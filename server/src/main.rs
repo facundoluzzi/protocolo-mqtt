@@ -13,7 +13,7 @@ fn main() {
             let client_stream: TcpStream = connection_ok.0;
             let reader = BufReader::new(client_stream);
             let lines = reader.lines();
-            for line in lines{
+            for line in lines {
                 println!("Recibido: {:?}", line);
             }
         } else if let Err(connection_err) = connection {
