@@ -29,3 +29,55 @@ impl ConfigParser {
         self.configurations = configs;
     }
 }
+
+#[cfg(test)]
+mod test_config_parser {
+    use super::*;
+
+    fn open_config_file() -> Result<File, std::io::Error> {
+        let file = File::open("../testParser.conf")?;
+        Ok(file)
+    }
+
+    #[test]
+    fn configurations_does_not_have_commented_lines() {
+        let file = open_config_file().unwrap();
+        let mut config_parser = ConfigParser::new();
+        config_parser.charge_configurations_from_file(file);
+        for (key, _) in config_parser.configurations {
+            assert!(!key.starts_with("#"));
+        }
+    }
+
+    #[test]
+    fn configurations_does_not_have_blank_lines() {
+        let file = open_config_file().unwrap();
+        let mut config_parser = ConfigParser::new();
+        config_parser.charge_configurations_from_file(file);
+        for (key, _) in config_parser.configurations {
+            assert!(!key.starts_with(" "));
+        }
+    }
+
+    #[test]
+    fn configurations_values_are_correct() {
+        let file = open_config_file().unwrap();
+        let expected_values = vec!["1".to_string(),"2".to_string(),"3".to_string(),"4".to_string()];
+        let mut config_parser = ConfigParser::new();
+        config_parser.charge_configurations_from_file(file);
+        for (_, value) in config_parser.configurations {
+            assert!(expected_values.contains(&value.to_string()));
+        }
+    }
+
+    #[test]
+    fn configurations_keys_are_correct() {
+        let file = open_config_file().unwrap();
+        let expected_values = vec!["test1".to_string(),"test2".to_string(),"test3".to_string(),"test4".to_string()];
+        let mut config_parser = ConfigParser::new();
+        config_parser.charge_configurations_from_file(file);
+        for (key, _) in config_parser.configurations {
+            assert!(expected_values.contains(&key.to_string()));
+        }
+    }
+}
