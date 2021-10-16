@@ -40,6 +40,12 @@ mod test_config_parser {
     }
 
     #[test]
+    fn configurations_initialize_empty() {
+        let config_parser = ConfigParser::new();
+        assert!(config_parser.configurations.is_empty());
+    }
+
+    #[test]
     fn configurations_does_not_have_commented_lines() {
         let file = open_config_file().unwrap();
         let mut config_parser = ConfigParser::new();
