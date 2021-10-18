@@ -1,4 +1,4 @@
-use server::logger::logger::Logger;
+use server::logger::Logger;
 
 use std::io::BufRead;
 use std::io::BufReader;
@@ -8,7 +8,7 @@ use std::net::TcpStream;
 fn main() {
     let address = "0.0.0.0:1883".to_owned();
     let listener = TcpListener::bind(address);
-    
+
     let mut logger = Logger::new("prueba.txt".to_owned()).unwrap();
 
     if let Ok(listener_ok) = listener {
