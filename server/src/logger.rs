@@ -5,33 +5,32 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 pub struct Logger {
-    sender: Sender<String>,
+    pub sender: Sender<String>,
 }
 
 impl Logger {
     pub fn new(path: String) -> Result<Logger, std::io::Error> {
-        let file = File::create(path);
-        if let Err(err_file) = file {
-            return Err(err_file);
-        }
-
+        let mut file = File::create(path)?;
         let (tx, rx): (Sender<String>, Receiver<String>) = mpsc::channel();
 
-        if let Ok(mut created_file) = file {
-            thread::spawn(move || {
-                let receive = rx.recv();
-                if let Ok(success_receive) = receive {
-                    created_file.write_all(success_receive.as_bytes()).unwrap();
-                    created_file.write_all(b"\n").unwrap();
-                }
-            });
-        }
-
+        thread::spawn(move || {
+            for receive in rx {
+                file.write_all(receive.as_bytes()).unwrap();
+                file.write_all(b"\n").unwrap();
+            }
+        });
         Ok(Logger { sender: tx })
     }
 
     pub fn info(&mut self, message: String) {
-        self.sender.send(message).unwrap();
+        match self.sender.send(message) {
+            Ok(success_message) => {
+                println!("{:?}", success_message);
+            },
+            Err(error_message) => {
+                println!("{}", error_message);
+            }
+        }
     }
 }
 
