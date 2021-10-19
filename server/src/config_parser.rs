@@ -44,9 +44,27 @@ impl ConfigParser {
 #[cfg(test)]
 mod test_config_parser {
     use super::*;
+    use std::fs;
+    use std::io::prelude::*;
+
+    fn create_test_config_file() -> Result<(), std::io::Error> {
+        let mut file = File::create("testParser.conf")?;
+        file.write(b"test1 1\n")?;
+        file.write(b"#Comentario test\n")?;
+        file.write(b"test2 2\n")?;
+        file.write(b"#Comentario test2\n\n")?;
+        file.write(b"test3 3\n\n")?;
+        file.write(b"test4 4")?;
+        Ok(())
+    }
+
+    fn remove_test_config_file() -> Result<(), std::io::Error> {
+        fs::remove_file("testParser.conf").unwrap_or(());
+        Ok(())
+    }
 
     fn open_config_file() -> Result<File, std::io::Error> {
-        let file = File::open("../testParser.conf")?;
+        let file = File::open("testParser.conf")?;
         Ok(file)
     }
 
@@ -58,26 +76,31 @@ mod test_config_parser {
 
     #[test]
     fn configurations_does_not_have_commented_lines() {
+        create_test_config_file().unwrap();
         let file = open_config_file().unwrap();
         let mut config_parser = ConfigParser::new();
         config_parser.charge_configurations_from_file(file);
         for (key, _) in config_parser.configurations {
             assert!(!key.starts_with("#"));
         }
+        remove_test_config_file().unwrap();
     }
 
     #[test]
     fn configurations_does_not_have_blank_lines() {
+        create_test_config_file().unwrap();
         let file = open_config_file().unwrap();
         let mut config_parser = ConfigParser::new();
         config_parser.charge_configurations_from_file(file);
         for (key, _) in config_parser.configurations {
             assert!(!key.starts_with(" "));
         }
+        remove_test_config_file().unwrap();
     }
 
     #[test]
     fn configurations_values_are_correct() {
+        create_test_config_file().unwrap();
         let file = open_config_file().unwrap();
         let expected_values = vec![
             "1".to_string(),
@@ -90,10 +113,12 @@ mod test_config_parser {
         for (_, value) in config_parser.configurations {
             assert!(expected_values.contains(&value.to_string()));
         }
+        remove_test_config_file().unwrap();
     }
 
     #[test]
     fn configurations_keys_are_correct() {
+        create_test_config_file().unwrap();
         let file = open_config_file().unwrap();
         let expected_values = vec![
             "test1".to_string(),
@@ -106,5 +131,6 @@ mod test_config_parser {
         for (key, _) in config_parser.configurations {
             assert!(expected_values.contains(&key.to_string()));
         }
+        remove_test_config_file().unwrap();
     }
 }
