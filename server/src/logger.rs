@@ -5,7 +5,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 pub struct Logger {
-    sender: Sender<String>,
+    pub sender: Sender<String>,
 }
 
 impl Logger {
@@ -14,9 +14,8 @@ impl Logger {
         let (tx, rx): (Sender<String>, Receiver<String>) = mpsc::channel();
 
         thread::spawn(move || {
-            let receive = rx.recv();
-            if let Ok(success_receive) = receive {
-                file.write_all(success_receive.as_bytes()).unwrap();
+            for receive in rx {
+                file.write_all(receive.as_bytes()).unwrap();
                 file.write_all(b"\n").unwrap();
             }
         });
