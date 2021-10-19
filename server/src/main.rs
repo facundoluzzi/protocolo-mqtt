@@ -1,18 +1,10 @@
-use server::paquetes::PAQUETES;
+use server::paquetes;
 use server::logger::Logger;
 
 use std::io::BufRead;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
-
-fn get_id_packet(line: String) -> PAQUETES {
-    let bytes = line.as_bytes();
-    let info_packet = *bytes.get(0).unwrap();
-    let id_packet = 0b00001111 & info_packet;
-    println!("{:?}", id_packet);
-    PAQUETES::CONNECT{}
-}
 
 fn main() {
     let address = "0.0.0.0:1883".to_owned();
@@ -28,7 +20,8 @@ fn main() {
             let reader = BufReader::new(client_stream);
             let lines = reader.lines().flatten();
             for line in lines {
-                logger.info(line);
+                paquetes::PacketBuilder::new(line.clone());
+                logger.info(line.clone());
             }
         } else if let Err(connection_err) = connection {
             println!("{:?}", connection_err);
