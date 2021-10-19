@@ -23,14 +23,7 @@ impl Logger {
     }
 
     pub fn info(&mut self, message: String) {
-        match self.sender.send(message) {
-            Ok(success_message) => {
-                println!("{:?}", success_message);
-            },
-            Err(error_message) => {
-                println!("{}", error_message);
-            }
-        }
+        self.sender.send(message).unwrap();
     }
 }
 
