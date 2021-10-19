@@ -1,7 +1,16 @@
+use server::paquetes::PAQUETES;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::net::TcpListener;
 use std::net::TcpStream;
+
+fn get_id_packet(line: String) -> PAQUETES {
+    let bytes = line.as_bytes();
+    let info_packet = *bytes.get(0).unwrap();
+    let id_packet = 0b00001111 & info_packet;
+    println!("{:?}", id_packet);
+    PAQUETES::CONNECT{}
+}
 
 fn main() {
     let address = "0.0.0.0:1883".to_owned();
