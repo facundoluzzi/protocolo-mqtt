@@ -20,6 +20,8 @@ fn main() {
             let reader = BufReader::new(client_stream);
             let lines = reader.lines().flatten();
             for line in lines {
+                println!("{:?}", line);
+                println!("{}", line);
                 paquetes::PacketBuilder::new(line.clone());
                 logger.info(line.clone());
             }

@@ -48,7 +48,7 @@ pub struct PacketBuilder {}
 
 impl PacketBuilder  {
     pub fn new(linea: String) -> PAQUETES {
-        println!("linea: {}", linea);
+        println!("linea: {:?}", linea);
         // paso el string a un array de bytes
         let bytes = linea.as_bytes();
         println!("bytes: {:?}", bytes);
@@ -80,9 +80,8 @@ mod tests {
 
     #[test]
     fn crear_paquete_connect_correctamente() {
-        let bytes_packet: u8 = 0b00010000;
-        let paquete_creado = PacketBuilder::new(bytes_packet.to_string());
+        let paquete_creado = PacketBuilder::new("\u{1f}".to_owned());
         println!("{:?}", paquete_creado);
-        // assert_eq!(paquete_creado.get_type(), CONNECT{});
+        // assert_eq!(paquete_creado.get_type(), CONNECT{});q
     }
 }
