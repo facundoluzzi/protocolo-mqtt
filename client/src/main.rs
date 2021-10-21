@@ -1,4 +1,3 @@
-use core::unicode::conversions::to_lower;
 use std::io::stdin;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -9,21 +8,21 @@ fn main() {
     let address = "0.0.0.0:1883".to_owned();
     let reader = BufReader::new(stdin());
     let socket = TcpStream::connect(address);
+    println!("{:?}",socket);
 
     if let Ok(mut socket_ok) = socket {
         for line in reader.lines().flatten() {
             println!("Enviando: {:?}", line);
-            let mut toSend :u8 = match line.as_str() {
-                "CONNECT" => 0b00010000,
-                "CONNAC" => 0b00100000,
-                _ => 0b00000000
+            let to_send: [u8; 1] = match line.as_str() {
+                "CONNECT" => [0b0010000u8],
+                "CONNAC" => [0b0100000u8],
+                _ => [0b0000000u8]
             };
-            match toSend {
-                0b00000000 => {println!("NO PACKET");
-                    panic!()
+            match to_send {
+                [0b0000000u8] => {println!("NO PACKET");
                 }
                 _=> {
-                    if let Err(respuesta_uno) = socket_ok.write(toSend) {
+                    if let Err(respuesta_uno) = socket_ok.write(&to_send) {
                         println!("{}", respuesta_uno);
                         return;
                     }
