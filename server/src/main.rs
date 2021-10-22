@@ -22,7 +22,7 @@ fn main() {
             for line in lines {
                 println!("{:?}", line);
                 println!("{}", line);
-                paquetes::PacketBuilder::new(line.clone());
+                // paquetes::PacketBuilder::new(line.clone());
                 logger.info(line.clone());
             }
         } else if let Err(connection_err) = connection {
