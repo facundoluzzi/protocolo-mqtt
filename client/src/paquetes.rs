@@ -1,13 +1,29 @@
+pub trait PACKET {
+    fn get_type(&self) -> String;
+}
+
 #[derive(Debug)]
-pub enum PAQUETES {
+pub enum PACKETS {
     CONNECT,
-    CONNAC,
-    DEFAULT
+    CONNACK,
+    DEFAULT,
+}
+
+impl PACKET for PACKETS {
+    fn get_type(&self) -> String{
+        match *self {
+            PACKETS::CONNECT => "connect".to_owned(),
+            PACKETS::CONNACK => "connack".to_owned(),
+            PACKETS::DEFAULT => "default".to_owned()
+        }
+    }
 }
 
 pub struct CONNECT {}
 
-pub struct CONNAC {}
+pub struct CONNACK {}
+
+pub struct DEFAULT {}
 
 impl CONNECT {
     pub fn get_type() -> String {
@@ -15,39 +31,35 @@ impl CONNECT {
     }
 }
 
-impl CONNAC {
+impl CONNACK {
     pub fn get_type() -> String {
-        "connac".to_owned()   
+        "CONNACK".to_owned()   
+    }
+}
+
+impl DEFAULT {
+    pub fn get_type() -> String {
+        "DEFAULT".to_owned()   
+    }
+}
+pub struct PACKETFACTORY {}
+
+impl PACKETFACTORY {
+    pub fn get(packet: &[u8]) -> PACKETS {
+        match packet {
+            [0b0010000u8] => PACKETS::CONNECT,
+            [0b0100000u8] => PACKETS::CONNACK,
+            _ => PACKETS::DEFAULT
+        }
     }
 }
 
 
-//pub struct PUBLISH {}
-
-// pub struct PUBACK {}
-
-// pub struct PUBREL {}
-
-// pub struct PUBCOMP {}
-
-// pub struct SUBSCRIBE {}
-
-// pub struct SUBACK {}
-
-// pub struct UNSUSCRIBE {}
-
-// pub struct UNSUBACK {}
-
-// pub struct PINGREQ {}
-
-// pub struct PINGRESP {}
-
-// pub struct DISCONNECT {}
 
 pub struct PacketBuilder {}
 
 impl PacketBuilder  {
-    pub fn new(linea: String) -> PAQUETES {
+    pub fn new(linea: String) -> PACKETS {
         println!("linea: {}", linea);
         // paso el string a un array de bytes
         let bytes = linea.as_bytes();
@@ -62,13 +74,13 @@ impl PacketBuilder  {
         println!("mask: {}", mask);
         match mask {
             0b00010000 => {
-                PAQUETES::CONNECT{}
+                PACKETS::CONNECT{}
             }
             0b00100000 => {
-                PAQUETES::CONNAC{}
+                PACKETS::CONNACK{}
             }
             _ => {
-                PAQUETES::DEFAULT
+                PACKETS::DEFAULT
             }
         }
     }
