@@ -1,26 +1,22 @@
-#[derive(Debug)]
-pub enum PAQUETES {
-    CONNECT,
-    CONNAC,
-    DEFAULT
+pub trait Paquetes {
+    fn get_type(&self) -> String;
 }
 
-pub struct CONNECT {}
-
-pub struct CONNAC {}
-
-impl CONNECT {
-    pub fn get_type() -> String {
-        "connect".to_owned()   
+pub struct Connect;
+impl Paquetes for Connect {
+    #[inline(never)]
+    fn get_type(&self) -> String {
+        "connect".to_string()
     }
 }
 
-impl CONNAC {
-    pub fn get_type() -> String {
-        "connac".to_owned()   
-    }
-}
+// pub struct CONNAC {}
 
+// impl CONNAC {
+//     pub fn get_type() -> String {
+//         "connac".to_owned()   
+//     }
+// }
 
 //pub struct PUBLISH {}
 
@@ -47,28 +43,16 @@ impl CONNAC {
 pub struct PacketBuilder {}
 
 impl PacketBuilder  {
-    pub fn new(linea: String) -> PAQUETES {
-        println!("linea: {:?}", linea);
-        // paso el string a un array de bytes
+    pub fn new(linea: String) -> Connect {
         let bytes = linea.as_bytes();
-        println!("bytes: {:?}", bytes);
-
-        // obtengo el primer byte que tiene la configuracion
         let first_byte = *bytes.get(0).unwrap();
-        println!("first_byte: {}", first_byte);
-
-        // me quedo con los bits del paquete
         let mask = 0b11110000 & first_byte;
-        println!("mask: {}", mask);
         match mask {
             0b00010000 => {
-                PAQUETES::CONNECT{}
-            }
-            0b00100000 => {
-                PAQUETES::CONNAC{}
+                Connect{}
             }
             _ => {
-                PAQUETES::DEFAULT
+                Connect{}
             }
         }
     }
@@ -80,8 +64,7 @@ mod tests {
 
     #[test]
     fn crear_paquete_connect_correctamente() {
-        let paquete_creado = PacketBuilder::new("\u{1f}".to_owned());
-        println!("{:?}", paquete_creado);
-        // assert_eq!(paquete_creado.get_type(), CONNECT{});q
+        let connect_packet = PacketBuilder::new("\u{10}".to_owned());
+        assert_eq!(connect_packet.get_type(), "connect".to_string());
     }
 }
