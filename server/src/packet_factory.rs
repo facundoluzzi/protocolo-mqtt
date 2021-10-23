@@ -1,6 +1,6 @@
-use crate::paquetes::Paquetes;
 use crate::connect::Connect;
 use crate::default::Default;
+use crate::paquetes::Paquetes;
 
 pub struct PacketFactory {}
 
@@ -12,22 +12,13 @@ impl PacketFactory {
     pub fn get(linea: String) -> Box<dyn Paquetes> {
         let bytes = linea.as_bytes();
         let first_byte = bytes.get(0);
-        
+
         match first_byte {
-            Some(first_byte_ok) => {
-                match PacketFactory::get_control_packet_type(*first_byte_ok) {
-                    1 => {
-                        Connect::new()
-                    }
-                    _ => {
-                        Default::new()
-                    }
-                }
-            }
-            None => {
-                // devolver un paquete error
-                return Default::new()
-            }
+            Some(first_byte_ok) => match PacketFactory::get_control_packet_type(*first_byte_ok) {
+                1 => Connect::init(),
+                _ => Default::init(),
+            },
+            None => Default::init(),
         }
     }
 }

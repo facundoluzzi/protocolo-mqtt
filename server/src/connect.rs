@@ -4,7 +4,7 @@ pub struct Connect {}
 
 // Implement the `Animal` trait for `Sheep`.
 impl Paquetes for Connect {
-    fn new() -> Box<dyn Paquetes> {
+    fn init() -> Box<dyn Paquetes> {
         Box::new(Connect {})
     }
     fn get_type(&self) -> String {

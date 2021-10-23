@@ -1,4 +1,6 @@
 pub trait Paquetes {
-    fn new() -> Box<dyn Paquetes> where Self: Sized;
+    fn init() -> Box<dyn Paquetes>
+    where
+        Self: Sized;
     fn get_type(&self) -> String;
 }

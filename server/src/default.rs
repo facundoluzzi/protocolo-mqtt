@@ -4,7 +4,7 @@ pub struct Default {}
 
 // Implement the `Animal` trait for `Cow`.
 impl Paquetes for Default {
-    fn new() -> Box<dyn Paquetes> {
+    fn init() -> Box<dyn Paquetes> {
         Box::new(Default {})
     }
     fn get_type(&self) -> String {
