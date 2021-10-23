@@ -1,4 +1,5 @@
 use server::logger::Logger;
+// use server::paquetes;
 
 use std::io::BufRead;
 use std::io::BufReader;
@@ -19,15 +20,16 @@ fn main() {
             let reader = BufReader::new(client_stream);
             let lines = reader.lines().flatten();
             for line in lines {
-                logger.info(line);
+                println!("{:?}", line);
+                println!("{}", line);
+                // paquetes::PacketBuilder::new(line.clone());
+                logger.info(line.clone());
             }
         } else if let Err(connection_err) = connection {
             println!("{:?}", connection_err);
-            return;
         }
     } else if let Err(err) = listener {
         println!("{:?}", err);
-        return;
     }
 }
 
