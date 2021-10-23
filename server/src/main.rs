@@ -27,11 +27,9 @@ fn main() {
             }
         } else if let Err(connection_err) = connection {
             println!("{:?}", connection_err);
-            return;
         }
     } else if let Err(err) = listener {
         println!("{:?}", err);
-        return;
     }
 }
 
