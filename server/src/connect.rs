@@ -1,15 +1,15 @@
 use crate::paquetes::Paquetes;
 
 pub struct Connect {
-    remaining_length: usize
+    remaining_length: usize,
 }
 
 impl Paquetes for Connect {
     /**
-     * Se calcula la cantidad de bytes dentro del actual paquete, incluyendo la data del header variable 
+     * Se calcula la cantidad de bytes dentro del actual paquete, incluyendo la data del header variable
      * y el payload. Esto no incluye los bytes usados para encodear el remaining length.
      * Aclaraciones: toma los primeros 7 bits de cada byte porque el último está reservado como flag
-     * para continuar procesando. 
+     * para continuar procesando.
      * En cada byte procesado se multiplica el valor representado con esos 7 bits por 128^n siendo n
      * la posición del byte procesado.
      */
@@ -21,7 +21,7 @@ impl Paquetes for Connect {
             let encoded_byte: usize = bytes[index] as usize;
             value += (encoded_byte & 127) * multiplier;
             multiplier *= 128;
-            if multiplier > (128*128*128) {
+            if multiplier > (128 ^ 3) {
                 // error
                 return Err("".to_string());
             }
@@ -38,9 +38,13 @@ impl Paquetes for Connect {
     }
 
     fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
-        let mut packet = Box::new(Connect {remaining_length: 0});
+        let mut packet = Box::new(Connect {
+            remaining_length: 0,
+        });
         println!("{:?}", bytes);
-        packet.save_remaining_length(&bytes[1..bytes.len()]).unwrap();
+        packet
+            .save_remaining_length(&bytes[1..bytes.len()])
+            .unwrap();
         packet
     }
 
