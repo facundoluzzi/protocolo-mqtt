@@ -29,14 +29,16 @@ mod tests {
 
     #[test]
     fn crear_paquete_connect_correctamente() {
-        let bytes_packet = "\u{10}\u{40}";
+        let bytes_packet =
+            "\u{10}\u{40}\u{00},\u{04},\u{4D},\u{15},\u{45},\u{45},\u{04},\u{FF},\u{00},\u{0A}";
         let prueba = PacketFactory::get(bytes_packet.to_owned());
         assert_eq!(prueba.get_type(), "connect".to_owned());
     }
 
     #[test]
     fn crear_paquete_default() {
-        let bytes_packet = "\u{00}";
+        let bytes_packet =
+            "\u{00}\u{00},\u{04},\u{4D},\u{15},\u{45},\u{45},\u{04},\u{FF},\u{00},\u{0A}";
         let prueba = PacketFactory::get(bytes_packet.to_owned());
         assert_eq!(prueba.get_type(), "default".to_owned());
     }
