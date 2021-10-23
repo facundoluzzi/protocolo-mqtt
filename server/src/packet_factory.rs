@@ -15,10 +15,10 @@ impl PacketFactory {
 
         match first_byte {
             Some(first_byte_ok) => match PacketFactory::get_control_packet_type(*first_byte_ok) {
-                1 => Connect::init(),
-                _ => Default::init(),
+                1 => Connect::init(bytes),
+                _ => Default::init(bytes),
             },
-            None => Default::init(),
+            None => Default::init(bytes),
         }
     }
 }
@@ -29,7 +29,7 @@ mod tests {
 
     #[test]
     fn crear_paquete_connect_correctamente() {
-        let bytes_packet = "\u{10}";
+        let bytes_packet = "\u{10}\u{40}";
         let prueba = PacketFactory::get(bytes_packet.to_owned());
         assert_eq!(prueba.get_type(), "connect".to_owned());
     }
