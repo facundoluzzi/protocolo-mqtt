@@ -5,20 +5,28 @@ use crate::default::Default;
 pub struct PacketFactory {}
 
 impl PacketFactory {
+    fn get_control_packet_type(first_byte: u8) -> u8 {
+        (0b11110000 & first_byte) >> 4
+    }
+
     pub fn get(linea: String) -> Box<dyn Paquetes> {
-        // paso el string a un array de bytes
         let bytes = linea.as_bytes();
-        println!("{:?}", bytes);
-        // obtengo el primer byte que tiene la configuracion
-        let first_byte = *bytes.get(0).unwrap();
-        // me quedo con los bits del paquete
-        let mask = 0b11110000 & first_byte;
-        match mask {
-            0b00010000 => {
-                Connect::new()
+        let first_byte = bytes.get(0);
+        
+        match first_byte {
+            Some(first_byte_ok) => {
+                match PacketFactory::get_control_packet_type(*first_byte_ok) {
+                    1 => {
+                        Connect::new()
+                    }
+                    _ => {
+                        Default::new()
+                    }
+                }
             }
-            _ => {
-                Default::new()
+            None => {
+                // devolver un paquete error
+                return Default::new()
             }
         }
     }
