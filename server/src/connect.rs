@@ -1,5 +1,5 @@
 use crate::paquetes::Paquetes;
-
+use crate::utf8_parser::UTF8;
 pub struct Connect {
     remaining_length: usize,
     flags: ConnectFlags,
@@ -7,38 +7,33 @@ pub struct Connect {
 }
 
 pub struct ConnectPayload {
-    username: [u8] ,
-    password: [u8],
-    will_retain: [u8],
-    will_qos: [u8],
-    will_flag: [u8],
-    clean_session: [u8],
+    client_identifier: u8,
+    will_topic: Option<u8>,
+    will_message: Option<u8>,
+    username: Option<u8>,
+    password: Option<u8>,
 }
 
 impl ConnectPayload {
     fn new(connectFlags: ConnectFlags, remaining_bytes: &[u8]) -> ConnectPayload {
-        let username_flag = connectFlags.get_username_flag();
-        let password_flag = connectFlags.get_password_flag();
+        let index: usize = 0;
+        let pointer: usize = 0;
+        let (client_identifier, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);                
+        let (will_topic, index) = if connectFlags.get_will_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0};
+        pointer += index;
+        let (will_message, index) = if connectFlags.get_will_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0)};
+        pointer += index;
+        let (username, index) = if connectFlags.get_username_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0)};
+        pointer += index;
+        let (password, index) = if connectFlags.get_password_flag() & connectFlags.get_username_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0)};
 
-        let pointer = 0;
-        if (username_flag) {
-            username = remaining_bytes[pointer...(pointer+189)],
-            pointer += 189;
-        }else {
-            username = Null,
-        }
-
-        if (username_flag) {
-            password = remaining_bytes[pointer... (pointer + 128)],
-            pointer += 128;
-        }
         ConnectPayload {
-            
+            client_identifier: client_identifier,
+            username: username,
+            password: password,
+            will_topic: will_topic,
+            will_message: will_message,
         }
-
-
-
-
     }
 }
 
@@ -54,14 +49,13 @@ pub struct ConnectFlags {
 impl ConnectFlags {
     fn new(bytes: &u8) -> ConnectFlags {
         ConnectFlags {
-            will_qos: (0b00011000 & bytes)>>3,
+            will_qos: (0b00011000 & bytes) >> 3,
             username: 0b10000000 & bytes != 0,
             password: 0b01000000 & bytes != 0,
             will_retain: 0b00100000 & bytes != 0,
             will_flag: 0b00000100 & bytes != 0,
             clean_session: 0b00000010 & bytes != 0,
         }
-        
     }
 
     fn get_username_flag(&self) -> bool {
@@ -83,8 +77,6 @@ impl ConnectFlags {
         self.will_qos
     }
 }
-
-
 
 impl Paquetes for Connect {
     /**
@@ -120,8 +112,8 @@ impl Paquetes for Connect {
     }
 
     fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
-        let flag_null = ConnectFlags::new(&0b00000000u8);
-        let payload_null = ConnectPayload::new(flag_null,&0b00000000u8);
+        let flag_null = ConnectFlags::new(&0x00u8);
+        let payload_null = ConnectPayload::new(flag_null, &[0x00u8]);
         let mut packet = Box::new(Connect {
             remaining_length: 0,
             flags: flag_null,
@@ -134,7 +126,7 @@ impl Paquetes for Connect {
         let variable_header = &bytes[index..index + 10];
         let connect_flags = ConnectFlags::new(&variable_header[8]);
         packet.flags = connect_flags;
-        
+
         //let payload = &bytes[index + 10..packet.get_remaining_length()];
 
         packet
@@ -252,7 +244,4 @@ mod tests {
         let third = Connect::init(&bytes);
         assert_eq!(third.get_remaining_length(), 321);
     }
-
-
-
 }
