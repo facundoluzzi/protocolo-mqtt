@@ -1,26 +1,38 @@
 use std::io::stdin;
 use std::io::BufRead;
 use std::io::BufReader;
-use std::io::Write;
+use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::str::from_utf8;
 
 fn main() {
-    let address = "0.0.0.0:1883".to_owned();
     let reader = BufReader::new(stdin());
-    let socket = TcpStream::connect(address);
-    if let Ok(mut socket_ok) = socket {
-        for line in reader.lines().flatten() {
-            println!("Enviando: {:?}", line);
-            if let Err(respuesta_uno) = socket_ok.write(line.as_bytes()) {
-                println!("{}", respuesta_uno);
-                return;
-            }
-            if let Err(respuesta_dos) = socket_ok.write("\n".to_owned().as_bytes()) {
-                println!("{}", respuesta_dos);
-                return;
+    match TcpStream::connect("localhost:1883") {
+        Ok(mut stream) => {
+            println!("Successfully connected to server in port 3333");
+            for line in reader.lines().flatten() {
+                if let Err(msg_error) = stream.write(line.as_bytes()) {
+                    println!("{}", msg_error);
+                    return;
+                }
+                println!("Sent {}, awaiting reply...", line);
+
+                let mut data = vec![0_u8; 100]; // using 6 byte buffer
+                match stream.read(&mut data) {
+                    Ok(size) => {
+                        println!("received {:?}", from_utf8(&data[0..size]));
+                    }
+                    Err(e) => {
+                        println!("Failed to receive data: {}", e);
+                    }
+                }
             }
         }
+        Err(e) => {
+            println!("Failed to connect: {}", e);
+        }
     }
+    println!("Terminated.");
 }
 
 #[cfg(test)]

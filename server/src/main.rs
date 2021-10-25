@@ -6,10 +6,10 @@ use std::thread;
 
 fn handle_new_client(mut stream: TcpStream) {
     // TODO: revisar el largo
-    let mut data = [0_u8; 50];
+    let mut data = [0_u8; 100];
     while match stream.read(&mut data) {
-        Ok(_size) => {
-            let packet = PacketFactory::get(&data);
+        Ok(size) => {
+            let packet = PacketFactory::get(&data[0..size]);
             packet.send_response(&stream);
             true
         }
