@@ -1,14 +1,16 @@
-use std::io::{Read, Write};
+use server::packet_factory::PacketFactory;
+
+use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::thread;
 
 fn handle_new_client(mut stream: TcpStream) {
+    // TODO: revisar el largo
     let mut data = [0_u8; 50];
     while match stream.read(&mut data) {
-        Ok(size) => {
-            if let Err(msg_error) = stream.write(&data[0..size]) {
-                println!("Error in sending response: {}", msg_error);
-            }
+        Ok(_size) => {
+            let packet = PacketFactory::get(&data);
+            packet.send_response(&stream);
             true
         }
         Err(_) => {
@@ -24,7 +26,7 @@ fn handle_new_client(mut stream: TcpStream) {
 
 fn main() {
     let listener = TcpListener::bind("0.0.0.0:1883").unwrap();
-    println!("Server listening on port 3333");
+    println!("Server listening on port 1883");
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {

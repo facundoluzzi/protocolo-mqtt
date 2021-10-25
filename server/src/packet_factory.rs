@@ -9,8 +9,7 @@ impl PacketFactory {
         (0b11110000 & first_byte) >> 4
     }
 
-    pub fn get(linea: String) -> Box<dyn Paquetes> {
-        let bytes = linea.as_bytes();
+    pub fn get(bytes: &[u8]) -> Box<dyn Paquetes> {
         let first_byte = bytes.get(0);
 
         match first_byte {
@@ -29,17 +28,19 @@ mod tests {
 
     #[test]
     fn crear_paquete_connect_correctamente() {
-        let bytes_packet =
-            "\u{10}\u{40}\u{00},\u{04},\u{4D},\u{15},\u{45},\u{45},\u{04},\u{FF},\u{00},\u{0A}";
-        let prueba = PacketFactory::get(bytes_packet.to_owned());
+        let bytes_packet = [
+            0x10, 0x40, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0xFF, 0x00, 0x0A,
+        ];
+        let prueba = PacketFactory::get(&bytes_packet);
         assert_eq!(prueba.get_type(), "connect".to_owned());
     }
 
     #[test]
     fn crear_paquete_default() {
-        let bytes_packet =
-            "\u{00}\u{00},\u{04},\u{4D},\u{15},\u{45},\u{45},\u{04},\u{FF},\u{00},\u{0A}";
-        let prueba = PacketFactory::get(bytes_packet.to_owned());
+        let bytes_packet = [
+            0x00, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0xFF, 0x00, 0x0A,
+        ];
+        let prueba = PacketFactory::get(&bytes_packet);
         assert_eq!(prueba.get_type(), "default".to_owned());
     }
 }
