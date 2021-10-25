@@ -17,16 +17,10 @@ fn main() {
                 }
                 println!("Sent {}, awaiting reply...", line);
 
-                let mut data = vec![0_u8; line.len()]; // using 6 byte buffer
-                match stream.read_exact(&mut data) {
-                    Ok(_) => {
-                        println!("received {:?}", data);
-                        if data == line.as_bytes() {
-                            println!("Reply is ok!");
-                        } else {
-                            let text = from_utf8(&data).unwrap();
-                            println!("Unexpected reply: {}", text);
-                        }
+                let mut data = vec![0_u8; 100]; // using 6 byte buffer
+                match stream.read(&mut data) {
+                    Ok(size) => {
+                        println!("received {:?}", from_utf8(&data[0..size]));
                     }
                     Err(e) => {
                         println!("Failed to receive data: {}", e);
