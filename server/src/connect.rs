@@ -1,4 +1,6 @@
 use crate::paquetes::Paquetes;
+use std::io::Write;
+use std::net::TcpStream;
 
 pub struct Connect {
     remaining_length: usize,
@@ -55,6 +57,12 @@ impl Paquetes for Connect {
 
     fn get_type(&self) -> String {
         "connect".to_owned()
+    }
+
+    fn send_response(&self, mut stream: &TcpStream) {
+        if let Err(msg_error) = stream.write("connack\n".as_bytes()) {
+            println!("Error in sending response: {}", msg_error);
+        }
     }
 }
 

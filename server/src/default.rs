@@ -1,4 +1,6 @@
 use crate::paquetes::Paquetes;
+use std::io::Write;
+use std::net::TcpStream;
 
 pub struct Default {}
 
@@ -17,5 +19,11 @@ impl Paquetes for Default {
     }
     fn get_type(&self) -> String {
         "default".to_owned()
+    }
+
+    fn send_response(&self, mut stream: &TcpStream) {
+        if let Err(msg_error) = stream.write("default message\n".as_bytes()) {
+            println!("Error in sending response: {}", msg_error);
+        }
     }
 }
