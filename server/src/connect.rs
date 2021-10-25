@@ -7,25 +7,49 @@ pub struct Connect {
 }
 
 pub struct ConnectPayload {
-    client_identifier: u8,
-    will_topic: Option<u8>,
-    will_message: Option<u8>,
-    username: Option<u8>,
-    password: Option<u8>,
+    client_identifier: String,
+    will_topic: Option<String>,
+    will_message: Option<String>,
+    username: Option<String>,
+    password: Option<String>,
 }
 
 impl ConnectPayload {
     fn new(connectFlags: ConnectFlags, remaining_bytes: &[u8]) -> ConnectPayload {
-        let index: usize = 0;
-        let pointer: usize = 0;
-        let (client_identifier, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);                
-        let (will_topic, index) = if connectFlags.get_will_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0};
-        pointer += index;
-        let (will_message, index) = if connectFlags.get_will_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0)};
-        pointer += index;
-        let (username, index) = if connectFlags.get_username_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0)};
-        pointer += index;
-        let (password, index) = if connectFlags.get_password_flag() & connectFlags.get_username_flag() {UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()])} else {(None, 0)};
+        let mut pointer: usize = 0;
+        let username: Option<String>;
+        let password: Option<String>;
+        let will_topic: Option<String>;
+        let will_message: Option<String>;
+        let (client_identifier, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);  
+        pointer += index;              
+        if connectFlags.get_will_flag() {
+            let (will_topic_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
+            will_topic = Some(will_topic_copy);
+            pointer += index;
+            let (will_message_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
+            will_message = Some(will_message_copy);
+            pointer += index;
+        }else {
+            will_topic = None;
+            will_message = None;
+        }
+
+        if connectFlags.get_username_flag() {
+            let (username_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
+            username = Some(username_copy);
+            pointer += index;
+        }else {
+            username = None;
+        }
+
+        if connectFlags.get_password_flag() & connectFlags.get_username_flag() {
+            let (password_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
+            password = Some(password_copy);
+            pointer += index;
+        }else {
+            password = None;
+        }
 
         ConnectPayload {
             client_identifier: client_identifier,

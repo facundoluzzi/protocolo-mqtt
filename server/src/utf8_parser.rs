@@ -1,7 +1,7 @@
 pub struct UTF8 {}
 
 impl UTF8 {
-    pub fn utf8_parser(bytes: &[u8]) -> (&[u8], usize) {
+    pub fn utf8_parser(bytes: &[u8]) -> (String, usize) {
         let msb = bytes[0];
         let lsb = bytes[1];
         let length: usize;
@@ -11,6 +11,6 @@ impl UTF8 {
         } else {
             length = usize::from(lsb);
         }
-        (&bytes[0..length], length)
+        (String::from_utf8(bytes[0..length].to_vec()).unwrap(), length)
     }
 }
