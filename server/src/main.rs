@@ -1,36 +1,44 @@
-use server::logger::Logger;
-// use server::paquetes;
+use server::packet_factory::PacketFactory;
 
-use std::io::BufRead;
-use std::io::BufReader;
-use std::net::TcpListener;
-use std::net::TcpStream;
+use std::io::Read;
+use std::net::{Shutdown, TcpListener, TcpStream};
+use std::thread;
+
+fn handle_new_client(mut stream: TcpStream) {
+    // TODO: revisar el largo
+    let mut data = [0_u8; 100];
+    while match stream.read(&mut data) {
+        Ok(size) => {
+            let packet = PacketFactory::get(&data[0..size]);
+            packet.send_response(&stream);
+            true
+        }
+        Err(_) => {
+            println!(
+                "An error occurred, terminating connection with {}",
+                stream.peer_addr().unwrap()
+            );
+            stream.shutdown(Shutdown::Both).unwrap();
+            false
+        }
+    } {}
+}
 
 fn main() {
-    let address = "0.0.0.0:1883".to_owned();
-    let listener = TcpListener::bind(address);
-
-    let mut logger = Logger::new("prueba.txt".to_owned()).unwrap();
-
-    if let Ok(listener_ok) = listener {
-        println!("{:?}", listener_ok);
-        let connection = listener_ok.accept();
-        if let Ok(connection_ok) = connection {
-            let client_stream: TcpStream = connection_ok.0;
-            let reader = BufReader::new(client_stream);
-            let lines = reader.lines().flatten();
-            for line in lines {
-                println!("{:?}", line);
-                println!("{}", line);
-                // paquetes::PacketBuilder::new(line.clone());
-                logger.info(line.clone());
+    let listener = TcpListener::bind("0.0.0.0:1883").unwrap();
+    println!("Server listening on port 1883");
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                println!("New connection: {}", stream.peer_addr().unwrap());
+                thread::spawn(move || handle_new_client(stream));
             }
-        } else if let Err(connection_err) = connection {
-            println!("{:?}", connection_err);
+            Err(e) => {
+                println!("Error on connection: {}", e);
+            }
         }
-    } else if let Err(err) = listener {
-        println!("{:?}", err);
     }
+    drop(listener);
 }
 
 #[cfg(test)]

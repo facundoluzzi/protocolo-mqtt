@@ -11,6 +11,9 @@ impl UTF8 {
         } else {
             length = usize::from(lsb);
         }
-        (String::from_utf8(bytes[0..length].to_vec()).unwrap(), length)
+        (
+            String::from_utf8(bytes[0..length].to_vec()).unwrap(),
+            length,
+        )
     }
 }

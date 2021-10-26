@@ -1,105 +1,16 @@
+use crate::flags::connect_flags::ConnectFlags;
+use crate::flags::flags::Flags;
 use crate::paquetes::Paquetes;
-use crate::utf8_parser::UTF8;
+use crate::payload::connect_payload::ConnectPayload;
+use crate::payload::payload::Payload;
+
+use std::io::Write;
+use std::net::TcpStream;
+
 pub struct Connect {
     remaining_length: usize,
-    flags: ConnectFlags,
-    payload: ConnectPayload,
-}
-
-pub struct ConnectPayload {
-    client_identifier: String,
-    will_topic: Option<String>,
-    will_message: Option<String>,
-    username: Option<String>,
-    password: Option<String>,
-}
-
-impl ConnectPayload {
-    fn new(connectFlags: ConnectFlags, remaining_bytes: &[u8]) -> ConnectPayload {
-        let mut pointer: usize = 0;
-        let username: Option<String>;
-        let password: Option<String>;
-        let will_topic: Option<String>;
-        let will_message: Option<String>;
-        let (client_identifier, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);  
-        pointer += index;              
-        if connectFlags.get_will_flag() {
-            let (will_topic_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
-            will_topic = Some(will_topic_copy);
-            pointer += index;
-            let (will_message_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
-            will_message = Some(will_message_copy);
-            pointer += index;
-        }else {
-            will_topic = None;
-            will_message = None;
-        }
-
-        if connectFlags.get_username_flag() {
-            let (username_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
-            username = Some(username_copy);
-            pointer += index;
-        }else {
-            username = None;
-        }
-
-        if connectFlags.get_password_flag() & connectFlags.get_username_flag() {
-            let (password_copy, index) = UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
-            password = Some(password_copy);
-            pointer += index;
-        }else {
-            password = None;
-        }
-
-        ConnectPayload {
-            client_identifier: client_identifier,
-            username: username,
-            password: password,
-            will_topic: will_topic,
-            will_message: will_message,
-        }
-    }
-}
-
-pub struct ConnectFlags {
-    username: bool,
-    password: bool,
-    will_retain: bool,
-    will_qos: u8,
-    will_flag: bool,
-    clean_session: bool,
-}
-
-impl ConnectFlags {
-    fn new(bytes: &u8) -> ConnectFlags {
-        ConnectFlags {
-            will_qos: (0b00011000 & bytes) >> 3,
-            username: 0b10000000 & bytes != 0,
-            password: 0b01000000 & bytes != 0,
-            will_retain: 0b00100000 & bytes != 0,
-            will_flag: 0b00000100 & bytes != 0,
-            clean_session: 0b00000010 & bytes != 0,
-        }
-    }
-
-    fn get_username_flag(&self) -> bool {
-        self.username
-    }
-    fn get_password_flag(&self) -> bool {
-        self.password
-    }
-    fn get_will_retain_flag(&self) -> bool {
-        self.will_retain
-    }
-    fn get_will_flag(&self) -> bool {
-        self.will_flag
-    }
-    fn get_clean_session_flag(&self) -> bool {
-        self.clean_session
-    }
-    fn get_will_qos_flag(&self) -> u8 {
-        self.will_qos
-    }
+    flags: Box<dyn Flags>,
+    payload: Box<dyn Payload>,
 }
 
 impl Paquetes for Connect {
@@ -137,7 +48,7 @@ impl Paquetes for Connect {
 
     fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
         let flag_null = ConnectFlags::new(&0x00u8);
-        let payload_null = ConnectPayload::new(flag_null, &[0x00u8]);
+        let payload_null = ConnectPayload::new(&flag_null, &[0x00u8]);
         let mut packet = Box::new(Connect {
             remaining_length: 0,
             flags: flag_null,
@@ -149,15 +60,26 @@ impl Paquetes for Connect {
             .unwrap();
         let variable_header = &bytes[index..index + 10];
         let connect_flags = ConnectFlags::new(&variable_header[8]);
+        packet.payload = ConnectPayload::new(
+            &connect_flags,
+            &bytes[index + 10..packet.get_remaining_length()],
+        );
         packet.flags = connect_flags;
-
-        //let payload = &bytes[index + 10..packet.get_remaining_length()];
-
         packet
     }
 
     fn get_type(&self) -> String {
         "connect".to_owned()
+    }
+
+    fn get_payload(&self) -> &Box<dyn Payload> {
+        &self.payload
+    }
+
+    fn send_response(&self, mut stream: &TcpStream) {
+        if let Err(msg_error) = stream.write("connack\n".as_bytes()) {
+            println!("Error in sending response: {}", msg_error);
+        }
     }
 }
 
@@ -268,4 +190,33 @@ mod tests {
         let third = Connect::init(&bytes);
         assert_eq!(third.get_remaining_length(), 321);
     }
+
+    // #[test]
+    // fn leer_payload_correctamente() {
+    //     let bytes = [
+    //         0x10,
+    //         0x80,
+    //         0x01,
+    //         0x00,
+    //         0x04,
+    //         0x4D,
+    //         0x15,
+    //         0x45,
+    //         0x45,
+    //         0x04,
+    //         0x00,
+    //         0x00,
+    //         0x0A,
+    //         0x00, // empieza el payload
+    //         0x06,
+    //         0x50,
+    //         0x52,
+    //         0x55,
+    //         0x45,
+    //         0x42,
+    //         0x41
+    //     ];
+    //     let connect_packet = Connect::init(&bytes);
+
+    // }
 }
