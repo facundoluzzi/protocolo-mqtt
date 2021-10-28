@@ -1,3 +1,4 @@
+use server::logs::logger::Logger;
 use server::packet_factory::PacketFactory;
 
 use std::io::Read;
@@ -14,10 +15,11 @@ fn handle_new_client(mut stream: TcpStream) {
             true
         }
         Err(_) => {
-            println!(
+            // ESTO FALLA POR QUE NO EXISTE LOGGER
+            logger.error(format!(
                 "An error occurred, terminating connection with {}",
                 stream.peer_addr().unwrap()
-            );
+            ));
             stream.shutdown(Shutdown::Both).unwrap();
             false
         }
@@ -25,16 +27,18 @@ fn handle_new_client(mut stream: TcpStream) {
 }
 
 fn main() {
+    let mut logger = Logger::new("test.log".to_string()).expect("Logger could not be created");
     let listener = TcpListener::bind("0.0.0.0:1883").unwrap();
-    println!("Server listening on port 1883");
+    logger.info("Server listening on port 1883".to_string());
+
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
-                println!("New connection: {}", stream.peer_addr().unwrap());
+                logger.info(format!("New connection: {}", stream.peer_addr().unwrap()));
                 thread::spawn(move || handle_new_client(stream));
             }
             Err(e) => {
-                println!("Error on connection: {}", e);
+                logger.error(format!("Error on connection: {}", e));
             }
         }
     }
