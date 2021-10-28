@@ -14,14 +14,19 @@ pub struct ConnectPayload {
 impl Payload for ConnectPayload {
     fn new(connect_flags: &Box<dyn Flags>, remaining_bytes: &[u8]) -> Box<dyn Payload> {
         let mut pointer: usize = 0;
+        let client_identifier: String;
         let username: Option<String>;
         let password: Option<String>;
         let will_topic: Option<String>;
         let will_message: Option<String>;
 
-        let (client_identifier, index) =
-            UTF8::utf8_parser(&remaining_bytes[pointer + 1..remaining_bytes.len()]);
-        pointer += index;
+        if remaining_bytes != &[0x00u8] {
+            let (client_identifier_copy, index) = UTF8::utf8_parser(remaining_bytes);
+            client_identifier = client_identifier_copy;
+            pointer += index;
+        }else{
+            client_identifier = "PayloadNull".to_owned();
+        }
 
         if connect_flags.get_will_flag() {
             let (will_topic_copy, index) =
