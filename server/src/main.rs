@@ -9,8 +9,8 @@ fn handle_new_client(mut stream: TcpStream) {
     let mut data = [0_u8; 100];
     while match stream.read(&mut data) {
         Ok(size) => {
-            let packet = PacketFactory::get(&data[0..size]);
-            packet.send_response(&stream);
+            PacketFactory::get(&data[0..size])
+                .send_response(&stream);
             true
         }
         Err(_) => {

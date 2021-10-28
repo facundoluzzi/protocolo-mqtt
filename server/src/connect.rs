@@ -82,7 +82,9 @@ impl Paquetes for Connect {
     }
 
     fn send_response(&self, mut stream: &TcpStream) {
-        if let Err(msg_error) = stream.write("connack\n".as_bytes()) {
+        let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
+        let connack_response = [0x20, 0x02, session_present_bit, 0x00];
+        if let Err(msg_error) = stream.write(&connack_response) {
             println!("Error in sending response: {}", msg_error);
         }
     }
