@@ -24,7 +24,7 @@ impl Payload for ConnectPayload {
             let (client_identifier_copy, index) = UTF8::utf8_parser(remaining_bytes);
             client_identifier = client_identifier_copy;
             pointer += index;
-        }else{
+        } else {
             client_identifier = "PayloadNull".to_owned();
         }
 
@@ -68,4 +68,20 @@ impl Payload for ConnectPayload {
             will_message: will_message,
         })
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn obtener_remaining_length_correctamente() {
+        let first_bytes = [
+            0x10, 0x0C, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x01, 0x02,
+        ];
+
+        let first_connect_packet = ConnectPayload::new();
+        assert_eq!(first_connect_packet.get_remaining_length(), 12);
+
+     }
 }

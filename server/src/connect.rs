@@ -25,7 +25,7 @@ impl Paquetes for Connect {
     fn save_remaining_length(&mut self, bytes: &[u8]) -> Result<usize, String> {
         let mut multiplier: usize = 1;
         let mut value: usize = 0;
-        let mut index: usize = 0;
+        let mut index: usize = 0; // cantidad de bytes leídos
         loop {
             let encoded_byte: usize = bytes[index] as usize;
             value += (encoded_byte & 127) * multiplier;
@@ -35,7 +35,7 @@ impl Paquetes for Connect {
                 return Err("".to_string());
             }
             self.remaining_length = value;
-            if encoded_byte & 128 == 0 {
+            if encoded_byte & 0b10000000 == 0 {
                 return Ok(index + 1);
             }
             index += 1;
@@ -55,14 +55,19 @@ impl Paquetes for Connect {
             payload: payload_null,
         });
 
-        let index = packet
+        let readed_index = packet
             .save_remaining_length(&bytes[1..bytes.len()])
             .unwrap();
-        let variable_header = &bytes[index..index + 10];
-        let connect_flags = ConnectFlags::new(&variable_header[8]);
+
+        let init_variable_header = 1 + readed_index;
+        let end_variable_header = readed_index + 10;
+        let variable_header = &bytes[init_variable_header..end_variable_header + 1];
+
+        let connect_flags = ConnectFlags::new(&variable_header[7]);
+
         packet.payload = ConnectPayload::new(
             &connect_flags,
-            &bytes[index + 10..packet.get_remaining_length()],
+            &bytes[end_variable_header + 1..init_variable_header + packet.get_remaining_length()],
         );
         packet.flags = connect_flags;
         packet
@@ -89,30 +94,23 @@ mod tests {
 
     #[test]
     fn obtener_remaining_length_correctamente() {
-        // todos los vectores que se envian en los tests tienen desde la posición que finaliza la lectura del remaining length,
+        // Todos los vectores que se envian en los tests tienen desde la posición que finaliza la lectura del remaining length,
         // lo siguiente:
         // 6 bytes de protocol name 0x00u8 (length MSB(0)), 0x04u8 (length LSB(4)), 0x4Du8 (M), 0x15u8 (Q), 0x45u8 (T), 0x45u8 (T)
         // 1 byte de protocol level 0x04 que es lo que determina la versión del protocolo
         // 1 byte de content flag que representa que información puede haber en el payload
         // 2 bytes de keep alive
+        // 0x0A -->  0 = 0000, A = 0110
+        // el segundo byte indica el remaining length de largo 12, considerando el header variable y los últimos dos de payload.
+        // Se considera que los flags están vacíos en el índice 9, de otra manera habría que agregar tantos bytes como los flags indiquen
+        // indice 9 -> byte 9 -> 0x00
 
-        // 64 en decimal
         let first_bytes = [
-            0b00010000u8,
-            0x40u8,
-            0x00u8,
-            0x04u8,
-            0x4Du8,
-            0x15u8,
-            0x45u8,
-            0x45u8,
-            0x04u8,
-            0xFFu8,
-            0x00u8,
-            0x0Au8,
+            0x10, 0x0C, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x01, 0x02,
         ];
+
         let first_connect_packet = Connect::init(&first_bytes);
-        //assert_eq!(first_connect_packet.get_remaining_length(), 1);
+        assert_eq!(first_connect_packet.get_remaining_length(), 12);
 
         // // representar el 127 en decimal
         // let second_bytes = [
