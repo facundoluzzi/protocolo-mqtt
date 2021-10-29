@@ -5,17 +5,16 @@ use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::thread;
 
-fn handle_new_client(mut stream: TcpStream) {
-    // TODO: revisar el largo
+fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
     let mut data = [0_u8; 100];
     while match stream.read(&mut data) {
         Ok(size) => {
             let packet = PacketFactory::get(&data[0..size]);
+            logger.info(format!("Received from client {:?}", &data[0..size]));
             packet.send_response(&stream);
             true
         }
         Err(_) => {
-            // ESTO FALLA POR QUE NO EXISTE LOGGER
             logger.error(format!(
                 "An error occurred, terminating connection with {}",
                 stream.peer_addr().unwrap()
@@ -35,7 +34,8 @@ fn main() {
         match stream {
             Ok(stream) => {
                 logger.info(format!("New connection: {}", stream.peer_addr().unwrap()));
-                thread::spawn(move || handle_new_client(stream));
+                let logger_clone = logger.clone();
+                thread::spawn(move || handle_new_client(stream, logger_clone));
             }
             Err(e) => {
                 logger.error(format!("Error on connection: {}", e));
