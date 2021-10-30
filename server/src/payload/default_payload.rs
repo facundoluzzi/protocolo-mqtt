@@ -4,7 +4,7 @@ use crate::payload::trait_payload::Payload;
 pub struct DefaultPayload {}
 
 impl Payload for DefaultPayload {
-    fn new(_connect_flags: &Box<dyn Flags>, _remaining_bytes: &[u8]) -> Box<dyn Payload> {
+    fn init(_connect_flags: &Box<dyn Flags>, _remaining_bytes: &[u8]) -> Box<dyn Payload> {
         Box::new(DefaultPayload {})
     }
     fn get_client_id(&self) -> String {

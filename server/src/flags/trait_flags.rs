@@ -1,5 +1,5 @@
 pub trait Flags {
-    fn new(bytes: &u8) -> Box<dyn Flags>
+    fn init(bytes: &u8) -> Box<dyn Flags>
     where
         Self: Sized;
     fn get_username_flag(&self) -> bool;

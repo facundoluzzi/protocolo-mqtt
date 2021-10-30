@@ -47,8 +47,8 @@ impl Paquetes for Connect {
     }
 
     fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
-        let flag_null = ConnectFlags::new(&0x00u8);
-        let payload_null = ConnectPayload::new(&flag_null, &[0x00u8]);
+        let flag_null = ConnectFlags::init(&0x00u8);
+        let payload_null = ConnectPayload::init(&flag_null, &[0x00u8]);
         let mut packet = Box::new(Connect {
             remaining_length: 0,
             flags: flag_null,
@@ -62,8 +62,8 @@ impl Paquetes for Connect {
         let init_variable_header = 1 + readed_index;
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
-        let connect_flags = ConnectFlags::new(&variable_header[7]);
-        packet.payload = ConnectPayload::new(
+        let connect_flags = ConnectFlags::init(&variable_header[7]);
+        packet.payload = ConnectPayload::init(
             &connect_flags,
             &bytes[end_variable_header + 1..init_variable_header + packet.get_remaining_length()],
         );
@@ -99,14 +99,13 @@ mod tests {
         // 1 byte de content flag que representa que información puede haber en el payload
         // 2 bytes de keep alive
         // 0x0A -->  0 = 0000, A = 0110
-        // el segundo byte indica el remaining length de largo 18, considerando el header variable, y 8 extras del payload: Client ID. 
+        // el segundo byte indica el remaining length de largo 18, considerando el header variable, y 8 extras del payload: Client ID.
         // Se considera que los flags están vacíos en el índice 9, de otra manera habría que agregar tantos bytes como los flags indiquen
         // indice 9 -> byte 9 -> 0x00
 
         let first_bytes = [
-            0x10, 0x12, 
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 
-            0x00, 0x06, 0x41, 0x4A, 0x0C, 0x0B, 0x5C, 0x42
+            0x10, 0x12, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x06,
+            0x41, 0x4A, 0x0C, 0x0B, 0x5C, 0x42,
         ];
 
         let first_connect_packet = Connect::init(&first_bytes);

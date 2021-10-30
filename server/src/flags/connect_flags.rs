@@ -10,7 +10,7 @@ pub struct ConnectFlags {
 }
 
 impl Flags for ConnectFlags {
-    fn new(bytes: &u8) -> Box<dyn Flags> {
+    fn init(bytes: &u8) -> Box<dyn Flags> {
         Box::new(ConnectFlags {
             will_qos: (0b00011000 & bytes) >> 3,
             username: 0b10000000 & bytes != 0,
@@ -46,17 +46,15 @@ impl Flags for ConnectFlags {
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
-    use crate::flags::connect_flags::ConnectFlags;
     use super::*;
+    use crate::flags::connect_flags::ConnectFlags;
 
     #[test]
     fn creacion_correcta_de_flags() {
         let flags: u8 = 0b11000000;
-        let connect_flags = ConnectFlags::new(&flags);
+        let connect_flags = ConnectFlags::init(&flags);
         assert_eq!(connect_flags.get_username_flag(), true);
         assert_eq!(connect_flags.get_password_flag(), true);
         assert_eq!(connect_flags.get_will_retain_flag(), false);

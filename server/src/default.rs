@@ -21,7 +21,7 @@ impl Paquetes for Default {
 
     fn init(_bytes: &[u8]) -> Box<dyn Paquetes> {
         Box::new(Default {
-            payload: DefaultPayload::new(&ConnectFlags::new(&0x00u8), &[]),
+            payload: DefaultPayload::init(&ConnectFlags::init(&0x00u8), &[]),
         })
     }
 
