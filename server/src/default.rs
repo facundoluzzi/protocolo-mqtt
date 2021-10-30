@@ -1,8 +1,8 @@
 use crate::flags::connect_flags::ConnectFlags;
-use crate::flags::flags::Flags;
+use crate::flags::trait_flags::Flags;
 use crate::paquetes::Paquetes;
 use crate::payload::default_payload::DefaultPayload;
-use crate::payload::payload::Payload;
+use crate::payload::trait_payload::Payload;
 use std::io::Write;
 use std::net::TcpStream;
 

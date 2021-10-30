@@ -1,4 +1,4 @@
-use crate::payload::payload::Payload;
+use crate::payload::trait_payload::Payload;
 use std::net::TcpStream;
 
 pub trait Paquetes {

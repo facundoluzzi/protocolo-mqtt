@@ -1,4 +1,4 @@
-use crate::flags::flags::Flags;
+use crate::flags::trait_flags::Flags;
 
 pub trait Payload {
     fn get_client_id(&self) -> String;

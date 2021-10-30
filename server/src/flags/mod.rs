@@ -1,2 +1,2 @@
 pub mod connect_flags;
-pub mod flags;
+pub mod trait_flags;

@@ -1,5 +1,5 @@
-use crate::flags::flags::Flags;
-use crate::payload::payload::Payload;
+use crate::flags::trait_flags::Flags;
+use crate::payload::trait_payload::Payload;
 
 pub struct DefaultPayload {}
 

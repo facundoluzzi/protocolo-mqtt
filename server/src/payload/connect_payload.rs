@@ -1,7 +1,5 @@
-use std::any::Any;
-
-use crate::flags::flags::Flags;
-use crate::payload::payload::Payload;
+use crate::flags::trait_flags::Flags;
+use crate::payload::trait_payload::Payload;
 use crate::utf8_parser::UTF8;
 
 pub struct ConnectPayload {
@@ -20,7 +18,7 @@ impl Payload for ConnectPayload {
         let password: Option<String>;
         let will_topic: Option<String>;
         let will_message: Option<String>;
-        if remaining_bytes != &[0x00u8] {
+        if remaining_bytes != [0x00u8] {
             let (client_identifier_copy, index) = UTF8::utf8_parser(remaining_bytes);
             client_identifier = client_identifier_copy;
             pointer += index;
@@ -51,20 +49,20 @@ impl Payload for ConnectPayload {
                 UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_topic = Some(will_topic_copy);
             pointer += index;
-            let (will_message_copy, index) =
+            let (will_message_copy, _index) =
                 UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_message = Some(will_message_copy);
-            pointer += index;
+            
         } else {
             will_topic = None;
             will_message = None;
         }
         Box::new(ConnectPayload {
-            client_identifier: client_identifier,
-            username: username,
-            password: password,
-            will_topic: will_topic,
-            will_message: will_message,
+            client_identifier,
+            username,
+            password,
+            will_topic,
+            will_message,
         })
     }
     fn get_client_id(&self) -> String {
