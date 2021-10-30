@@ -1,8 +1,4 @@
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use std::{collections::HashMap, fs::File, io::{BufRead, BufReader}, path};
 
 pub struct ConfigParser {
     configurations: HashMap<String, String>,
@@ -21,7 +17,13 @@ impl ConfigParser {
         }
     }
 
-    pub fn charge_configurations_from_file(&mut self, file: File) {
+    fn open_configuration_file(path: String) -> File {
+        let file = File::open(path).unwrap();
+        file
+    }
+
+    pub fn charge_configurations_from_path_file(&mut self, path: String) {
+        let file = ConfigParser::open_configuration_file(path);
         let mut configs: HashMap<String, String> = HashMap::new();
         let lines_in_file = BufReader::new(file).lines();
         let lines_without_comments_and_blanks = lines_in_file
@@ -63,11 +65,6 @@ mod test_config_parser {
         Ok(())
     }
 
-    fn open_config_file() -> Result<File, std::io::Error> {
-        let file = File::open("testParser.conf")?;
-        Ok(file)
-    }
-
     #[test]
     fn configurations_initialize_empty() {
         let config_parser = ConfigParser::new();
@@ -77,9 +74,8 @@ mod test_config_parser {
     #[test]
     fn configurations_does_not_have_commented_lines() {
         create_test_config_file().unwrap();
-        let file = open_config_file().unwrap();
         let mut config_parser = ConfigParser::new();
-        config_parser.charge_configurations_from_file(file);
+        config_parser.charge_configurations_from_path_file("testParser.conf".to_string());
         for (key, _) in config_parser.configurations {
             assert!(!key.starts_with("#"));
         }
@@ -89,9 +85,8 @@ mod test_config_parser {
     #[test]
     fn configurations_does_not_have_blank_lines() {
         create_test_config_file().unwrap();
-        let file = open_config_file().unwrap();
         let mut config_parser = ConfigParser::new();
-        config_parser.charge_configurations_from_file(file);
+        config_parser.charge_configurations_from_path_file("testParser.conf".to_string());
         for (key, _) in config_parser.configurations {
             assert!(!key.starts_with(" "));
         }
@@ -101,7 +96,6 @@ mod test_config_parser {
     #[test]
     fn configurations_values_are_correct() {
         create_test_config_file().unwrap();
-        let file = open_config_file().unwrap();
         let expected_values = vec![
             "1".to_string(),
             "2".to_string(),
@@ -109,7 +103,7 @@ mod test_config_parser {
             "4".to_string(),
         ];
         let mut config_parser = ConfigParser::new();
-        config_parser.charge_configurations_from_file(file);
+        config_parser.charge_configurations_from_path_file("testParser.conf".to_string());
         for (_, value) in config_parser.configurations {
             assert!(expected_values.contains(&value.to_string()));
         }
@@ -119,7 +113,6 @@ mod test_config_parser {
     #[test]
     fn configurations_keys_are_correct() {
         create_test_config_file().unwrap();
-        let file = open_config_file().unwrap();
         let expected_values = vec![
             "test1".to_string(),
             "test2".to_string(),
@@ -127,7 +120,7 @@ mod test_config_parser {
             "test4".to_string(),
         ];
         let mut config_parser = ConfigParser::new();
-        config_parser.charge_configurations_from_file(file);
+        config_parser.charge_configurations_from_path_file("testParser.conf".to_string());
         for (key, _) in config_parser.configurations {
             assert!(expected_values.contains(&key.to_string()));
         }
