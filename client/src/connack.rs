@@ -1,14 +1,14 @@
 use crate::flags::connack_flags::ConnackFlags;
 use crate::paquetes::Paquetes;
-use crate::return_connack::ReturnConnack;
+use client::return_connack::get_code;
 
 use std::io::Write;
 use std::net::TcpStream;
 
 pub struct Connack {
     remaining_length: usize,
-    flags: ConnackFlags,
-    return_code: ReturnConnack, 
+    _flags: ConnackFlags,
+    _return_code: String
 }
 
 impl Paquetes for Connack {
@@ -31,11 +31,11 @@ impl Paquetes for Connack {
     fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
         let variable_header = &bytes[2..4];
         let connack_flags = ConnackFlags::init(&variable_header[0]);
-        let connack_code = ReturnConnack::init(&variable_header[1]);
+        let connack_code = get_code(variable_header[1]);
         Box::new(Connack {
             remaining_length: 2,
-            flags: connack_flags,
-            return_code: connack_code,
+            _flags: connack_flags,
+            _return_code: connack_code,
         })
     }
 
@@ -47,8 +47,6 @@ impl Paquetes for Connack {
             println!("Error in sending response: {}", msg_error);
         }
     }
-
-
 }
 
 #[cfg(test)]
