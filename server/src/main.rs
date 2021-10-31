@@ -1,3 +1,4 @@
+use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
 use server::packet_factory::PacketFactory;
 
@@ -27,9 +28,22 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
 }
 
 fn main() {
-    let mut logger = Logger::new("test.log".to_string()).expect("Logger could not be created");
-    let listener = TcpListener::bind("0.0.0.0:1883").unwrap();
-    logger.info("Server listening on port 1883".to_string());
+    let config_path = ServerConfigs::read_config_path_from_cli();
+    let server_configs = ServerConfigs::obtain_configurations(config_path);
+
+    let address = format!(
+        "0.0.0.0:{}",
+        server_configs.get_conf_named("port".to_string())
+    );
+
+    let mut logger = Logger::new(server_configs.get_conf_named("log_path".to_string()))
+        .expect("Logger could not be created");
+    let listener = TcpListener::bind(address).unwrap();
+
+    logger.info(format!(
+        "Server listening on port {}",
+        server_configs.get_conf_named("port".to_string())
+    ));
 
     for stream in listener.incoming() {
         match stream {
