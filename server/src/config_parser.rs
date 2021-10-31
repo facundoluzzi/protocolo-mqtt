@@ -1,3 +1,4 @@
+use std::env;
 use std::{
     collections::HashMap,
     fs::File,
@@ -15,10 +16,19 @@ impl Default for ServerConfigs {
 }
 
 impl ServerConfigs {
-    pub fn new() -> ServerConfigs {
+    fn new() -> ServerConfigs {
         ServerConfigs {
             configurations: HashMap::new(),
         }
+    }
+
+    pub fn read_config_path_from_cli() -> String {
+        let args: Vec<String> = env::args().collect();
+        if args.len() <= 1 {
+            panic!("The path to the config file is needed");
+        }
+
+        args[1].to_string()
     }
 
     fn open_configuration_file(path: String) -> File {
@@ -29,7 +39,13 @@ impl ServerConfigs {
         }
     }
 
-    pub fn charge_configurations_from_path_file(&mut self, path: String) {
+    pub fn obtain_configurations(path: String) -> ServerConfigs {
+        let mut server_configs = ServerConfigs::new();
+        server_configs.charge_configurations_from_path_file(path);
+        server_configs
+    }
+
+    fn charge_configurations_from_path_file(&mut self, path: String) {
         let file = ServerConfigs::open_configuration_file(path);
         let mut configs: HashMap<String, String> = HashMap::new();
         let lines_in_file = BufReader::new(file).lines();
@@ -100,8 +116,7 @@ mod test_config_parser {
     #[test]
     fn configurations_does_not_have_commented_lines() {
         create_test_config_file("testParser1.conf".to_string()).unwrap();
-        let mut configs = ServerConfigs::new();
-        configs.charge_configurations_from_path_file("testParser1.conf".to_string());
+        let configs = ServerConfigs::obtain_configurations("testParser1.conf".to_string());
         let keys = configs.get_config_names();
         for key in keys {
             assert!(!key.starts_with("#"));
@@ -112,8 +127,7 @@ mod test_config_parser {
     #[test]
     fn configurations_does_not_have_blank_lines() {
         create_test_config_file("testParser2.conf".to_string()).unwrap();
-        let mut configs = ServerConfigs::new();
-        configs.charge_configurations_from_path_file("testParser2.conf".to_string());
+        let configs = ServerConfigs::obtain_configurations("testParser2.conf".to_string());
         let keys = configs.get_config_names();
         for key in keys {
             assert!(!key.starts_with(" "));
@@ -130,8 +144,7 @@ mod test_config_parser {
             "3".to_string(),
             "4".to_string(),
         ];
-        let mut configs = ServerConfigs::new();
-        configs.charge_configurations_from_path_file("testParser3.conf".to_string());
+        let configs = ServerConfigs::obtain_configurations("testParser3.conf".to_string());
         let mut values = configs.get_config_values();
         values.sort();
         assert_eq!(expected_values, values);
@@ -147,8 +160,7 @@ mod test_config_parser {
             "test3".to_string(),
             "test4".to_string(),
         ];
-        let mut configs = ServerConfigs::new();
-        configs.charge_configurations_from_path_file("testParser4.conf".to_string());
+        let configs = ServerConfigs::obtain_configurations("testParser4.conf".to_string());
         let mut keys = configs.get_config_names();
         keys.sort();
         assert_eq!(expected_values, keys);

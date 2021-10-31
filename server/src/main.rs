@@ -1,7 +1,6 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
 use server::packet_factory::PacketFactory;
-use std::env;
 
 use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
@@ -28,10 +27,8 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
 }
 
 fn main() {
-    let config_path: Vec<String> = env::args().collect();
-    let config_path = &config_path[1];
-    let mut server_configs = ServerConfigs::new();
-    server_configs.charge_configurations_from_path_file(config_path.to_string());
+    let config_path = ServerConfigs::read_config_path_from_cli();
+    let server_configs = ServerConfigs::obtain_configurations(config_path);
 
     let address = format!(
         "0.0.0.0:{}",
