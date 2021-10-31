@@ -1,16 +1,14 @@
 use crate::flags::connect_flags::ConnectFlags;
-use crate::flags::trait_flags::Flags;
 use crate::paquetes::Paquetes;
 use crate::payload::connect_payload::ConnectPayload;
-use crate::payload::trait_payload::Payload;
 
 use std::io::Write;
 use std::net::TcpStream;
 
 pub struct Connect {
     remaining_length: usize,
-    flags: Box<dyn Flags>,
-    payload: Box<dyn Payload>,
+    flags: ConnectFlags,
+    payload: ConnectPayload,
 }
 
 impl Paquetes for Connect {
@@ -75,12 +73,8 @@ impl Paquetes for Connect {
         "connect".to_owned()
     }
 
-    fn get_payload(&self) -> &dyn Payload {
-        self.payload.as_ref()
-    }
-
     fn send_response(&self, mut stream: &TcpStream) {
-        if let Err(msg_error) = stream.write("connack\n".as_bytes()) {
+        if let Err(msg_error) = stream.write(b"connack\n") {
             println!("Error in sending response: {}", msg_error);
         }
     }

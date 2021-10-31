@@ -1,17 +1,16 @@
-use crate::flags::trait_flags::Flags;
-use crate::payload::trait_payload::Payload;
+use crate::flags::connect_flags::ConnectFlags;
 use crate::utf8_parser::UTF8;
 
 pub struct ConnectPayload {
-    client_identifier: String,
-    will_topic: Option<String>,
-    will_message: Option<String>,
-    username: Option<String>,
-    password: Option<String>,
+    _client_identifier: String,
+    _will_topic: Option<String>,
+    _will_message: Option<String>,
+    _username: Option<String>,
+    _password: Option<String>,
 }
 
-impl Payload for ConnectPayload {
-    fn init(connect_flags: &Box<dyn Flags>, remaining_bytes: &[u8]) -> Box<dyn Payload> {
+impl ConnectPayload {
+    pub fn init(connect_flags: &ConnectFlags, remaining_bytes: &[u8]) -> ConnectPayload {
         let mut pointer: usize = 0;
         let client_identifier: String;
         let username: Option<String>;
@@ -56,28 +55,28 @@ impl Payload for ConnectPayload {
             will_topic = None;
             will_message = None;
         }
-        Box::new(ConnectPayload {
-            client_identifier,
-            username,
-            password,
-            will_topic,
-            will_message,
-        })
+        ConnectPayload {
+            _client_identifier: client_identifier,
+            _username: username,
+            _password: password,
+            _will_topic: will_topic,
+            _will_message: will_message,
+        }
     }
-    fn get_client_id(&self) -> String {
-        self.client_identifier.to_owned()
+    pub fn get_client_id(&self) -> String {
+        self._client_identifier.to_owned()
     }
-    fn get_username(&self) -> Option<&String> {
-        self.username.as_ref()
+    pub fn get_username(&self) -> Option<&String> {
+        self._username.as_ref()
     }
-    fn get_password(&self) -> Option<&String> {
-        self.password.as_ref()
+    pub fn get_password(&self) -> Option<&String> {
+        self._password.as_ref()
     }
-    fn get_will_topic(&self) -> Option<&String> {
-        self.will_topic.as_ref()
+    pub fn get_will_topic(&self) -> Option<&String> {
+        self._will_topic.as_ref()
     }
-    fn get_will_message(&self) -> Option<&String> {
-        self.will_message.as_ref()
+    pub fn get_will_message(&self) -> Option<&String> {
+        self._will_message.as_ref()
     }
 }
 
