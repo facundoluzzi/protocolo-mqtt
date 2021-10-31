@@ -1,4 +1,8 @@
-use std::{collections::HashMap, fs::File, io::{BufRead, BufReader}};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufRead, BufReader},
+};
 
 pub struct ServerConfigs {
     configurations: HashMap<String, String>,
@@ -21,7 +25,7 @@ impl ServerConfigs {
         let file = File::open(path);
         match file {
             Ok(file) => file,
-            Err(error_file) => panic!("Error opening config file {}", error_file)
+            Err(error_file) => panic!("Error opening config file {}", error_file),
         }
     }
 
@@ -61,7 +65,11 @@ impl ServerConfigs {
     }
 
     pub fn get_config_values(&self) -> Vec<String> {
-        let values = self.configurations.values().map(|x| x.to_string()).collect();
+        let values = self
+            .configurations
+            .values()
+            .map(|x| x.to_string())
+            .collect();
         values
     }
 }

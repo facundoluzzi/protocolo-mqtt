@@ -1,5 +1,7 @@
+use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
 use server::packet_factory::PacketFactory;
+use std::env;
 
 use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
@@ -26,9 +28,24 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
 }
 
 fn main() {
-    let mut logger = Logger::new("test.log".to_string()).expect("Logger could not be created");
-    let listener = TcpListener::bind("0.0.0.0:1883").unwrap();
-    logger.info("Server listening on port 1883".to_string());
+    let config_path: Vec<String> = env::args().collect();
+    let config_path = &config_path[1];
+    let mut server_configs = ServerConfigs::new();
+    server_configs.charge_configurations_from_path_file(config_path.to_string());
+
+    let address = format!(
+        "0.0.0.0:{}",
+        server_configs.get_conf_named("port".to_string())
+    );
+
+    let mut logger = Logger::new(server_configs.get_conf_named("log_path".to_string()))
+        .expect("Logger could not be created");
+    let listener = TcpListener::bind(address).unwrap();
+
+    logger.info(format!(
+        "Server listening on port {}",
+        server_configs.get_conf_named("port".to_string())
+    ));
 
     for stream in listener.incoming() {
         match stream {
