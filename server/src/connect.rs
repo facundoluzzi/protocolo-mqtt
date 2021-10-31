@@ -75,8 +75,8 @@ impl Paquetes for Connect {
         "connect".to_owned()
     }
 
-    fn get_payload(&self) -> &Box<dyn Payload> {
-        &self.payload
+    fn get_payload(&self) -> &dyn Payload {
+        self.payload.as_ref()
     }
 
     fn send_response(&self, mut stream: &TcpStream) {
