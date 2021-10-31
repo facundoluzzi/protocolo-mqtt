@@ -3,7 +3,7 @@ pub mod connect;
 pub mod default;
 pub mod flags;
 pub mod helper;
-pub mod logger;
+pub mod logs;
 pub mod packet_factory;
 pub mod paquetes;
 pub mod payload;
