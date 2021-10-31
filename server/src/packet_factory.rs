@@ -1,6 +1,7 @@
 use crate::connect::Connect;
 use crate::default::Default;
 use crate::paquetes::Paquetes;
+use crate::publish::Publish;
 
 pub struct PacketFactory {}
 
@@ -15,6 +16,7 @@ impl PacketFactory {
         match first_byte {
             Some(first_byte_ok) => match PacketFactory::get_control_packet_type(*first_byte_ok) {
                 1 => Connect::init(bytes),
+                3 => Publish::init(bytes),
                 _ => Default::init(bytes),
             },
             None => Default::init(bytes),
@@ -26,14 +28,21 @@ impl PacketFactory {
 mod tests {
     use super::*;
 
-    //#[test]
-    // fn crear_paquete_connect_correctamente() {
-    //     let bytes_packet = [
-    //         0x10, 0x40, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0xFF, 0x00, 0x0A,
-    //     ];
-    //     let prueba = PacketFactory::get(&bytes_packet);
-    //     assert_eq!(prueba.get_type(), "connect".to_owned());
-    // }
+    #[test]
+    fn crear_paquete_connect_correctamente() {
+        let first_bytes = [
+            0x10, 0x0C, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x01, 0x02,
+        ];
+        let connect_packet = PacketFactory::get(&first_bytes);
+        assert_eq!(connect_packet.get_type(), "connect".to_owned());
+    }
+
+    #[test]
+    fn crear_paquete_publish_correctamente() {
+        let first_bytes = [0x30];
+        let publish_packet = PacketFactory::get(&first_bytes);
+        assert_eq!(publish_packet.get_type(), "publish".to_owned());
+    }
 
     #[test]
     fn crear_paquete_default() {
