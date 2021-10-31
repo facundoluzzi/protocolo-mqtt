@@ -1,19 +1,24 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
 use server::packet_factory::PacketFactory;
+use server::topics::topics::Topics;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::thread;
 
-fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
+fn handle_new_client(mut stream: TcpStream, mut logger: Logger, topics: Arc<Mutex<Topics>>) {
+    // TODO: revisar el largo
     let mut data = [0_u8; 100];
     while match stream.read(&mut data) {
         Ok(size) => {
-            let packet = PacketFactory::get(&data[0..size]);
-            logger.info(format!("Received from client {:?}", &data[0..size]));
-            PacketFactory::get(&data[0..size])
-                .send_response(&stream);
+            let mut prueba = topics.lock().unwrap();
+            let result = prueba.add_topic();
+            logger.info(format!("valor: {}", result));
+            // logger.info(format!("Received from client {:?}", &data[0..size]));
+            PacketFactory::get(&data[0..size]).send_response(&stream);
             true
         }
         Err(_) => {
@@ -39,6 +44,9 @@ fn main() {
     let mut logger = Logger::new(server_configs.get_conf_named("log_path".to_string()))
         .expect("Logger could not be created");
     let listener = TcpListener::bind(address).unwrap();
+    let topics = Topics::new();
+    let mutex = std::sync::Mutex::new(topics);
+    let arc = std::sync::Arc::new(mutex);
 
     logger.info(format!(
         "Server listening on port {}",
@@ -50,7 +58,10 @@ fn main() {
             Ok(stream) => {
                 logger.info(format!("New connection: {}", stream.peer_addr().unwrap()));
                 let logger_clone = logger.clone();
-                thread::spawn(move || handle_new_client(stream, logger_clone));
+                let cloned_arc = arc.clone();
+                thread::spawn(move || {
+                    handle_new_client(stream, logger_clone, cloned_arc);
+                });
             }
             Err(e) => {
                 logger.error(format!("Error on connection: {}", e));
