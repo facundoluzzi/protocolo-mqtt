@@ -1,7 +1,7 @@
 use crate::flags::flags::Flags;
 use crate::payload::payload::Payload;
 
-use crate::utf8_parser::UTF8;
+use crate::helper::utf8_parser::UTF8;
 
 pub struct ConnectPayload {
     client_identifier: String,
@@ -70,18 +70,18 @@ impl Payload for ConnectPayload {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    #[test]
-    fn obtener_remaining_length_correctamente() {
-        let first_bytes = [
-            0x10, 0x0C, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x01, 0x02,
-        ];
+//     #[test]
+//     fn obtener_remaining_length_correctamente() {
+//         let first_bytes = [
+//             0x10, 0x0C, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x01, 0x02,
+//         ];
 
-        let first_connect_packet = ConnectPayload::new();
-        assert_eq!(first_connect_packet.get_remaining_length(), 12);
+//         let first_connect_packet = ConnectPayload::new();
+//         assert_eq!(first_connect_packet.get_remaining_length(), 12);
 
-     }
-}
+//      }
+// }
