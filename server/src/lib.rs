@@ -1,6 +1,7 @@
 pub mod config_parser;
 pub mod connect;
 pub mod default;
+pub mod logs;
 pub mod flags;
 pub mod logger;
 pub mod packet_factory;
