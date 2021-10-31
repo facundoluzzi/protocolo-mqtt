@@ -35,7 +35,7 @@ impl Paquetes for Default {
         }
     }
 
-    fn get_payload(&self) -> &dyn Payload{
-        self.payload.as_ref()   
+    fn get_payload(&self) -> &dyn Payload {
+        self.payload.as_ref()
     }
 }
