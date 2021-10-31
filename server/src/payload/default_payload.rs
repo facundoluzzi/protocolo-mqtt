@@ -4,7 +4,7 @@ pub struct DefaultPayload {}
 
 impl DefaultPayload {
     pub fn init(_connect_flags: ConnectFlags, _remaining_bytes: &[u8]) -> DefaultPayload {
-       DefaultPayload {}
+        DefaultPayload {}
     }
     pub fn get_client_id(&self) -> String {
         "Default".to_owned()
