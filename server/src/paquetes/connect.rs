@@ -1,7 +1,7 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::flags::flags::Flags;
 use crate::helper::remaining_length::save_remaining_length;
-use crate::paquetes::Paquetes;
+use crate::paquetes::trait_paquetes::Paquetes;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::payload::payload::Payload;
 

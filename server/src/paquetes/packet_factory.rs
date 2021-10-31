@@ -1,7 +1,8 @@
-use crate::connect::Connect;
-use crate::default::Default;
-use crate::paquetes::Paquetes;
-use crate::publish::Publish;
+use crate::paquetes::subscribe::Subscribe;
+use crate::paquetes::connect::Connect;
+use crate::paquetes::default::Default;
+use crate::paquetes::trait_paquetes::Paquetes;
+use crate::paquetes::publish::Publish;
 
 pub struct PacketFactory {}
 
@@ -17,6 +18,7 @@ impl PacketFactory {
             Some(first_byte_ok) => match PacketFactory::get_control_packet_type(*first_byte_ok) {
                 1 => Connect::init(bytes),
                 3 => Publish::init(bytes),
+                8 => Subscribe::init(bytes),
                 _ => Default::init(bytes),
             },
             None => Default::init(bytes),

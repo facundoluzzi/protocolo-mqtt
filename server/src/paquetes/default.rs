@@ -1,6 +1,6 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::flags::flags::Flags;
-use crate::paquetes::Paquetes;
+use crate::paquetes::trait_paquetes::Paquetes;
 use crate::payload::default_payload::DefaultPayload;
 use crate::payload::payload::Payload;
 use std::io::Write;

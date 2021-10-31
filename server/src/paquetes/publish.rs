@@ -1,4 +1,4 @@
-use crate::paquetes::Paquetes;
+use crate::paquetes::trait_paquetes::Paquetes;
 use crate::variable_header::publish_variable_header::get_variable_header;
 use crate::helper::remaining_length::save_remaining_length;
 
