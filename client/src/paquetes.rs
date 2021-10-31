@@ -1,4 +1,3 @@
-use crate::payload::trait_payload::Payload;
 use std::net::TcpStream;
 
 pub trait Paquetes {
@@ -9,5 +8,5 @@ pub trait Paquetes {
         Self: Sized;
     fn get_type(&self) -> String;
     fn send_response(&self, stream: &TcpStream);
-    fn get_payload(&self) -> &dyn Payload;
+
 }

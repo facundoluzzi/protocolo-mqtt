@@ -1,39 +1,32 @@
-use crate::flags::trait_flags::Flags;
-
 pub struct ConnackFlags {
-    username: bool,
-    password: bool,
-    will_retain: bool,
-    will_qos: u8,
-    will_flag: bool,
-    clean_session: bool,
+    session_present_flag: bool,
 }
 
-impl Flags for ConnackFlags {
-    fn init(bytes: &u8) -> Box<dyn Flags> {
-        Box::new(ConnectFlags {
-            will_qos: (0b00011000 & bytes) >> 3,
-        })
+impl ConnackFlags {
+    pub fn init(bytes: &u8) -> ConnackFlags {
+        ConnackFlags {
+            session_present_flag: 0x01 & bytes != 0,
+        }
     }
-
-    fn get_username_flag(&self) -> bool {
-        self.username
+    pub fn get_session_present_flag(&self) -> bool {
+        self.session_present_flag
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::flags::connack_flags::ConnackFlags;
 
     #[test]
-    fn creacion_correcta_de_flags() {
-        let flags: u8 = 0b11000000;
+    fn create_connack_flags_with_session_present() {
+        let flags: u8 = 0x01;
         let connect_flags = ConnackFlags::init(&flags);
-        assert_eq!(connect_flags.get_username_flag(), true);
-        assert_eq!(connect_flags.get_password_flag(), true);
-        assert_eq!(connect_flags.get_will_retain_flag(), false);
-        assert_eq!(connect_flags.get_will_flag(), false);
-        assert_eq!(connect_flags.get_clean_session_flag(), false);
+        assert_eq!(connect_flags.get_session_present_flag(), true);
+    }
+    #[test]
+    fn create_connack_flags_without_session_present() {
+        let flags: u8 = 0x00;
+        let connect_flags = ConnackFlags::init(&flags);
+        assert_eq!(connect_flags.get_session_present_flag(), false);
     }
 }
