@@ -11,7 +11,8 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
         Ok(size) => {
             let packet = PacketFactory::get(&data[0..size]);
             logger.info(format!("Received from client {:?}", &data[0..size]));
-            packet.send_response(&stream);
+            PacketFactory::get(&data[0..size])
+                .send_response(&stream);
             true
         }
         Err(_) => {
