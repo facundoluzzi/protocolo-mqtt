@@ -24,6 +24,7 @@ impl Paquetes for Publish {
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
         let init_variable_header = 1 + readed_index;
+
         let (topic, packet_identifier, length) =
             get_variable_header(&bytes[init_variable_header..bytes.len()]);
 
@@ -59,7 +60,7 @@ mod tests {
         // el byte nro 10 y 11 son los dos últimos bytes del variable header y son el packet identifier
         // los n siguientes bugs son parte del payload, en este caso vacío
         let bytes = [
-            0x30, 0x01, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x00, 0x06,
+            0x30, 0x0A, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x00, 0x06, 0x54,
         ];
         let publish_packet = Publish::init(&bytes);
         assert_eq!(publish_packet.get_type(), "publish".to_owned());

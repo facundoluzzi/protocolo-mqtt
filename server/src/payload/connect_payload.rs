@@ -11,7 +11,6 @@ pub struct ConnectPayload {
 
 impl ConnectPayload {
     pub fn init(connect_flags: &ConnectFlags, remaining_bytes: &[u8]) -> ConnectPayload {
-        println!("{:?}", remaining_bytes);
         let mut pointer: usize = 0;
         let client_identifier: String;
         let username: Option<String>;
@@ -47,11 +46,11 @@ impl ConnectPayload {
 
         if connect_flags.get_will_flag() {
             let (will_topic_copy, index) =
-            UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_topic = Some(will_topic_copy);
             pointer += index;
             let (will_message_copy, _index) =
-            UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_message = Some(will_message_copy);
         } else {
             will_topic = None;

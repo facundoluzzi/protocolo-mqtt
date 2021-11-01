@@ -33,7 +33,8 @@ mod tests {
     #[test]
     fn crear_paquete_connect_correctamente() {
         let bytes = [
-            0x10, 0x0E, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02, 0x00, 0x00
+            0x10, 0x0E, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
+            0x00, 0x00,
         ];
         let connect_packet = PacketFactory::get(&bytes);
         assert_eq!(connect_packet.get_type(), "connect".to_owned());
@@ -41,8 +42,10 @@ mod tests {
 
     #[test]
     fn crear_paquete_publish_correctamente() {
-        let first_bytes = [0x30];
-        let publish_packet = PacketFactory::get(&first_bytes);
+        let bytes = [
+            0x30, 0x0A, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x00, 0x06, 0x54,
+        ];
+        let publish_packet = PacketFactory::get(&bytes);
         assert_eq!(publish_packet.get_type(), "publish".to_owned());
     }
 

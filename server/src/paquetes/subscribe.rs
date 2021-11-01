@@ -6,7 +6,7 @@ use std::net::TcpStream;
 
 pub struct Subscribe {
     _remaining_length: usize,
-    _packet_identifier: u8
+    _packet_identifier: u8,
 }
 
 impl Paquetes for Subscribe {
@@ -21,7 +21,7 @@ impl Paquetes for Subscribe {
 
         Box::new(Subscribe {
             _remaining_length: remaining_length,
-            _packet_identifier: bytes[init_variable_header]
+            _packet_identifier: bytes[init_variable_header],
         })
     }
 
