@@ -1,17 +1,15 @@
 use crate::flags::connect_flags::ConnectFlags;
-use crate::flags::flags::Flags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::paquetes::trait_paquetes::Paquetes;
 use crate::payload::connect_payload::ConnectPayload;
-use crate::payload::payload::Payload;
 
 use std::io::Write;
 use std::net::TcpStream;
 
 pub struct Connect {
-    remaining_length: usize,
-    flags: Box<dyn Flags>,
-    payload: Box<dyn Payload>,
+    _remaining_length: usize,
+    flags: ConnectFlags,
+    _payload: ConnectPayload,
 }
 
 impl Paquetes for Connect {
@@ -23,17 +21,17 @@ impl Paquetes for Connect {
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
 
-        let connect_flags = ConnectFlags::new(&variable_header[7]);
+        let connect_flags = ConnectFlags::init(&variable_header[7]);
 
-        let payload = ConnectPayload::new(
+        let payload = ConnectPayload::init(
             &connect_flags,
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
         );
         let flags = connect_flags;
         Box::new(Connect {
-            remaining_length: remaining_length,
-            flags: flags,
-            payload: payload,
+            _remaining_length: remaining_length,
+            flags,
+            _payload: payload,
         })
     }
 
@@ -63,7 +61,7 @@ mod tests {
         // 1 byte de content flag que representa que información puede haber en el payload
         // 2 bytes de keep alive
         // 0x0A -->  0 = 0000, A = 0110
-        // el segundo byte indica el remaining length de largo 12, considerando el header variable y los últimos dos de payload.
+        // el segundo byte indica el remaining length de largo 18, considerando el header variable, y 8 extras del payload: Client ID.
         // Se considera que los flags están vacíos en el índice 9, de otra manera habría que agregar tantos bytes como los flags indiquen
         // indice 9 -> byte 9 -> 0x00
 
