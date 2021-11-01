@@ -43,7 +43,7 @@ impl Paquetes for Connack {
         "connack".to_owned()
     }
     fn send_response(&self, mut stream: &TcpStream) {
-        if let Err(msg_error) = stream.write("connack\n".as_bytes()) {
+        if let Err(msg_error) = stream.write(b"connack\n") {
             println!("Error in sending response: {}", msg_error);
         }
     }
