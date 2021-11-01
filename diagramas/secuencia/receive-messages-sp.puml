@@ -1,11 +1,12 @@
 @startuml
 
 
-participant Client as cl order 1
+participant Subscriptor as cl order 1
 participant Server as sv order 2
 participant Topics as topics order 3
 participant Topic as topic order 4
 participant Subscriber as Sub order 5
+participant Publicador as cl2 order 6
 
 cl -> sv: CONNECT(SP = 1)
 sv -> sv : save_id()
@@ -25,7 +26,7 @@ sv --> cl: SUBACK
 cl -> sv: DISCONNECT
 sv --> cl: DISCONNACK
 
-cl -> sv: PUBLISH(topicName, msg)
+cl2 -> sv: PUBLISH(topicName, msg)
 sv -> topics: send(topic, msg)
 topics -> topic: send(msg)
 topic -> Sub: send(msg)
@@ -33,7 +34,7 @@ Sub -> Sub: save_msg(msg)
 Sub --> topic: Ok()
 topic --> topics: Ok()
 topics --> sv: Ok
-sv --> cl: PUBACK
+sv --> cl2: PUBACK
 
 cl -> sv: CONNECT
 sv --> cl: CONNACK

@@ -1,0 +1,14 @@
+@startuml
+
+class Server {}
+
+interface Paquetes {}
+
+class Connect implements Paquetes {}
+class Default implements Paquetes {}
+class Publisher implements Paquetes {}
+class Suscriber implements Paquetes {}
+
+class Payload
+
+@enduml
