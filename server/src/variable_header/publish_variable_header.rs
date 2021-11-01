@@ -1,9 +1,9 @@
-use crate::helper::utf8_parser::utf8_parser;
+use crate::helper::utf8_parser::UTF8;
 /**
  * https://docs.solace.com/PubSub-Basics/SMF-Topics.htm
  */
 pub fn get_variable_header(bytes: &[u8]) -> (String, &[u8], usize) {
-    let (parsed_topic, readed_bytes) = utf8_parser(bytes);
+    let (parsed_topic, readed_bytes) = UTF8::utf8_parser(bytes);
     let packet_identifier = &bytes[readed_bytes + 2..readed_bytes + 4];
     (parsed_topic, packet_identifier, readed_bytes + 4)
 }

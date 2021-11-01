@@ -1,12 +1,12 @@
 use crate::helper::remaining_length::save_remaining_length;
 use crate::paquetes::trait_paquetes::Paquetes;
-// use crate::variable_header::publish_variable_header::get_variable_header;
 
+use std::io::Write;
 use std::net::TcpStream;
 
 pub struct Subscribe {
     _remaining_length: usize,
-    _packet_identifier: u8,
+    _packet_identifier: u8
 }
 
 impl Paquetes for Subscribe {
@@ -21,7 +21,7 @@ impl Paquetes for Subscribe {
 
         Box::new(Subscribe {
             _remaining_length: remaining_length,
-            _packet_identifier: bytes[init_variable_header],
+            _packet_identifier: bytes[init_variable_header]
         })
     }
 
@@ -29,7 +29,12 @@ impl Paquetes for Subscribe {
         "subscribe".to_owned()
     }
 
-    fn send_response(&self, mut _stream: &TcpStream) {}
+    fn send_response(&self, mut stream: &TcpStream) {
+        let bytes_response = [0x90, 0x03, 0x00, 0x00, 0x00];
+        if let Err(msg_error) = stream.write(&bytes_response) {
+            println!("Error in sending response: {}", msg_error);
+        }
+    }
 }
 
 #[cfg(test)]
