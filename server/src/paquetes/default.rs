@@ -1,18 +1,12 @@
-use crate::flags::connect_flags::ConnectFlags;
 use crate::paquetes::trait_paquetes::Paquetes;
-use crate::payload::default_payload::DefaultPayload;
 use std::io::Write;
 use std::net::TcpStream;
 
-pub struct Default {
-    _payload: DefaultPayload,
-}
+pub struct Default {}
 
 impl Paquetes for Default {
     fn init(_bytes: &[u8]) -> Box<dyn Paquetes> {
-        Box::new(Default {
-            _payload: DefaultPayload::init(ConnectFlags::init(&0x00u8), &[]),
-        })
+        Box::new(Default {})
     }
 
     fn get_type(&self) -> String {
