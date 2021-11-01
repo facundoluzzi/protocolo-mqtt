@@ -1,6 +1,6 @@
+mod connack;
 mod flags;
 mod paquetes;
-mod connack;
 
 use std::io::stdin;
 use std::io::BufRead;

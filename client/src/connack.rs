@@ -8,7 +8,7 @@ use std::net::TcpStream;
 pub struct Connack {
     remaining_length: usize,
     _flags: ConnackFlags,
-    _return_code: String
+    _return_code: String,
 }
 
 impl Paquetes for Connack {
@@ -58,8 +58,7 @@ mod tests {
         let first_bytes = [
             0x20, // Paquete CONNACK
             0x02, // Remaining Length - 2 para paquete CONNACK, ya que no tiene payload
-            0x01,
-            0x00,
+            0x01, 0x00,
         ];
 
         let first_connack_packet = Connack::init(&first_bytes);
