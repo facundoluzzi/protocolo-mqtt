@@ -1,5 +1,5 @@
 use crate::flags::connect_flags::ConnectFlags;
-use crate::helper::utf8_parser::utf8_parser;
+use crate::helper::utf8_parser::UTF8;
 
 pub struct ConnectPayload {
     _client_identifier: String,
@@ -17,8 +17,9 @@ impl ConnectPayload {
         let password: Option<String>;
         let will_topic: Option<String>;
         let will_message: Option<String>;
+
         if remaining_bytes != [0x00u8] {
-            let (client_identifier_copy, index) = utf8_parser(remaining_bytes);
+            let (client_identifier_copy, index) = UTF8::utf8_parser(remaining_bytes);
             client_identifier = client_identifier_copy;
             pointer += index;
         } else {
@@ -27,7 +28,7 @@ impl ConnectPayload {
 
         if connect_flags.get_username_flag() {
             let (username_copy, index) =
-                utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             username = Some(username_copy);
             pointer += index;
         } else {
@@ -36,7 +37,7 @@ impl ConnectPayload {
 
         if connect_flags.get_password_flag() & connect_flags.get_username_flag() {
             let (password_copy, index) =
-                utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             password = Some(password_copy);
             pointer += index;
         } else {
@@ -45,11 +46,11 @@ impl ConnectPayload {
 
         if connect_flags.get_will_flag() {
             let (will_topic_copy, index) =
-                utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_topic = Some(will_topic_copy);
             pointer += index;
             let (will_message_copy, _index) =
-                utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_message = Some(will_message_copy);
         } else {
             will_topic = None;

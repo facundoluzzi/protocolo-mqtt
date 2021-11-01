@@ -1,6 +1,6 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
-use server::packet_factory::PacketFactory;
+use server::paquetes::packet_factory::PacketFactory;
 
 use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};

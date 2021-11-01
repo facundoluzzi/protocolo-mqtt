@@ -1,6 +1,6 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
-use crate::paquetes::Paquetes;
+use crate::paquetes::trait_paquetes::Paquetes;
 use crate::payload::connect_payload::ConnectPayload;
 
 use std::io::Write;
@@ -66,7 +66,8 @@ mod tests {
         // indice 9 -> byte 9 -> 0x00
 
         let bytes = [
-            0x10, 0x0C, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x01, 0x02,
+            0x10, 0x0E, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
+            0x00, 0x00,
         ];
 
         let connect_packet = Connect::init(&bytes);

@@ -1,0 +1,22 @@
+@startuml
+
+participant Client as cl order 1
+participant Server as sv order 2
+participant Topics as topics order 3
+participant Topic as topic order 4
+participant Subscriber as Sub order 5
+
+cl -> sv: Connect
+sv --> cl: Connack
+
+cl -> sv: Suscribe(topicName)
+sv -> topics: add(topic, stream)
+topics -> topic: add(stream)
+topic -> Sub: add(stream)
+Sub --> topic: Ok()
+topic --> topics: Ok()
+topics --> sv: Ok
+sv --> cl: Suback 
+
+
+@enduml
