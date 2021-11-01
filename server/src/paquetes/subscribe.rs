@@ -1,6 +1,6 @@
-use crate::paquetes::trait_paquetes::Paquetes;
-use crate::variable_header::publish_variable_header::get_variable_header;
 use crate::helper::remaining_length::save_remaining_length;
+use crate::paquetes::trait_paquetes::Paquetes;
+// use crate::variable_header::publish_variable_header::get_variable_header;
 
 use std::net::TcpStream;
 
@@ -17,7 +17,7 @@ impl Paquetes for Subscribe {
         let init_variable_header = 1 + readed_index;
         let end_variable_header = init_variable_header + 2;
 
-        let payload = &bytes[end_variable_header..bytes.len()];
+        let _payload = &bytes[end_variable_header..bytes.len()];
 
         Box::new(Subscribe {
             _remaining_length: remaining_length,
@@ -43,7 +43,9 @@ mod tests {
         // el tercer y cuarto byte indican el largo del topic name, según el encoding msb o lsb, en este caso de 5 bytes
         // el byte nro 10 y 11 son los dos últimos bytes del variable header y son el packet identifier
         // los n siguientes bugs son parte del payload, en este caso vacío
-        let bytes = [0x30, 0x01, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x00, 0x06];
+        let bytes = [
+            0x30, 0x01, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x00, 0x06,
+        ];
         let publish_packet = Subscribe::init(&bytes);
         assert_eq!(publish_packet.get_type(), "subscribe".to_owned());
     }
