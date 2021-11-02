@@ -8,11 +8,16 @@ use std::thread;
 
 fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
     let mut data = [0_u8; 100];
+    // TODO: ver que onda el while
     while match stream.read(&mut data) {
         Ok(size) => {
-            logger.info(format!("Received from client {:?}", &data[0..size]));
-            PacketFactory::get(&data[0..size]).send_response(&stream);
-            true
+            if size == 0 {
+                false
+            } else {
+                logger.info(format!("Received from client {:?}", &data[0..size]));
+                PacketFactory::get(&data[0..size]).send_response(&stream);
+                true
+            }
         }
         Err(_) => {
             logger.error(format!(
@@ -20,7 +25,7 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger) {
                 stream.peer_addr().unwrap()
             ));
             stream.shutdown(Shutdown::Both).unwrap();
-            false
+            true
         }
     } {}
 }
