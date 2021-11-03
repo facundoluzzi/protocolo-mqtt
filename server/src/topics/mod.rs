@@ -1,3 +1,3 @@
 pub mod subscriber;
 pub mod topic;
-pub mod topics;
+pub mod topic_manager;

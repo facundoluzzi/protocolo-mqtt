@@ -1,7 +1,7 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
 use server::paquetes::packet_factory::PacketFactory;
-use server::topics::topics::Topics;
+use server::topics::topic_manager::TopicManager;
 use std::sync::Arc;
 use std::sync::Mutex;
 
@@ -9,7 +9,7 @@ use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::thread;
 
-fn handle_new_client(mut stream: TcpStream, mut logger: Logger, topics: Arc<Mutex<Topics>>) {
+fn handle_new_client(mut stream: TcpStream, mut logger: Logger, topics: Arc<Mutex<TopicManager>>) {
     // TODO: revisar el largo
     let mut data = [0_u8; 100];
     // TODO: ver que onda el while
@@ -46,7 +46,7 @@ fn main() {
     let mut logger = Logger::new(server_configs.get_conf_named("log_path".to_string()))
         .expect("Logger could not be created");
     let listener = TcpListener::bind(address).unwrap();
-    let topics = Topics::new();
+    let topics = TopicManager::new();
     let mutex = std::sync::Mutex::new(topics);
     let arc = std::sync::Arc::new(mutex);
 
