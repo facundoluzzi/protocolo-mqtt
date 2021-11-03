@@ -1,0 +1,24 @@
+@startuml
+
+class Server {}
+class PacketFactory {}
+
+class ContextApplication {}
+
+interface Paquetes {}
+class Connect implements Paquetes {}
+class Default implements Paquetes {}
+class Publish implements Paquetes {}
+class Subscribe implements Paquetes {}
+
+class ConnectPayload {}
+class ConnectFlags {}
+
+Server --> PacketFactory
+PacketFactory --> Paquetes
+Connect --> ConnectPayload
+Connect --> ConnectFlags
+Server -left-> ContextApplication
+PacketFactory --> ContextApplication
+
+@enduml

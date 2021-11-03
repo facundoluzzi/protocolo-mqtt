@@ -1,6 +1,6 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
-use server::packet_factory::PacketFactory;
+use server::paquetes::packet_factory::PacketFactory;
 use server::topics::topics::Topics;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -12,14 +12,16 @@ use std::thread;
 fn handle_new_client(mut stream: TcpStream, mut logger: Logger, topics: Arc<Mutex<Topics>>) {
     // TODO: revisar el largo
     let mut data = [0_u8; 100];
+    // TODO: ver que onda el while
     while match stream.read(&mut data) {
         Ok(size) => {
-            let mut prueba = topics.lock().unwrap();
-            let result = prueba.add_topic();
-            logger.info(format!("valor: {}", result));
-            // logger.info(format!("Received from client {:?}", &data[0..size]));
-            PacketFactory::get(&data[0..size]).send_response(&stream);
-            true
+            if size == 0 {
+                false
+            } else {
+                logger.info(format!("Received from client {:?}", &data[0..size]));
+                PacketFactory::get(&data[0..size]).send_response(&stream);
+                true
+            }
         }
         Err(_) => {
             logger.error(format!(
@@ -27,7 +29,7 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger, topics: Arc<Mute
                 stream.peer_addr().unwrap()
             ));
             stream.shutdown(Shutdown::Both).unwrap();
-            false
+            true
         }
     } {}
 }

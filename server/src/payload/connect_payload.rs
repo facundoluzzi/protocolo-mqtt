@@ -1,5 +1,5 @@
 use crate::flags::connect_flags::ConnectFlags;
-use crate::utf8_parser::UTF8;
+use crate::helper::utf8_parser::UTF8;
 
 pub struct ConnectPayload {
     _client_identifier: String,
@@ -17,6 +17,7 @@ impl ConnectPayload {
         let password: Option<String>;
         let will_topic: Option<String>;
         let will_message: Option<String>;
+
         if remaining_bytes != [0x00u8] {
             let (client_identifier_copy, index) = UTF8::utf8_parser(remaining_bytes);
             client_identifier = client_identifier_copy;
