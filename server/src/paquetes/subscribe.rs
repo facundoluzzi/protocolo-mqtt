@@ -1,7 +1,6 @@
 use crate::helper::remaining_length::save_remaining_length;
-use crate::paquetes::trait_paquetes::Paquetes;
 
-use std::io::Write;
+use std::io::{Read, Write};
 use std::net::TcpStream;
 
 pub struct Subscribe {
@@ -9,8 +8,8 @@ pub struct Subscribe {
     _packet_identifier: u8,
 }
 
-impl Paquetes for Subscribe {
-    fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
+impl Subscribe {
+    pub fn init(bytes: &[u8]) -> Subscribe {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -19,21 +18,25 @@ impl Paquetes for Subscribe {
 
         let _payload = &bytes[end_variable_header..bytes.len()];
 
-        Box::new(Subscribe {
+        Subscribe {
             _remaining_length: remaining_length,
             _packet_identifier: bytes[init_variable_header],
-        })
+        }
     }
 
-    fn get_type(&self) -> String {
+    pub fn get_type(&self) -> String {
         "subscribe".to_owned()
     }
 
-    fn send_response(&self, mut stream: &TcpStream) {
+    pub fn send_response(&self, mut stream: &TcpStream) {
         let bytes_response = [0x90, 0x03, 0x00, 0x00, 0x00];
         if let Err(msg_error) = stream.write(&bytes_response) {
             println!("Error in sending response: {}", msg_error);
         }
+    }
+
+    pub fn send_message(&self, stream: &dyn Read){
+        //todo
     }
 }
 

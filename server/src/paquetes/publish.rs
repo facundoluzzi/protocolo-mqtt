@@ -1,7 +1,7 @@
 use crate::helper::remaining_length::save_remaining_length;
-use crate::paquetes::trait_paquetes::Paquetes;
 use crate::variable_header::publish_variable_header::get_variable_header;
 
+use std::io::Read;
 use std::net::TcpStream;
 
 pub struct Publish {
@@ -14,8 +14,8 @@ pub struct Publish {
     _payload: String,
 }
 
-impl Paquetes for Publish {
-    fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
+impl Publish {
+    pub fn init(bytes: &[u8]) -> Publish {
         let dup_flag = 0x08 & bytes[0];
         let qos_flag = 0x06 & bytes[0];
         let retain_flag = 0x01 & bytes[0];
@@ -30,7 +30,7 @@ impl Paquetes for Publish {
 
         let payload = &bytes[init_variable_header + length..bytes.len()];
 
-        Box::new(Publish {
+        Publish {
             _dup: dup_flag,
             _qos: qos_flag,
             _retain: retain_flag,
@@ -38,14 +38,18 @@ impl Paquetes for Publish {
             _topic: topic,
             _packet_identifier: packet_identifier[0],
             _payload: std::str::from_utf8(payload).unwrap().to_string(),
-        })
+        }
     }
 
-    fn get_type(&self) -> String {
+    pub fn get_type(&self) -> String {
         "publish".to_owned()
     }
 
-    fn send_response(&self, mut _stream: &TcpStream) {}
+    pub fn send_response(&self, mut _stream: &TcpStream) {}
+
+    pub fn send_message(&self, stream: &dyn Read){
+        //todo
+    }
 }
 
 #[cfg(test)]

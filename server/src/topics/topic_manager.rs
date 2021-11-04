@@ -29,15 +29,19 @@ impl TopicManager {
         thread::spawn(move || {
             for receive in publish_rx {
                 // for topic in &topic_manager.topics {
-
+                    
                 // }
             }
         });
 
         thread::spawn(move || {
             for receive in subscribe_rx {}
-        });
+        }); 
 
         topic_manager
+    }
+
+    pub fn get_publish_sender(&self) -> &Sender<String> {
+        &self.publish_sender
     }
 }

@@ -1,9 +1,8 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
-use crate::paquetes::trait_paquetes::Paquetes;
 use crate::payload::connect_payload::ConnectPayload;
 
-use std::io::Write;
+use std::io::{Read, Write};
 use std::net::TcpStream;
 
 pub struct Connect {
@@ -12,8 +11,8 @@ pub struct Connect {
     _payload: ConnectPayload,
 }
 
-impl Paquetes for Connect {
-    fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
+impl Connect {
+    pub fn init(bytes: &[u8]) -> Connect {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -28,24 +27,28 @@ impl Paquetes for Connect {
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
         );
         let flags = connect_flags;
-        Box::new(Connect {
+        Connect {
             _remaining_length: remaining_length,
             flags,
             _payload: payload,
-        })
+        }
     }
 
-    fn get_type(&self) -> String {
+    pub fn get_type(&self) -> String {
         "connect".to_owned()
     }
 
-    fn send_response(&self, mut stream: &TcpStream) {
+    pub fn send_response(&self, mut stream: &TcpStream) {
         let session_present_bit = 0x01 & self.flags.get_clean_session_flag() as u8;
         println!("{}", session_present_bit);
         let connack_response = [0x20, 0x02, session_present_bit, 0x00];
         if let Err(msg_error) = stream.write(&connack_response) {
             println!("Error in sending response: {}", msg_error);
         }
+    }
+
+    pub fn send_message(&self, stream: &dyn Read){
+        //todo
     }
 }
 

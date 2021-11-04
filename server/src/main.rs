@@ -19,7 +19,7 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger, topics: Arc<Mute
                 false
             } else {
                 logger.info(format!("Received from client {:?}", &data[0..size]));
-                PacketFactory::get(&data[0..size]).send_response(&stream);
+                PacketFactory::process_message(&data[0..size], *topics.lock().unwrap().get_publish_sender());
                 true
             }
         }
