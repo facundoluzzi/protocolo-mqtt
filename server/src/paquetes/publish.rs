@@ -3,6 +3,7 @@ use crate::variable_header::publish_variable_header::get_variable_header;
 
 use std::io::Read;
 use std::net::TcpStream;
+use std::sync::mpsc::Sender;
 
 pub struct Publish {
     _dup: u8,
@@ -47,7 +48,7 @@ impl Publish {
 
     pub fn send_response(&self, mut _stream: &TcpStream) {}
 
-    pub fn send_message(&self, stream: &dyn Read){
+    pub fn send_message(&self, stream: &Sender<String>){
         //todo
     }
 }

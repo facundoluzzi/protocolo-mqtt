@@ -1,5 +1,6 @@
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::sync::mpsc::Sender;
 
 pub struct Default {}
 
@@ -18,7 +19,7 @@ impl Default {
         }
     }
 
-    pub fn send_message(&self, stream: &dyn Read){
+    pub fn send_message(&self, stream: &Sender<String>){
         //todo
     }
 }

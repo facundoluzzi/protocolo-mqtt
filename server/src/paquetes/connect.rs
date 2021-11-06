@@ -4,6 +4,7 @@ use crate::payload::connect_payload::ConnectPayload;
 
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::sync::mpsc::Sender;
 
 pub struct Connect {
     _remaining_length: usize,
@@ -47,7 +48,7 @@ impl Connect {
         }
     }
 
-    pub fn send_message(&self, stream: &dyn Read){
+    pub fn send_message(&self, stream: &Sender<String>){
         //todo
     }
 }

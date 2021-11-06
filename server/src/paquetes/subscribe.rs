@@ -2,6 +2,7 @@ use crate::helper::remaining_length::save_remaining_length;
 
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::sync::mpsc::Sender;
 
 pub struct Subscribe {
     _remaining_length: usize,
@@ -35,7 +36,7 @@ impl Subscribe {
         }
     }
 
-    pub fn send_message(&self, stream: &dyn Read){
+    pub fn send_message(&self, stream: &Sender<String>){
         //todo
     }
 }

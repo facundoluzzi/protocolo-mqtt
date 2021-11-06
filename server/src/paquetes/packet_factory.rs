@@ -1,4 +1,5 @@
 use std::io::Read;
+use std::sync::mpsc::Sender;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
 use crate::paquetes::publish::Publish;
@@ -17,7 +18,7 @@ impl PacketFactory {
         (0b11110000 & first_byte) >> 4
     }
 
-    pub fn process_message(bytes: &[u8], stream: &dyn Read) {
+    pub fn process_message(bytes: &[u8], stream: &Sender<String>) {
         let first_byte = bytes.get(0);
 
         match first_byte {
