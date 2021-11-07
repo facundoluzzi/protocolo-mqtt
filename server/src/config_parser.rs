@@ -1,9 +1,6 @@
+use crate::helper::file_handler::get_lines_as_key_values;
+use std::collections::HashMap;
 use std::env;
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufRead, BufReader},
-};
 
 pub struct ServerConfigs {
     configurations: HashMap<String, String>,
@@ -31,14 +28,6 @@ impl ServerConfigs {
         args[1].to_string()
     }
 
-    fn open_configuration_file(path: String) -> File {
-        let file = File::open(path);
-        match file {
-            Ok(file) => file,
-            Err(error_file) => panic!("Error opening config file {}", error_file),
-        }
-    }
-
     pub fn obtain_configurations(path: String) -> ServerConfigs {
         let mut server_configs = ServerConfigs::new();
         server_configs.charge_configurations_from_path_file(path);
@@ -46,23 +35,7 @@ impl ServerConfigs {
     }
 
     fn charge_configurations_from_path_file(&mut self, path: String) {
-        let file = ServerConfigs::open_configuration_file(path);
-        let mut configs: HashMap<String, String> = HashMap::new();
-        let lines_in_file = BufReader::new(file).lines();
-        let lines_without_comments_and_blanks = lines_in_file
-            .map(|line| line.unwrap_or_else(|_| "".to_string()))
-            .filter(|line| !line.is_empty() && !line.starts_with('#'));
-
-        let props_and_values = lines_without_comments_and_blanks.map(|line| {
-            line.split(' ')
-                .map(|word| word.to_string())
-                .collect::<Vec<String>>()
-        });
-
-        for vec in props_and_values {
-            configs.insert(vec[0].to_string(), vec[1].to_string());
-        }
-        self.configurations = configs;
+        self.configurations = get_lines_as_key_values(path);
     }
 
     pub fn get_conf_named(&self, conf_name: String) -> String {
@@ -94,6 +67,7 @@ impl ServerConfigs {
 mod test_config_parser {
     use super::*;
     use std::fs;
+    use std::fs::File;
     use std::io::prelude::*;
 
     fn create_test_config_file(path: String) -> Result<(), std::io::Error> {
