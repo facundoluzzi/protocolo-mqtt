@@ -1,6 +1,7 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
 use server::paquetes::packet_manager::PacketManager;
+use server::paquetes::publisher_suscriber::PublisherSuscriber;
 use server::topics::topic_manager::TopicManager;
 use std::sync::mpsc::Sender;
 
@@ -11,7 +12,7 @@ use std::thread;
 fn handle_new_client(
     mut stream: TcpStream,
     mut logger: Logger,
-    publish_subscriber_sender: &Sender<String>,
+    publish_subscriber_sender: &Sender<PublisherSuscriber>,
 ) {
     // TODO: revisar el largo
     let mut data = [0_u8; 100];

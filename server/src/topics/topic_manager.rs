@@ -1,6 +1,4 @@
-use crate::paquetes::publish::Publish;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
-use crate::paquetes::subscribe::Subscribe;
 use crate::topics::topic::Topic;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
@@ -42,23 +40,31 @@ impl TopicManager {
                 // hay que crear un struct PublisherSubscriber que tenga el tipo, recibimos un struct de ese tipo acá.
                 // Dependiendo de que haga, lo podemos mandar a dos threads diferentes o no. Pero nos puede servir para bloquear
                 // los publishers mientras hayan subscripciones en proceso o lo opuesto.
-                // topics_copy.push(Topic::new(publish_suscriber));
+                // // topics_copy.push(Topic::new(publish_suscriber));
 
                 let packet_type = publish_suscriber.get_packet_type();
                 if packet_type.eq("Publish") {
                     for topic in &topics_copy {
                         if topic.clone().equals(publish_suscriber.get_topic()){
-                            topic.publish_msg(publish_suscriber.get_message());
+                            topic.clone().publish_msg(publish_suscriber.get_message());
                         }
                     }
                 }
+                else {
+                    for topic in &topics_copy {
+                        if topic.clone().equals(publish_suscriber.get_topic()){
+                            topic.clone().add("UnSuscriptor!!1".to_owned());
+                        }
+                    }
+                }
+
             }
         });
 
         topic_manager
     }
 
-    pub fn get_sender(&self) -> Sender<String> {
+    pub fn get_sender(&self) -> Sender<PublisherSuscriber> {
         self.publisher_subscriber_sender.clone()
     }
 }

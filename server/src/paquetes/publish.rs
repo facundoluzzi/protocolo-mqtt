@@ -1,11 +1,12 @@
 use crate::helper::remaining_length::save_remaining_length;
 use crate::payload;
 use crate::variable_header::publish_variable_header::get_variable_header;
-use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 
 use std::io::Read;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
+
+use super::publisher_suscriber::PublisherSuscriber;
 
 pub struct Publish {
     _dup: u8,
@@ -52,13 +53,14 @@ impl Publish {
         self._topic.to_string()
     }
 
-    pub fn send_response(&self, mut _stream: &TcpStream, sender: &Sender<String>) {
+    pub fn send_response(&self, stream: &TcpStream, sender: &Sender<PublisherSuscriber>) {
             // to do Puback
     }
 
-    pub fn send_message(&self, sender: &Sender<String>) {
-        let publisher_suscriber = PublisherSuscriber::new(self._topic, self._payload, 0);
+    pub fn send_message(&self, stream: &TcpStream, sender: &Sender<PublisherSuscriber>) {
+        let publisher_suscriber = PublisherSuscriber::new(self._topic.to_owned(), self._payload.to_owned(), 0);
         sender.send(publisher_suscriber).unwrap();
+        self.send_response(stream, sender);
     }
 }
 

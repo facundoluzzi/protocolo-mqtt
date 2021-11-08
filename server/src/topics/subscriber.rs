@@ -1,22 +1,18 @@
-// use std::net::TcpStream;
+#[derive(Debug)]
+pub struct Subscriber {
+    string: String
+}
 
-// use super::topic::Topic;
+impl Clone for Subscriber {
+    fn clone(&self) -> Self {
+        Subscriber {string: "as".to_owned()}
+    }
+}
 
-// #[derive(Debug)]
-// pub struct Subscriber {
-//     stream: TcpStream,
-// }
-
-// impl Clone for Subscriber {
-//     fn clone(&self) -> Self {
-//         Subscriber {topics: [].to_vec()}
-//     }
-// }
-
-// impl Subscriber {
-//     pub fn new(bytes: &[u8]) -> Subscriber {
-//         Subscriber {topics: [].to_vec()}
-//     }
+impl Subscriber {
+    pub fn new() -> Subscriber {
+        Subscriber {string: "as".to_owned()}
+    }
     
-//     pub fn publish_message(&self, _message: String) {}
-// }
+    pub fn publish_message(&self, _message: String) {}
+}
