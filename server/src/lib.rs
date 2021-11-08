@@ -1,3 +1,4 @@
+pub mod authentication;
 pub mod config_parser;
 pub mod flags;
 pub mod helper;

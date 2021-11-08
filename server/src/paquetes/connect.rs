@@ -1,8 +1,9 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
+use crate::helper::status_code::ReturnCode;
 use crate::payload::connect_payload::ConnectPayload;
 
-use std::io::{Read, Write};
+use std::io::{Write};
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -10,6 +11,7 @@ pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
     _payload: ConnectPayload,
+    status_code: ReturnCode,
 }
 
 impl Connect {
@@ -28,10 +30,16 @@ impl Connect {
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
         );
         let flags = connect_flags;
+        let status_code = match payload.check_authentication() {
+            true => ReturnCode::Success,
+            false => ReturnCode::NotAuthorized,
+        };
+
         Connect {
             _remaining_length: remaining_length,
             flags,
             _payload: payload,
+            status_code,
         }
     }
 
@@ -39,10 +47,13 @@ impl Connect {
         "connect".to_owned()
     }
 
-    pub fn send_response(&self, mut stream: &TcpStream) {
-        let session_present_bit = 0x01 & self.flags.get_clean_session_flag() as u8;
-        println!("{}", session_present_bit);
-        let connack_response = [0x20, 0x02, session_present_bit, 0x00];
+    fn send_response(&self, mut stream: &TcpStream) {
+        let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
+        let status_code = match self.status_code {
+            ReturnCode::Success => 0x00,
+            ReturnCode::NotAuthorized => 0x05,
+        };
+        let connack_response = [0x20, 0x02, session_present_bit, status_code];
         if let Err(msg_error) = stream.write(&connack_response) {
             println!("Error in sending response: {}", msg_error);
         }

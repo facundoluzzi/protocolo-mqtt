@@ -1,3 +1,4 @@
+use crate::authentication::main::is_authenticated;
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::utf8_parser::UTF8;
 
@@ -5,8 +6,8 @@ pub struct ConnectPayload {
     _client_identifier: String,
     _will_topic: Option<String>,
     _will_message: Option<String>,
-    _username: Option<String>,
-    _password: Option<String>,
+    username: Option<String>,
+    password: Option<String>,
 }
 
 impl ConnectPayload {
@@ -58,24 +59,29 @@ impl ConnectPayload {
         }
         ConnectPayload {
             _client_identifier: client_identifier,
-            _username: username,
-            _password: password,
+            username,
+            password,
             _will_topic: will_topic,
             _will_message: will_message,
         }
     }
+
+    pub fn check_authentication(&self) -> bool {
+        match (self.username.as_ref(), self.password.as_ref()) {
+            (Some(uname), Some(pass)) => is_authenticated(uname.to_string(), pass.to_string()),
+            (None, None) => true,
+            _ => false,
+        }
+    }
+
     pub fn get_client_id(&self) -> String {
         self._client_identifier.to_owned()
     }
-    pub fn get_username(&self) -> Option<&String> {
-        self._username.as_ref()
-    }
-    pub fn get_password(&self) -> Option<&String> {
-        self._password.as_ref()
-    }
+
     pub fn get_will_topic(&self) -> Option<&String> {
         self._will_topic.as_ref()
     }
+
     pub fn get_will_message(&self) -> Option<&String> {
         self._will_message.as_ref()
     }
@@ -88,16 +94,15 @@ mod tests {
 
     #[test]
     fn create_payload_with_username() {
-        let flags: u8 = 0b10000000;
+        let flags: u8 = 0xB0;
         let connect_flags = ConnectFlags::init(&flags);
         let remaining_bytes = [
             0x00, 0x02, 0x5C, 0x0B, 0x00, 0x06, 0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F,
         ];
         let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
-        assert_eq!(connect.get_username(), Some("ALTEGO".to_owned()).as_ref());
-        assert_eq!(connect.get_password(), None);
         assert_eq!(connect.get_will_topic(), None);
         assert_eq!(connect.get_will_message(), None);
+        assert_eq!(connect.check_authentication(), false);
     }
 
     #[test]
@@ -106,22 +111,10 @@ mod tests {
         let connect_flags = ConnectFlags::init(&flags);
         let remaining_bytes = [
             0x00, 0x02, 0x5C, 0x0B, 0x00, 0x06, 0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F, 0x00, 0x03,
-            0x01, 0x02, 0x03,
+            0x41, 0x4C, 0x54,
         ];
         let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
-        println!(
-            "Mirar el formato del usuario: {}",
-            connect.get_username().to_owned().unwrap()
-        );
-        println!(
-            "Mirar el formato de la contraseña: {}",
-            connect.get_password().to_owned().unwrap()
-        );
-        assert_eq!(connect.get_username(), Some("ALTEGO".to_owned()).as_ref());
-        assert_eq!(
-            connect.get_password(),
-            Some(String::from_utf8([1, 2, 3].to_vec()).unwrap()).as_ref()
-        );
+        assert_eq!(connect.check_authentication(), true);
         assert_eq!(connect.get_will_topic(), None);
         assert_eq!(connect.get_will_message(), None);
     }
@@ -136,8 +129,6 @@ mod tests {
             0x4D, // EGASSEM en hexa, al parsearlo queda como MESSAGE
         ];
         let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
-        assert_eq!(connect.get_username(), None);
-        assert_eq!(connect.get_password(), None);
         assert_eq!(connect.get_will_topic(), Some("TOPIC".to_owned()).as_ref());
         assert_eq!(
             connect.get_will_message(),
@@ -155,11 +146,6 @@ mod tests {
             0x41, 0x53, 0x53, 0x45, 0x4D, // EGASSEM en hexa, al parsearlo queda como MESSAGE
         ];
         let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
-        assert_eq!(connect.get_username(), Some("ALTEGO".to_owned()).as_ref());
-        assert_eq!(
-            connect.get_password(),
-            Some(String::from_utf8([1, 2, 3].to_vec()).unwrap()).as_ref()
-        );
         assert_eq!(connect.get_will_topic(), Some("TOPIC".to_owned()).as_ref());
         assert_eq!(
             connect.get_will_message(),
