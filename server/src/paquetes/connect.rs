@@ -47,7 +47,7 @@ impl Connect {
         "connect".to_owned()
     }
 
-    fn send_response(&self, mut stream: &TcpStream) {
+    pub fn send_response(&self, mut stream: &TcpStream) {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let status_code = match self.status_code {
             ReturnCode::Success => 0x00,

@@ -1,5 +1,6 @@
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::{Subscriber};
 use crate::topics::topic_manager::TopicManager;
 use std::sync::mpsc::Sender;
 
@@ -42,7 +43,7 @@ impl Subscribe<'_> {
         while self.payload.len() as i32 > acumulator + 1 {
                 let (topic, length) = UTF8::utf8_parser(&self.payload[(acumulator + 1) as usize.. self.payload.len()]);
                 acumulator += length as i32;
-                let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), 1);
+                let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), Subscriber);
                 sender.send(publisher_suscriber).unwrap();
         }
         Subscribe {

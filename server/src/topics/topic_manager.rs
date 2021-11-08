@@ -1,3 +1,4 @@
+use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::topics::topic::Topic;
 use std::sync::mpsc;
@@ -42,22 +43,30 @@ impl TopicManager {
                 // los publishers mientras hayan subscripciones en proceso o lo opuesto.
                 // // topics_copy.push(Topic::new(publish_suscriber));
 
-                let packet_type = publish_suscriber.get_packet_type();
-                if packet_type.eq("Publish") {
-                    for topic in &topics_copy {
-                        if topic.clone().equals(publish_suscriber.get_topic()){
-                            topic.clone().publish_msg(publish_suscriber.get_message());
+                match publish_suscriber.get_packet_type() {
+                    PublisherSubscriberCode::Publisher => {
+                        for topic in &topics_copy {
+                            if topic.clone().equals(publish_suscriber.get_topic()) {
+                                topic.clone().publish_msg(publish_suscriber.get_message());
+                            }
                         }
-                    }
-                }
-                else {
-                    for topic in &topics_copy {
-                        if topic.clone().equals(publish_suscriber.get_topic()){
+                    },
+                    PublisherSubscriberCode::Subscriber => {
+                        // buscar el topico
+                        // si existe agrego un subscriptor
+                        // sino creo el topico y agrego el subscriptor
+                        let topic_found = &topics_copy.iter().find(|topic| -> bool {
+                            topic.equals(publish_suscriber.get_topic())
+                        });
+
+                        if let Some(topic) = topic_found {
+                            topic.clone().add("UnSuscriptor!!1".to_owned());
+                        } else {
+                            let topic = Topic::new(publish_suscriber.get_topic());
                             topic.clone().add("UnSuscriptor!!1".to_owned());
                         }
                     }
-                }
-
+                };
             }
         });
 
