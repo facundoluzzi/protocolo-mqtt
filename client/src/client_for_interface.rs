@@ -4,6 +4,7 @@ use std::{
     thread,
 };
 
+use crate::packet_factory::PacketManager;
 pub struct Client {
     stream: Option<TcpStream>,
 }
@@ -34,8 +35,8 @@ impl Client {
     }
 
     pub fn connect_to_server(mut self, host: String, port: String) -> Result<String, String> {
-        let addres = format!("{}:{}", host, port);
-        match TcpStream::connect(addres) {
+        let address = format!("{}:{}", host, port);
+        match TcpStream::connect(address) {
             Ok(mut stream) => {
                 let stream_clone = stream.try_clone().expect("Could not clone the stream");
                 self.stream = Some(stream_clone);
@@ -43,8 +44,12 @@ impl Client {
                 thread::spawn(move || {
                     let mut data = vec![0_u8; 100]; // using 6 byte buffer
                     while match stream.read(&mut data) {
-                        Ok(size) => {
-                            println!("received {:?}", &data[0..size]);
+                        Ok(_) => {
+                            let packet_manager = PacketManager::new();
+                            println!(
+                                "received {:?}",
+                                packet_manager.process_message(&data).get_type()
+                            );
                             true
                         }
                         Err(e) => {
