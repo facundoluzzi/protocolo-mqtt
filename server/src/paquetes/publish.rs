@@ -1,7 +1,7 @@
+use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Publisher;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::payload;
 use crate::variable_header::publish_variable_header::get_variable_header;
-use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::{Publisher};
 
 use std::io::Read;
 use std::net::TcpStream;
@@ -55,12 +55,13 @@ impl Publish {
     }
 
     pub fn send_response(&self, stream: &TcpStream, sender: &Sender<PublisherSuscriber>) {
-            // to do Puback
+        // to do Puback
     }
 
     pub fn send_message(&self, stream: &TcpStream, sender: &Sender<PublisherSuscriber>) {
-        let publisher_suscriber = PublisherSuscriber::new(self._topic.to_owned(), self._payload.to_owned(), Publisher);
-        sender.send(publisher_suscriber).unwrap(); 
+        let publisher_suscriber =
+            PublisherSuscriber::new(self._topic.to_owned(), self._payload.to_owned(), Publisher);
+        sender.send(publisher_suscriber).unwrap();
         self.send_response(stream, sender);
     }
 }

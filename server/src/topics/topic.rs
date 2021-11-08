@@ -1,6 +1,5 @@
 use crate::topics::subscriber::Subscriber;
 
-#[derive(Debug)]
 pub struct Topic {
     name: String,
     subscribers: Vec<Subscriber>,
@@ -39,7 +38,7 @@ impl Topic {
         }
     }
 
-    pub fn equals(self, other_topic: String) -> bool {
+    pub fn equals(&self, other_topic: String) -> bool {
         self.name == other_topic
     }
 

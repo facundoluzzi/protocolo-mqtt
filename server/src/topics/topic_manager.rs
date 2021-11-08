@@ -30,11 +30,14 @@ impl TopicManager {
         ) = mpsc::channel();
         let topics: Vec<Topic> = Vec::new();
 
-        let topic_manager = TopicManager {
+        let mut topic_manager = TopicManager {
             publisher_subscriber_sender,
             topics,
         };
+
+        // TODO: revisar esto, no sabemos si funciona bien o funciona mal.
         let mut topics_copy = topic_manager.topics.clone();
+        let mut topic_manager_copy = topic_manager.clone();
 
         thread::spawn(move || {
             for publish_suscriber in publisher_subscriber_receiver {
@@ -50,20 +53,18 @@ impl TopicManager {
                                 topic.clone().publish_msg(publish_suscriber.get_message());
                             }
                         }
-                    },
+                    }
                     PublisherSubscriberCode::Subscriber => {
-                        // buscar el topico
-                        // si existe agrego un subscriptor
-                        // sino creo el topico y agrego el subscriptor
-                        let topic_found = &topics_copy.iter().find(|topic| -> bool {
-                            topic.equals(publish_suscriber.get_topic())
-                        });
+                        let topic_found = topics_copy
+                            .iter()
+                            .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
 
                         if let Some(topic) = topic_found {
-                            topic.clone().add("UnSuscriptor!!1".to_owned());
+                            topic.clone().add("UnSuscriptor!!".to_owned());
                         } else {
                             let topic = Topic::new(publish_suscriber.get_topic());
-                            topic.clone().add("UnSuscriptor!!1".to_owned());
+                            topic.clone().add("UnSuscriptor!!".to_owned());
+                            topic_manager_copy.topics.push(topic);
                         }
                     }
                 };

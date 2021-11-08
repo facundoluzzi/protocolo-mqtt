@@ -3,7 +3,7 @@ use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ReturnCode;
 use crate::payload::connect_payload::ConnectPayload;
 
-use std::io::{Write};
+use std::io::Write;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
