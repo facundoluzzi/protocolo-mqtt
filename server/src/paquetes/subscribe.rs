@@ -1,15 +1,19 @@
 use crate::helper::remaining_length::save_remaining_length;
-
-use std::io::{Read, Write};
-use std::net::TcpStream;
+use crate::topics::topic_manager::TopicManager;
 use std::sync::mpsc::Sender;
 
-pub struct Subscribe {
+use std::io::Write;
+use std::net::TcpStream;
+
+use std::thread;
+
+pub struct Subscribe<'a> {
     _remaining_length: usize,
     _packet_identifier: u8,
+    payload: &'a [u8],
 }
 
-impl Subscribe {
+impl Subscribe<'_> {
     pub fn init(bytes: &[u8]) -> Subscribe {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
@@ -17,16 +21,27 @@ impl Subscribe {
         let init_variable_header = 1 + readed_index;
         let end_variable_header = init_variable_header + 2;
 
-        let _payload = &bytes[end_variable_header..bytes.len()];
+        let payload = &bytes[end_variable_header..bytes.len()];
 
         Subscribe {
             _remaining_length: remaining_length,
             _packet_identifier: bytes[init_variable_header],
+            payload,
         }
     }
 
     pub fn get_type(&self) -> String {
         "subscribe".to_owned()
+    }
+
+    pub fn subscribe_topic(&self, sender: &Sender<String>) -> Self {
+        sender.send("hola".to_string()).unwrap();
+
+        Subscribe {
+            _remaining_length: self._remaining_length,
+            _packet_identifier: self._packet_identifier,
+            payload: self.payload,
+        }
     }
 
     pub fn send_response(&self, mut stream: &TcpStream) {
@@ -35,15 +50,12 @@ impl Subscribe {
             println!("Error in sending response: {}", msg_error);
         }
     }
-
-    pub fn send_message(&self, stream: &Sender<String>){
-        //todo
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::{thread, time};
 
     #[test]
     fn crear_paquete_subscribe_correctamente() {
@@ -52,10 +64,12 @@ mod tests {
         // el tercer y cuarto byte indican el largo del topic name, según el encoding msb o lsb, en este caso de 5 bytes
         // el byte nro 10 y 11 son los dos últimos bytes del variable header y son el packet identifier
         // los n siguientes bugs son parte del payload, en este caso vacío
-        let bytes = [
-            0x30, 0x01, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x00, 0x06,
-        ];
-        let publish_packet = Subscribe::init(&bytes);
+        let bytes = [0x30, 0x08, 0x00, 0x0A, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45];
+        let sender = TopicManager::new();
+        let publish_packet = Subscribe::init(&bytes).subscribe_topic(&sender.get_sender());
+        Subscribe::init(&bytes).subscribe_topic(&sender.get_sender());
+        Subscribe::init(&bytes).subscribe_topic(&sender.get_sender());
+        thread::sleep(time::Duration::from_millis(100));
         assert_eq!(publish_packet.get_type(), "subscribe".to_owned());
     }
 }

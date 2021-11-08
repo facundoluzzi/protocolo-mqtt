@@ -103,9 +103,8 @@ mod tests {
     #[test]
     fn test_that_two_loggers_can_send_logs() {
         let mut logger = crear_logger("./prueba.txt".to_string()).unwrap();
-        let mut logger2 = logger.clone();
         logger.info("message1".to_owned());
-        logger2.info("message2".to_owned());
+        logger.info("message2".to_owned());
         thread::sleep(time::Duration::from_millis(10));
         assert_that_log_writed_correctly(
             vec!["INFO | message1".to_string(), "INFO | message2".to_string()],

@@ -6,55 +6,49 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 pub struct TopicManager {
-    publish_sender: Sender<Publish>,
-    subscribe_sender: Sender<Subscribe>,
-    topics: Vec<Topic>
+    publisher_subscriber_sender: Sender<String>,
+    topics: Vec<Topic>,
 }
 
 impl Clone for TopicManager {
     fn clone(&self) -> Self {
-        let publish_sender = self.publish_sender.clone();
-        let subscribe_sender = self.subscribe_sender.clone();
-        let topics = &self.topics;
-        Self { publish_sender, subscribe_sender, topics: topics.to_vec() }
+        // let topics = &self.topics;
+        // Self { publisher_subscriber_sender, subscribe_sender, topics: topics.to_vec() }
+        let publisher_subscriber_sender = self.publisher_subscriber_sender.clone();
+        Self {
+            publisher_subscriber_sender,
+            topics: self.topics.clone(),
+        }
     }
 }
 
 impl TopicManager {
     pub fn new() -> TopicManager {
-        let (publish_tx, publish_rx): (Sender<Publish>, Receiver<Publish>) = mpsc::channel();
-        let (subscribe_tx, subscribe_rx): (Sender<Subscribe>, Receiver<Subscribe>) = mpsc::channel();
+        let (publisher_subscriber_sender, publisher_subscriber_receiver): (
+            Sender<String>,
+            Receiver<String>,
+        ) = mpsc::channel();
         let topics: Vec<Topic> = Vec::new();
 
-        let topic_manager = TopicManager { publish_sender: publish_tx, subscribe_sender: subscribe_tx, topics };
-        let topics_copy = topic_manager.topics.clone();
+        let topic_manager = TopicManager {
+            publisher_subscriber_sender,
+            topics,
+        };
+        let mut topics_copy = topic_manager.topics.clone();
 
         thread::spawn(move || {
-            for receive in publish_rx {
-                for topic in &topics_copy {
-                    if topic.clone().equals(receive.get_name()){
-                        topic.publish_msg(receive.get_publish_message());
-                    }
-                }
+            for sub in publisher_subscriber_receiver {
+                // hay que crear un struct PublisherSubscriber que tenga el tipo, recibimos un struct de ese tipo acá.
+                // Dependiendo de que haga, lo podemos mandar a dos threads diferentes o no. Pero nos puede servir para bloquear
+                // los publishers mientras hayan subscripciones en proceso o lo opuesto.
+                topics_copy.push(Topic::new(sub));
             }
         });
-
-        thread::spawn(move || {
-            for receive in subscribe_rx {
-                for topic_to_suscribe in receive.get_topics() {
-                    // for topic in &topics_copy {
-                    //     if topic.clone().equals(receive.get_name()){
-                    //         topic.add();
-                    //     }
-                    // }
-                }
-            }
-        }); 
 
         topic_manager
     }
 
-    pub fn get_publish_sender(&self) -> &Sender<Publish> {
-        &self.publish_sender
+    pub fn get_sender(&self) -> Sender<String> {
+        self.publisher_subscriber_sender.clone()
     }
 }

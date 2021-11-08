@@ -47,16 +47,16 @@ impl Publish {
     }
 
     pub fn get_name(&self) -> String {
-        self._topic
+        self._topic.to_string()
     }
 
     pub fn get_publish_message(&self) -> String {
-        self._payload
+        self._payload.to_string()
     }
 
     pub fn send_response(&self, mut _stream: &TcpStream) {}
 
-    pub fn send_message(&self, stream: &Sender<String>){
+    pub fn send_message(&self, stream: &Sender<String>) {
         //todo
     }
 }

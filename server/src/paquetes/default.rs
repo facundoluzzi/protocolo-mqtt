@@ -19,7 +19,7 @@ impl Default {
         }
     }
 
-    pub fn send_message(&self, stream: &Sender<String>){
+    pub fn send_message(&self, stream: &Sender<String>) {
         //todo
     }
 }

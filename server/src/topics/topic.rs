@@ -3,22 +3,29 @@ use crate::topics::subscriber::Subscriber;
 #[derive(Debug)]
 pub struct Topic {
     name: String,
-    subscribers: Vec<Subscriber>
+    subscribers: Vec<Subscriber>,
 }
 
 impl Clone for Topic {
     fn clone(&self) -> Self {
-        Topic { name: self.name.clone(), subscribers: self.subscribers.clone() }
+        Topic {
+            name: self.name.clone(),
+            subscribers: self.subscribers.clone(),
+        }
     }
 }
 
 impl Topic {
     pub fn new(name: String) -> Self {
-        Topic { name, subscribers: Vec::new() }
+        Topic {
+            name,
+            subscribers: Vec::new(),
+        }
     }
 
     pub fn add(mut self, subscriber: String) {
-        let new_subscriber = Subscriber::new(subscriber);
+        // let new_subscriber = Subscriber::new(subscriber);
+        let new_subscriber = Subscriber::new(b"");
         self.subscribers.push(new_subscriber);
     }
 
@@ -38,9 +45,12 @@ impl Topic {
 
     pub fn get(self, name: String) -> Result<Self, String> {
         if self.name == name {
-            Ok(Self { name: self.name, subscribers: self.subscribers })
+            Ok(Self {
+                name: self.name,
+                subscribers: self.subscribers,
+            })
         } else {
-            Err("".to_string())   
+            Err("".to_string())
         }
     }
 }
