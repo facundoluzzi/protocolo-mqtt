@@ -1,4 +1,5 @@
 use crate::helper::remaining_length::save_remaining_length;
+use crate::payload;
 use crate::variable_header::publish_variable_header::get_variable_header;
 
 use std::io::Read;
@@ -50,14 +51,13 @@ impl Publish {
         self._topic.to_string()
     }
 
-    pub fn get_publish_message(&self) -> String {
-        self._payload.to_string()
+    pub fn send_response(&self, mut _stream: &TcpStream, sender: &Sender<String>) {
+            // to do Puback
     }
 
-    pub fn send_response(&self, mut _stream: &TcpStream) {}
-
-    pub fn send_message(&self, stream: &Sender<String>) {
-        //todo
+    pub fn send_message(&self, sender: &Sender<String>) {
+        let publisher_suscriber = PublisherSuscriber::new(self._topic, self._payload, 0);
+        sender.send(publisher_suscriber).unwrap();
     }
 }
 

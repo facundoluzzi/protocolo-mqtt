@@ -1,6 +1,6 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
-use server::paquetes::packet_factory::PacketManager;
+use server::paquetes::packet_manager::PacketManager;
 use server::topics::topic_manager::TopicManager;
 use std::sync::mpsc::Sender;
 

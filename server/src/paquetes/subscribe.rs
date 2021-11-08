@@ -35,7 +35,10 @@ impl Subscribe<'_> {
     }
 
     pub fn subscribe_topic(&self, sender: &Sender<String>) -> Self {
-        sender.send("hola".to_string()).unwrap();
+        //sender.send("hola".to_string()).unwrap();
+
+        // TO DO!! .... desencodear todos los topicos del payload, y generar un Vec<String>, luego, para cada topic - string, enviar un mensaje al Topic Manager
+
 
         Subscribe {
             _remaining_length: self._remaining_length,
