@@ -1,5 +1,6 @@
 use crate::topics::subscriber::Subscriber;
 
+#[derive(Debug)]
 pub struct Topic {
     name: String,
     subscribers: Vec<Subscriber>
@@ -29,6 +30,10 @@ impl Topic {
         for subscriber in self.subscribers {
             subscriber.publish_message(message.to_string());
         }
+    }
+
+    pub fn equals(self, other_topic: String) -> bool {
+        self.name == other_topic
     }
 
     pub fn get(self, name: String) -> Result<Self, String> {

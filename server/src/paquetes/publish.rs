@@ -46,6 +46,14 @@ impl Publish {
         "publish".to_owned()
     }
 
+    pub fn get_name(&self) -> String {
+        self._topic
+    }
+
+    pub fn get_publish_message(&self) -> String {
+        self._payload
+    }
+
     pub fn send_response(&self, mut _stream: &TcpStream) {}
 
     pub fn send_message(&self, stream: &Sender<String>){

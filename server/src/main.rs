@@ -13,13 +13,14 @@ fn handle_new_client(mut stream: TcpStream, mut logger: Logger, topics: Arc<Mute
     // TODO: revisar el largo
     let mut data = [0_u8; 100];
     // TODO: ver que onda el while
+    let packet_factory = PacketFactory::new();
     while match stream.read(&mut data) {
         Ok(size) => {
             if size == 0 {
                 false
             } else {
                 logger.info(format!("Received from client {:?}", &data[0..size]));
-                PacketFactory::process_message(&data[0..size], &*topics.lock().unwrap().get_publish_sender());
+                packet_factory.process_message(&data[0..size], &*topics.lock().unwrap().get_publish_sender());
                 true
             }
         }

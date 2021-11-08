@@ -1,24 +1,29 @@
-use std::io::Read;
 use std::sync::mpsc::Sender;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
 use crate::paquetes::publish::Publish;
 use crate::paquetes::subscribe::Subscribe;
 
-pub struct PublisherSubscriber {
-    type_packet: String,
-    message: String,
-    topic: Vec<String>
+pub struct PacketFactory {
+    client_id: String
 }
 
-pub struct PacketFactory {}
-
 impl PacketFactory {
-    fn get_control_packet_type(first_byte: u8) -> u8 {
+    pub fn new() -> Self {
+        PacketFactory {
+            client_id: "".to_string()
+        }
+    }
+    
+    pub fn get_control_packet_type(first_byte: u8) -> u8 {
         (0b11110000 & first_byte) >> 4
     }
 
-    pub fn process_message(bytes: &[u8], stream: &Sender<String>) {
+    pub fn set_client_id(&self, client_id: String) {
+        self.client_id = client_id;
+    }
+
+    pub fn process_message(self, bytes: &[u8], stream: &Sender<String>) {
         let first_byte = bytes.get(0);
 
         match first_byte {
