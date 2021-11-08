@@ -37,26 +37,23 @@ impl TopicManager {
         };
         let mut topics_copy = topic_manager.topics.clone();
 
-        // thread::spawn(move || {
-        //     for publish_suscriber in publisher_subscriber_receiver {
-        //         // hay que crear un struct PublisherSubscriber que tenga el tipo, recibimos un struct de ese tipo acá.
-        //         // Dependiendo de que haga, lo podemos mandar a dos threads diferentes o no. Pero nos puede servir para bloquear
-        //         // los publishers mientras hayan subscripciones en proceso o lo opuesto.
-        //         //topics_copy.push(Topic::new(publish_suscriber));
+        thread::spawn(move || {
+            for publish_suscriber in publisher_subscriber_receiver {
+                // hay que crear un struct PublisherSubscriber que tenga el tipo, recibimos un struct de ese tipo acá.
+                // Dependiendo de que haga, lo podemos mandar a dos threads diferentes o no. Pero nos puede servir para bloquear
+                // los publishers mientras hayan subscripciones en proceso o lo opuesto.
+                // topics_copy.push(Topic::new(publish_suscriber));
 
-        //         // packet_type = publish_suscriber.get_packet_type();
-        //         // if packet_type.eq("Publish") {
-        //         //     for topic in &topics_copy {
-        //         //         if topic.clone().equals(publish_suscriber.get_topic()){
-        //         //             topic.publish_msg(publish_suscriber.get_message());
-        //         //         }
-        //         //     }
-        //         // }
-        //         // else{
-                    
-        //         // }
-        //     }
-        // });
+                let packet_type = publish_suscriber.get_packet_type();
+                if packet_type.eq("Publish") {
+                    for topic in &topics_copy {
+                        if topic.clone().equals(publish_suscriber.get_topic()){
+                            topic.publish_msg(publish_suscriber.get_message());
+                        }
+                    }
+                }
+            }
+        });
 
         topic_manager
     }
