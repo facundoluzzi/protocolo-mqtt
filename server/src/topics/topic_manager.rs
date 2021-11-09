@@ -1,6 +1,7 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::paquetes::subscribe::Subscribe;
+use crate::topics::subscriber;
 use crate::topics::topic::Topic;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
@@ -69,10 +70,12 @@ impl TopicManager {
                             .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
 
                         if let Some(topic) = topic_found {
-                            topic.clone().add("UnSuscriptor!!".to_owned());
+                            topic.clone().add(subscriber);
+                            subscriber.add(topic);
                         } else {
                             let topic = Topic::new(publish_suscriber.get_topic());
-                            topic.clone().add(subscriber: Subscriber);
+                            topic.clone().add(subscriber);
+                            subscriber.add(topic);
                             topic_manager_copy.topics.push(topic);
                         }
                     }

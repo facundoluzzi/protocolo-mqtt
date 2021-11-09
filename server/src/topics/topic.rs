@@ -23,7 +23,6 @@ impl Topic {
     }
 
     pub fn add(mut self, subscriber: Subscriber) {
-        // let new_subscriber = Subscriber::new(subscriber);
         self.subscribers.push(new_subscriber);
     }
 
