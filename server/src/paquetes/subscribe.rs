@@ -42,7 +42,7 @@ impl Subscribe<'_> {
             let (topic, length) =
                 UTF8::utf8_parser(&self.payload[(acumulator + 1) as usize..self.payload.len()]);
             acumulator += length as i32;
-            let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), Subscriber);
+            let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), Subscriber, stream);
             sender.send(publisher_suscriber).unwrap();
         }
         Subscribe {

@@ -3,7 +3,8 @@ use std::{io::Write, net::{TcpListener, TcpStream}};
 #[derive(Debug)]
 pub struct Subscriber {
     socket: Option<TcpStream>,
-    queue: Vec<String>
+    queue: Vec<String>,
+    client_id: String,
 }
 
 impl Clone for Subscriber {
@@ -15,16 +16,17 @@ impl Clone for Subscriber {
                 None
             },
             queue: self.queue.clone(),
+            client_id: self.client_id.clone(),
         }
     }
 }
 
-
 impl Subscriber {
-    pub fn new(socket : TcpStream) -> Subscriber {
+    pub fn new(client_id: String, socket: TcpStream) -> Subscriber {
         Subscriber {
             socket: Some(socket),
-            queue: Vec::new()
+            queue: Vec::new(),
+            client_id,
         }
     }
 
@@ -35,6 +37,7 @@ impl Subscriber {
             self.queue.push(message);
         }
     }
+
     pub fn disconnect(&self){
         self.socket = None;
 
@@ -45,6 +48,9 @@ impl Subscriber {
         for message in self.queue {
             self.publish_message(message)
         }
-        
+    }
+
+    pub fn equals(&self, client_id: String) -> bool {
+        self.client_id == client_id
     }
 }
