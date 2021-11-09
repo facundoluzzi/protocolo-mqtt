@@ -1,9 +1,12 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
+use crate::paquetes::subscribe::Subscribe;
 use crate::topics::topic::Topic;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
+
+use super::subscriber::Subscriber;
 
 pub struct TopicManager {
     publisher_subscriber_sender: Sender<PublisherSuscriber>,
@@ -69,7 +72,7 @@ impl TopicManager {
                             topic.clone().add("UnSuscriptor!!".to_owned());
                         } else {
                             let topic = Topic::new(publish_suscriber.get_topic());
-                            topic.clone().add("UnSuscriptor!!".to_owned());
+                            topic.clone().add(subscriber: Subscriber);
                             topic_manager_copy.topics.push(topic);
                         }
                     }

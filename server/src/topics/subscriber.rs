@@ -2,7 +2,7 @@ use std::{io::Write, net::{TcpListener, TcpStream}};
 
 #[derive(Debug)]
 pub struct Subscriber {
-    socket:  Option<TcpStream>,
+    socket: Option<TcpStream>,
     queue: Vec<String>
 }
 
@@ -34,5 +34,17 @@ impl Subscriber {
         } else {
             self.queue.push(message);
         }
+    }
+    pub fn disconnect(&self){
+        self.socket = None;
+
+    }
+
+    pub fn reconnect(&mut self, socket: TcpStream){
+        self.socket = Some(socket);
+        for message in self.queue {
+            self.publish_message(message)
+        }
+        
     }
 }
