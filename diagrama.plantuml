@@ -1,0 +1,31 @@
+@startuml
+
+class Server {}
+
+class StateMachine {}
+
+class Topics {
+    + agregar(topic)
+    + borrar(topic)
+    + publish_msg(topic, message)
+}
+
+class Topic {
+    + name
+    + subscribers
+    + publish_msg(msg)
+}
+
+class Subscriber {
+    + socket
+    + publish_msg(message)
+}
+
+Server --> StateMachine
+StateMachine --> Topics
+StateMachine --> Logger
+StateMachine --> Config
+Topics "1" --> "n" Topic
+Topic "1" --> "1" Subscriber
+
+@enduml
