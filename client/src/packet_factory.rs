@@ -1,9 +1,15 @@
 use crate::connack::Connack;
-use crate::default::Default;
+use crate::default;
 use crate::trait_paquetes::Paquetes;
 
 pub struct PacketManager {
     client_id: String,
+}
+
+impl Default for PacketManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PacketManager {
@@ -27,9 +33,9 @@ impl PacketManager {
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
                 2 => Connack::init(bytes),
-                _ => Default::init(bytes),
+                _ => default::Default::init(bytes),
             },
-            None => Default::init(bytes),
+            None => default::Default::init(bytes),
         }
     }
 }
