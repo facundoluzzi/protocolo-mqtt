@@ -32,15 +32,21 @@ impl PacketManager {
         bytes: &[u8],
         stream: &TcpStream,
         publisher_subscriber_sender: &Sender<PublisherSuscriber>,
-        users_manager: UserManager,
+        user_manager: UserManager,
     ) {
         let first_byte = bytes.get(0);
 
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
-                1 => {let Subscriber = Connect::init(bytes).send_response(stream).create_subscriber();
-                    users_manager.add(Subscriber)
-                    },
+                1 => {
+                    let connect = Connect::init(bytes);
+                    if let Some(usuario) = user_manager.find_user(connect.get_client_id()) {
+                        usuario.assign_socket(stream);
+                    }else {
+                        let subscriber = connect.create_subscriber(stream);
+                        user_manager.add(subscriber);
+                    }
+                },
                 3 => Publish::init(bytes).send_message(stream, publisher_subscriber_sender),
                 8 => Subscribe::init(bytes)
                     .subscribe_topic(publisher_subscriber_sender)

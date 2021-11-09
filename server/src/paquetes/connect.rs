@@ -13,7 +13,7 @@ use super::subscribe::Subscribe;
 pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
-    _payload: ConnectPayload,
+    payload: ConnectPayload,
     status_code: ReturnCode,
 }
 
@@ -41,7 +41,7 @@ impl Connect {
         Connect {
             _remaining_length: remaining_length,
             flags,
-            _payload: payload,
+            payload: payload,
             status_code,
         }
     }
@@ -62,8 +62,12 @@ impl Connect {
         }
     }
 
-    pub fn create_subscriber(client_id: String, socket: TcpStream) -> Subscriber {
-        Subscriber::new(client_id, socket)
+    pub fn create_subscriber(&self, socket: &TcpStream) -> Subscriber {
+        Subscriber::new(self.payload.get_client_id(), socket)
+    }
+
+    pub fn get_client_id(&self) -> String {
+        self.payload.get_client_id()
     }
 
     pub fn send_message(&self, _stream: &Sender<String>) {
