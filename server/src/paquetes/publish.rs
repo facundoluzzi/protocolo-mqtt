@@ -58,7 +58,7 @@ impl Publish {
 
     pub fn send_message(&self, stream: &TcpStream, sender: &Sender<PublisherSuscriber>) {
         let publisher_suscriber =
-            PublisherSuscriber::new(self._topic.to_owned(), self._payload.to_owned(), Publisher);
+            PublisherSuscriber::new(self._topic.to_owned(), self._payload.to_owned(), Publisher, stream);
         sender.send(publisher_suscriber).unwrap();
         self.send_response(stream, sender);
     }
