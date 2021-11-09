@@ -2,7 +2,6 @@ use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
 use crate::paquetes::publish::Publish;
 use crate::paquetes::subscribe::Subscribe;
-use crate::topics::topic_manager::TopicManager;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -27,14 +26,21 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
-    pub fn process_message(&self, bytes: &[u8], stream: &TcpStream, publisher_subscriber_sender: &Sender<PublisherSuscriber>,) {
+    pub fn process_message(
+        &self,
+        bytes: &[u8],
+        stream: &TcpStream,
+        publisher_subscriber_sender: &Sender<PublisherSuscriber>,
+    ) {
         let first_byte = bytes.get(0);
 
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
                 1 => Connect::init(bytes).send_response(stream),
-                3 => Publish::init(bytes).send_message(stream, &publisher_subscriber_sender),
-                8 => Subscribe::init(bytes).subscribe_topic(&publisher_subscriber_sender).send_response(stream),
+                3 => Publish::init(bytes).send_message(stream, publisher_subscriber_sender),
+                8 => Subscribe::init(bytes)
+                    .subscribe_topic(publisher_subscriber_sender)
+                    .send_response(stream),
                 _ => Default::init(bytes).send_response(stream),
             },
             None => Default::init(bytes).send_response(stream),
@@ -44,7 +50,7 @@ impl PacketManager {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    //use super::*;
 
     //#[test]
     // fn crear_paquete_connect_correctamente() {

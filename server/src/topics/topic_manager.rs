@@ -10,6 +10,12 @@ pub struct TopicManager {
     topics: Vec<Topic>,
 }
 
+impl Default for TopicManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Clone for TopicManager {
     fn clone(&self) -> Self {
         // let topics = &self.topics;
@@ -30,13 +36,13 @@ impl TopicManager {
         ) = mpsc::channel();
         let topics: Vec<Topic> = Vec::new();
 
-        let mut topic_manager = TopicManager {
+        let topic_manager = TopicManager {
             publisher_subscriber_sender,
             topics,
         };
 
         // TODO: revisar esto, no sabemos si funciona bien o funciona mal.
-        let mut topics_copy = topic_manager.topics.clone();
+        let topics_copy = topic_manager.topics.clone();
         let mut topic_manager_copy = topic_manager.clone();
 
         thread::spawn(move || {
@@ -53,11 +59,11 @@ impl TopicManager {
                                 topic.clone().publish_msg(publish_suscriber.get_message());
                             }
                         }
-                    },
+                    }
                     PublisherSubscriberCode::Subscriber => {
-                        let topic_found = topics_copy.iter().find(|topic| -> bool {
-                            topic.equals(publish_suscriber.get_topic())
-                        });
+                        let topic_found = topics_copy
+                            .iter()
+                            .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
 
                         if let Some(topic) = topic_found {
                             topic.clone().add("UnSuscriptor!!".to_owned());

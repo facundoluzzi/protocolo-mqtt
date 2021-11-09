@@ -6,10 +6,17 @@ pub struct PublisherSuscriber {
     message: String,
 }
 
-
 impl PublisherSuscriber {
-    pub fn new(topic: String, message: String, code: PublisherSubscriberCode) -> PublisherSuscriber{
-        PublisherSuscriber{ topic, message, code }
+    pub fn new(
+        topic: String,
+        message: String,
+        code: PublisherSubscriberCode,
+    ) -> PublisherSuscriber {
+        PublisherSuscriber {
+            topic,
+            message,
+            code,
+        }
     }
 
     pub fn get_packet_type(&self) -> PublisherSubscriberCode {
@@ -23,5 +30,4 @@ impl PublisherSuscriber {
     pub fn get_message(&self) -> String {
         self.message.to_owned()
     }
-
 }

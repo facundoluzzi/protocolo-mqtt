@@ -3,7 +3,7 @@ use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ReturnCode;
 use crate::payload::connect_payload::ConnectPayload;
 
-use std::io::{Write};
+use std::io::Write;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -59,7 +59,7 @@ impl Connect {
         }
     }
 
-    pub fn send_message(&self, stream: &Sender<String>) {
+    pub fn send_message(&self, _stream: &Sender<String>) {
         //todo
     }
 }

@@ -24,7 +24,7 @@ fn handle_new_client(
                 false
             } else {
                 logger.info(format!("Received from client {:?}", &data[0..size]));
-                packet_factory.process_message(&data[0..size], &stream, &publish_subscriber_sender);
+                packet_factory.process_message(&data[0..size], &stream, publish_subscriber_sender);
                 true
             }
         }

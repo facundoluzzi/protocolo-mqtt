@@ -1,13 +1,11 @@
+use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Subscriber;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
-use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::{Subscriber};
-use crate::topics::topic_manager::TopicManager;
 use std::sync::mpsc::Sender;
 
 use std::io::Write;
 use std::net::TcpStream;
 
-use std::thread;
 use super::publisher_suscriber::PublisherSuscriber;
 
 pub struct Subscribe<'a> {
@@ -41,10 +39,11 @@ impl Subscribe<'_> {
         //sender.send("hola".to_string()).unwrap();
         let mut acumulator: i32 = -1;
         while self.payload.len() as i32 > acumulator + 1 {
-                let (topic, length) = UTF8::utf8_parser(&self.payload[(acumulator + 1) as usize.. self.payload.len()]);
-                acumulator += length as i32;
-                let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), Subscriber);
-                sender.send(publisher_suscriber).unwrap();
+            let (topic, length) =
+                UTF8::utf8_parser(&self.payload[(acumulator + 1) as usize..self.payload.len()]);
+            acumulator += length as i32;
+            let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), Subscriber);
+            sender.send(publisher_suscriber).unwrap();
         }
         Subscribe {
             _remaining_length: self._remaining_length,
@@ -63,8 +62,8 @@ impl Subscribe<'_> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use std::{thread, time};
+    //use super::*;
+    //use std::{thread, time};
 
     // #[test]
     // fn crear_paquete_subscribe_correctamente() {
