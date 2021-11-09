@@ -1,27 +1,38 @@
+use std::{io::Write, net::{TcpListener, TcpStream}};
+
 #[derive(Debug)]
 pub struct Subscriber {
-    string: String,
+    socket: Option<TcpStream>,
+    queue : Vec<String>
 }
 
 impl Clone for Subscriber {
     fn clone(&self) -> Self {
         Subscriber {
-            string: "as".to_owned(),
+            socket: if let Some(socket) = self.socket{
+                Some(socket.try_clone().unwrap())
+            }else{
+                None
+            },
+            queue: self.queue.clone(),
         }
     }
 }
-impl Default for Subscriber {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+
 
 impl Subscriber {
-    pub fn new() -> Subscriber {
+    pub fn new(socket : TcpStream) -> Subscriber {
         Subscriber {
-            string: "as".to_owned(),
+            socket: Some(socket),
+            queue: Vec::new()
         }
     }
 
-    pub fn publish_message(&self, _message: String) {}
+    pub fn publish_message(&self, message: String) {
+        if let Some(socket) = self.socket{
+            socket.write(&message.as_bytes());
+        }else{
+            self.queue.push(message)
+        }
+    }
 }
