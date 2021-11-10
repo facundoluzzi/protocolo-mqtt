@@ -23,7 +23,7 @@ impl Topic {
     }
 
     pub fn add(mut self, subscriber: Subscriber) {
-        self.subscribers.push(new_subscriber);
+        self.subscribers.push(subscriber);
     }
 
     pub fn remove(self, _subscriber: String) -> Result<String, String> {

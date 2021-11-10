@@ -1,17 +1,20 @@
-use std::{io::Write, net::{TcpListener, TcpStream}};
+use std::{
+    io::Write,
+    net::{TcpListener, TcpStream},
+};
 
 #[derive(Debug)]
 pub struct Subscriber {
     socket: Option<TcpStream>,
-    queue: Vec<String>
+    queue: Vec<String>,
 }
 
 impl Clone for Subscriber {
     fn clone(&self) -> Self {
         Subscriber {
-            socket: if let Some(socket) = &self.socket{
+            socket: if let Some(socket) = &self.socket {
                 Some(socket.try_clone().unwrap())
-            }else{
+            } else {
                 None
             },
             queue: self.queue.clone(),
@@ -19,12 +22,11 @@ impl Clone for Subscriber {
     }
 }
 
-
 impl Subscriber {
-    pub fn new(socket : TcpStream) -> Subscriber {
+    pub fn new(socket: TcpStream) -> Subscriber {
         Subscriber {
             socket: Some(socket),
-            queue: Vec::new()
+            queue: Vec::new(),
         }
     }
 
@@ -35,16 +37,14 @@ impl Subscriber {
             self.queue.push(message);
         }
     }
-    pub fn disconnect(&self){
+    pub fn disconnect(&self) {
         self.socket = None;
-
     }
 
-    pub fn reconnect(&mut self, socket: TcpStream){
+    pub fn reconnect(&mut self, socket: TcpStream) {
         self.socket = Some(socket);
         for message in self.queue {
             self.publish_message(message)
         }
-        
     }
 }

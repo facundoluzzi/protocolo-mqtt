@@ -1,4 +1,4 @@
-use std::{net::TcpStream};
+use std::net::TcpStream;
 
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 
@@ -6,7 +6,7 @@ pub struct PublisherSuscriber {
     code: PublisherSubscriberCode,
     topic: String,
     message: String,
-    stream: TcpStream
+    stream: TcpStream,
 }
 
 impl PublisherSuscriber {

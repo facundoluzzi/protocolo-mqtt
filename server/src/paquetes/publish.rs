@@ -56,9 +56,10 @@ impl Publish {
         // to do Puback
     }
 
-    pub fn send_message(&self, stream: &TcpStream, sender: &Sender<PublisherSuscriber>) {
-        let publisher_suscriber =
-            PublisherSuscriber::new(self._topic.to_owned(), self._payload.to_owned(), Publisher, stream);
+    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>, stream: &TcpStream) {
+        let topic = self._topic.to_owned();
+        let payload = self._payload.to_owned();
+        let publisher_suscriber = PublisherSuscriber::new(topic, payload, Publisher, *stream);
         sender.send(publisher_suscriber).unwrap();
         self.send_response(stream, sender);
     }

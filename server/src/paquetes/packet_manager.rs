@@ -37,9 +37,9 @@ impl PacketManager {
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
                 1 => Connect::init(bytes).send_response(stream),
-                3 => Publish::init(bytes).send_message(stream, publisher_subscriber_sender),
+                3 => Publish::init(bytes).send_message(publisher_subscriber_sender, stream),
                 8 => Subscribe::init(bytes)
-                    .subscribe_topic(publisher_subscriber_sender)
+                    .subscribe_topic(publisher_subscriber_sender, stream)
                     .send_response(stream),
                 _ => Default::init(bytes).send_response(stream),
             },
