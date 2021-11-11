@@ -1,8 +1,8 @@
-extern crate glib;
 extern crate gtk;
 
 use client::client_for_interface::Client;
 use glib::clone;
+use gtk::glib;
 use gtk::prelude::*;
 use std::thread;
 

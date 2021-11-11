@@ -3,10 +3,9 @@ name = "client"
 version = "0.1.0"
 edition = "2018"
 
-[dependencies]
-gtk = "0.14.3"
-glib = "*"
-pango-sys = "0.14.0"
+[dependencies.gtk]
+verson = "0.14.3"
+features = ["v3_20"]
 
 [[bin]]
 name = "interface"
