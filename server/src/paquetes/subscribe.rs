@@ -12,10 +12,11 @@ pub struct Subscribe {
     _remaining_length: usize,
     _packet_identifier: u8,
     payload: Vec<u8>,
+    suscriber: Suscriber,
 }
 
 impl Subscribe {
-    pub fn init(bytes: &[u8]) -> Subscribe {
+    pub fn init(bytes: &[u8], user: Suscriber) -> Subscribe {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -28,6 +29,7 @@ impl Subscribe {
             _remaining_length: remaining_length,
             _packet_identifier: bytes[init_variable_header],
             payload: (*payload).to_vec(),
+            suscriber: user,
         }
     }
 
@@ -37,11 +39,12 @@ impl Subscribe {
 
     pub fn subscribe_topic(&self, sender: &Sender<PublisherSuscriber>, mut stream: &TcpStream) -> Self {
         let mut acumulator: i32 = -1;
+        
         while self.payload.len() as i32 > acumulator + 1 {
             let (topic, length) =
                 UTF8::utf8_parser(&self.payload[(acumulator + 1) as usize..self.payload.len()]);
             acumulator += length as i32;
-            let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), Subscriber, *stream);
+            let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), Subscriber, *stream, self.suscriber);
             sender.send(publisher_suscriber).unwrap();
         }
 
@@ -49,6 +52,7 @@ impl Subscribe {
             _remaining_length: self._remaining_length,
             _packet_identifier: self._packet_identifier,
             payload: self.payload,
+            suscriber: self.suscriber,
         }
     }
 

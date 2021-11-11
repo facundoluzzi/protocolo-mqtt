@@ -2,15 +2,18 @@ use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ReturnCode;
 use crate::payload::connect_payload::ConnectPayload;
+use crate::topics::subscriber::Subscriber;
 
 use std::io::Write;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
+use super::subscribe::Subscribe;
+
 pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
-    _payload: ConnectPayload,
+    payload: ConnectPayload,
     status_code: ReturnCode,
 }
 
@@ -38,7 +41,7 @@ impl Connect {
         Connect {
             _remaining_length: remaining_length,
             flags,
-            _payload: payload,
+            payload: payload,
             status_code,
         }
     }
@@ -57,6 +60,14 @@ impl Connect {
         if let Err(msg_error) = stream.write(&connack_response) {
             println!("Error in sending response: {}", msg_error);
         }
+    }
+
+    pub fn create_subscriber(&self, socket: &TcpStream) -> Subscriber {
+        Subscriber::new(self.payload.get_client_id(), socket)
+    }
+
+    pub fn get_client_id(&self) -> String {
+        self.payload.get_client_id()
     }
 
     pub fn send_message(&self, _stream: &Sender<String>) {
