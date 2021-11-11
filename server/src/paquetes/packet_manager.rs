@@ -39,7 +39,7 @@ impl PacketManager {
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
                 1 => {
-                    let connect = Connect::init(bytes);
+                    let connect = Connect::init(bytes, user_manager);
                     if let Some(usuario) = user_manager.find_user(connect.get_client_id()) {
                         usuario.assign_socket(stream);
                     } else {

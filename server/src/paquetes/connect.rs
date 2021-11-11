@@ -3,12 +3,11 @@ use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ReturnCode;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::topics::subscriber::Subscriber;
+use crate::helper::user_manager::UserManager;
 
 use std::io::Write;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
-
-use super::subscribe::Subscribe;
 
 pub struct Connect {
     _remaining_length: usize,
@@ -18,7 +17,7 @@ pub struct Connect {
 }
 
 impl Connect {
-    pub fn init(bytes: &[u8]) -> Connect {
+    pub fn init(bytes: &[u8], user_manager: UserManager) -> Connect {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
