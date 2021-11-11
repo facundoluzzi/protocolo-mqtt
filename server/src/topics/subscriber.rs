@@ -1,6 +1,6 @@
 use std::{
     io::Write,
-    net::{TcpListener, TcpStream},
+    net::{TcpStream},
 };
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ impl Clone for Subscriber {
 impl Subscriber {
     pub fn new(client_id: String, socket: &TcpStream) -> Subscriber {
         Subscriber {
-            socket: Some(socket),
+            socket: Some(*socket),
             queue: Vec::new(),
             client_id,
         }
