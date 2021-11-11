@@ -50,7 +50,7 @@ mod tests {
         let user = Subscriber::new("Pablito".to_owned(), &stream);
         user_manager.add(user);
         assert_eq!(user, user_manager.find_user("Pablito".to_owned()));
-        user.delete_subscriber("Pablito");
+        user.delete_subscriber("Pablito".to_string());
         assert_eq!(None, user_manager.find_user("Pablito".to_owned()));
     }
 

@@ -14,7 +14,7 @@ pub struct Subscribe {
     _remaining_length: usize,
     _packet_identifier: u8,
     payload: Vec<u8>,
-    suscriber: Subscriber,
+    suscriber: Option<Subscriber>,
 }
 
 impl Subscribe {
@@ -31,7 +31,7 @@ impl Subscribe {
             _remaining_length: remaining_length,
             _packet_identifier: bytes[init_variable_header],
             payload: (*payload).to_vec(),
-            suscriber: user.unwrap()
+            suscriber: user
         }
     }
 
@@ -46,7 +46,9 @@ impl Subscribe {
             let (topic, length) =
                 UTF8::utf8_parser(&self.payload[(acumulator + 1) as usize..self.payload.len()]);
             acumulator += length as i32;
-            let publisher_suscriber = PublisherSuscriber::new(topic, "None".to_owned(), PublisherSubscriberCode::Subscriber, *stream);
+            let type_s = PublisherSubscriberCode::Subscriber;
+            let message = "None".to_owned();
+            let publisher_suscriber = PublisherSuscriber::new(topic, message, type_s, *stream, self.suscriber);
             sender.send(publisher_suscriber).unwrap();
         }
 

@@ -1,12 +1,14 @@
-use std::net::TcpStream;
-
+use crate::topics::subscriber::Subscriber;
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
+
+use std::net::TcpStream;
 
 pub struct PublisherSuscriber {
     code: PublisherSubscriberCode,
     topic: String,
     message: String,
     stream: TcpStream,
+    subscriber: Option<Subscriber>
 }
 
 impl PublisherSuscriber {
@@ -15,12 +17,14 @@ impl PublisherSuscriber {
         message: String,
         code: PublisherSubscriberCode,
         stream: TcpStream,
+        subscriber: Option<Subscriber>
     ) -> PublisherSuscriber {
         PublisherSuscriber {
             topic,
             message,
             code,
             stream,
+            subscriber
         }
     }
 
@@ -38,5 +42,9 @@ impl PublisherSuscriber {
 
     pub fn get_message(&self) -> String {
         self.message.to_owned()
+    }
+
+    pub fn get_subscriber(&self) -> Option<Subscriber> {
+        self.subscriber.clone()
     }
 }

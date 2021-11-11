@@ -27,7 +27,7 @@ impl Clone for Subscriber {
 impl Subscriber {
     pub fn new(client_id: String, socket: &TcpStream) -> Subscriber {
         Subscriber {
-            socket: Some(*socket),
+            socket: Some(socket),
             queue: Vec::new(),
             client_id,
         }
@@ -41,13 +41,13 @@ impl Subscriber {
         }
     }
 
-    pub fn disconnect(&self){
+    pub fn disconnect(&mut self) {
         self.socket = None;
     }
 
     pub fn reconnect(&mut self, socket: TcpStream) {
         self.socket = Some(socket);
-        for message in self.queue {
+        for message in self.queue.clone() {
             self.publish_message(message)
         }
     }
@@ -57,6 +57,10 @@ impl Subscriber {
     }
 
     pub fn assign_socket(&self, stream: &std::net::TcpStream) {
+
+    }
+
+    pub fn delete_subscriber(&self, name: String) {
 
     }
 }

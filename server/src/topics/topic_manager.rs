@@ -69,13 +69,13 @@ impl TopicManager {
                             .iter()
                             .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
 
+                        let subscriber = publish_suscriber.get_subscriber();
+
                         if let Some(topic) = topic_found {
                             topic.clone().add(subscriber);
-                            subscriber.add(topic);
                         } else {
                             let topic = Topic::new(publish_suscriber.get_topic());
                             topic.clone().add(subscriber);
-                            subscriber.add(topic);
                             topic_manager_copy.topics.push(topic);
                         }
                     }

@@ -22,8 +22,10 @@ impl Topic {
         }
     }
 
-    pub fn add(mut self, subscriber: Subscriber) {
-        self.subscribers.push(subscriber);
+    pub fn add(mut self, subscriber: Option<Subscriber>) {
+        if let Some(sub) = subscriber {
+            self.subscribers.push(sub);
+        }
     }
 
     pub fn remove(self, _subscriber: String) -> Result<String, String> {
@@ -31,7 +33,7 @@ impl Topic {
     }
 
     pub fn publish_msg(self, message: String) {
-        for subscriber in self.subscribers {
+        for mut subscriber in self.subscribers {
             subscriber.publish_message(message.to_string());
         }
     }
