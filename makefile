@@ -18,7 +18,8 @@ client: client/src/main.rs
 server-test:
 	cargo test $(SERVER_TOML_PATH)
 
-client-test:
+client_test:
+	cargo run $(SERVER_TOML_PATH) server.conf
 	cargo test $(CLIENT_TOML_PATH)
 
 graphics:
