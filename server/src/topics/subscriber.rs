@@ -1,7 +1,4 @@
-use std::{
-    io::Write,
-    net::{TcpStream},
-};
+use std::{io::Write, net::TcpStream};
 
 #[derive(Debug)]
 pub struct Subscriber {
@@ -13,9 +10,9 @@ pub struct Subscriber {
 impl Clone for Subscriber {
     fn clone(&self) -> Self {
         Subscriber {
-            socket: if let Some(socket) = &self.socket{
+            socket: if let Some(socket) = &self.socket {
                 Some(socket.try_clone().unwrap())
-            }else{
+            } else {
                 None
             },
             queue: self.queue.clone(),
@@ -56,48 +53,47 @@ impl Subscriber {
         self.client_id == client_id
     }
 
-    pub fn assign_socket(&self, stream: &std::net::TcpStream) {
+    pub fn assign_socket(&self, stream: &std::net::TcpStream) {}
 
-    }
-
-    pub fn delete_subscriber(&self, name: String) {
-
-    }
+    pub fn delete_subscriber(&self, name: String) {}
 }
 
 #[cfg(test)]
 mod tests {
     use std::io::Read;
-
     use super::*;
 
     #[test]
     fn create_a_subscriber_and_receive_a_publish() {
-        let mut stream = TcpStream::connect("0.0.0.0:1883").unwrap();
-        let subscriber = Subscriber::new("123".to_owned(), stream);
-        subscriber.publish_message("message".to_owned());
-        const length_message: usize = "message".as_bytes().len();
-        let reading = stream.read(&mut [0; length_message]).unwrap();
-        assert_eq!(reading, "message".as_bytes());
-    }
-    fn create_a_subscriber_and_disconnect_leave_the_socket_and_fill_queue() {
-        let mut stream = TcpStream::connect("0.0.0.0:1883").unwrap();
-        let subscriber = Subscriber::new("123".to_owned(), stream);
-        subscriber.disconnect();
-        subscriber.publish_message("message".to_owned());
-        const length_message: usize = "message".as_bytes().len();
-        let reading = stream.read(&mut [0; length_message]).unwrap();
-        assert_eq!(subscriber.queue[0], "message".to_owned());
-    } 
-
-    fn create_a_subscriber_and_disconnect_then_reconnect_and_receive_message_encolados() {
-        let mut stream = TcpStream::connect("0.0.0.0:1883").unwrap();
-        let subscriber = Subscriber::new("123".to_owned(), stream);
-        subscriber.disconnect();
-        subscriber.publish_message("message".to_owned());
-        // subscriber.
-        // let length_message = "message".as_bytes().len();
+        let stream = match TcpStream::connect("0.0.0.0:1883") {
+            Ok(ok_stream) => ok_stream,
+            Err(err) => panic!(err)
+        };
+        let subscriber = Subscriber::new("1234".to_owned(), stream);
+        // subscriber.publish_message("message".to_owned());
+        // const length_message: usize = "message".as_bytes().len();
         // let reading = stream.read(&mut [0; length_message]).unwrap();
         // assert_eq!(reading, "message".as_bytes());
     }
+
+    // fn create_a_subscriber_and_disconnect_leave_the_socket_and_fill_queue() {
+    //     let mut stream = TcpStream::connect("0.0.0.0:1883").unwrap();
+    //     let subscriber = Subscriber::new(client_id, stream);
+    //     subscriber.disconnect();
+    //     subscriber.publish_message("message".to_owned());
+    //     const length_message: usize = "message".as_bytes().len();
+    //     let reading = stream.read(&mut [0; length_message]).unwrap();
+    //     assert_eq!(subscriber.queue[0], "message".to_owned());
+    // }
+
+    // fn create_a_subscriber_and_disconnect_then_reconnect_and_receive_message_encolados() {
+    //     let mut stream = TcpStream::connect("0.0.0.0:1883").unwrap();
+    //     let subscriber = Subscriber::new("123".to_owned(), stream);
+    //     subscriber.disconnect();
+    //     subscriber.publish_message("message".to_owned());
+    //     subscriber.
+    //     let length_message = "message".as_bytes().len();
+    //     let reading = stream.read(&mut [0; length_message]).unwrap();
+    //     assert_eq!(reading, "message".as_bytes());
+    // }
 }

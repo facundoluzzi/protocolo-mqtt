@@ -1,10 +1,10 @@
 use server::config_parser::ServerConfigs;
+use server::helper::user_manager::UserManager;
 use server::logs::logger::Logger;
 use server::paquetes::packet_manager::PacketManager;
 use server::paquetes::publisher_suscriber::PublisherSuscriber;
 use server::topics::topic_manager::TopicManager;
 use std::sync::mpsc::Sender;
-use server::helper::user_manager::UserManager;
 
 use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
@@ -14,7 +14,7 @@ fn handle_new_client(
     mut stream: TcpStream,
     mut logger: Logger,
     publish_subscriber_sender: &Sender<PublisherSuscriber>,
-    user_manager: UserManager
+    user_manager: UserManager,
 ) {
     // TODO: revisar el largo
     let mut data = [0_u8; 100];
@@ -26,7 +26,12 @@ fn handle_new_client(
                 false
             } else {
                 logger.info(format!("Received from client {:?}", &data[0..size]));
-                packet_factory.process_message(&data[0..size], &stream, publish_subscriber_sender, user_manager.clone());
+                packet_factory.process_message(
+                    &data[0..size],
+                    &stream,
+                    publish_subscriber_sender,
+                    user_manager.clone(),
+                );
                 true
             }
         }
@@ -70,7 +75,12 @@ fn main() {
                 let publish_subscriber_sender_cloned = publish_subscriber_sender.get_sender();
                 let user_manager_cloned = user_manager.clone();
                 thread::spawn(move || {
-                    handle_new_client(stream, logger_clone, &publish_subscriber_sender_cloned, user_manager_cloned);
+                    handle_new_client(
+                        stream,
+                        logger_clone,
+                        &publish_subscriber_sender_cloned,
+                        user_manager_cloned,
+                    );
                 });
             }
             Err(e) => {

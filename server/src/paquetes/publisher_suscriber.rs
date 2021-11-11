@@ -1,11 +1,11 @@
-use crate::topics::subscriber::Subscriber;
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
+use crate::topics::subscriber::Subscriber;
 
 pub struct PublisherSuscriber {
     code: PublisherSubscriberCode,
     topic: String,
     message: String,
-    subscriber: Option<Subscriber>
+    subscriber: Option<Subscriber>,
 }
 
 impl PublisherSuscriber {
@@ -13,13 +13,13 @@ impl PublisherSuscriber {
         topic: String,
         message: String,
         code: PublisherSubscriberCode,
-        subscriber: Option<Subscriber>
+        subscriber: Option<Subscriber>,
     ) -> PublisherSuscriber {
         PublisherSuscriber {
             topic,
             message,
             code,
-            subscriber
+            subscriber,
         }
     }
 

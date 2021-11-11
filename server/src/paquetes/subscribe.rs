@@ -31,7 +31,7 @@ impl Subscribe {
             _remaining_length: remaining_length,
             _packet_identifier: bytes[init_variable_header],
             payload: (*payload).to_vec(),
-            suscriber: user
+            suscriber: user,
         }
     }
 
@@ -41,14 +41,15 @@ impl Subscribe {
 
     pub fn subscribe_topic(&self, sender: &Sender<PublisherSuscriber>) -> Self {
         let mut acumulator: i32 = -1;
-        
+
         while self.payload.len() as i32 > acumulator + 1 {
             let (topic, length) =
                 UTF8::utf8_parser(&self.payload[(acumulator + 1) as usize..self.payload.len()]);
             acumulator += length as i32;
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
-            let publisher_suscriber = PublisherSuscriber::new(topic, message, type_s, self.suscriber.clone());
+            let publisher_suscriber =
+                PublisherSuscriber::new(topic, message, type_s, self.suscriber.clone());
             sender.send(publisher_suscriber).unwrap();
         }
 

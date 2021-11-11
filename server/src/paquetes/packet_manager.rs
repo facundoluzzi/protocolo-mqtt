@@ -1,8 +1,8 @@
+use crate::helper::user_manager::UserManager;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
 use crate::paquetes::publish::Publish;
 use crate::paquetes::subscribe::Subscribe;
-use crate::helper::user_manager::UserManager;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -38,19 +38,16 @@ impl PacketManager {
 
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
-                1 => Connect::init(bytes, stream, user_manager)
-                    .send_response(stream),
+                1 => Connect::init(bytes, stream, user_manager).send_response(stream),
                 3 => Publish::init(bytes)
                     .send_message(publisher_subscriber_sender)
                     .send_response(stream),
                 8 => Subscribe::init(bytes, user_manager.find_user(self.client_id.to_string()))
                     .subscribe_topic(publisher_subscriber_sender)
                     .send_response(stream),
-                _ => Default::init(bytes)
-                    .send_response(stream),
+                _ => Default::init(bytes).send_response(stream),
             },
-            None => Default::init(bytes)
-                .send_response(stream),
+            None => Default::init(bytes).send_response(stream),
         };
     }
 }
