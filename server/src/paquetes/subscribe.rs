@@ -39,7 +39,7 @@ impl Subscribe {
         "subscribe".to_owned()
     }
 
-    pub fn subscribe_topic(&self, sender: &Sender<PublisherSuscriber>, mut stream: &TcpStream) -> Self {
+    pub fn subscribe_topic(&self, sender: &Sender<PublisherSuscriber>) -> Self {
         let mut acumulator: i32 = -1;
         
         while self.payload.len() as i32 > acumulator + 1 {
@@ -48,15 +48,15 @@ impl Subscribe {
             acumulator += length as i32;
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
-            let publisher_suscriber = PublisherSuscriber::new(topic, message, type_s, *stream, self.suscriber);
+            let publisher_suscriber = PublisherSuscriber::new(topic, message, type_s, self.suscriber.clone());
             sender.send(publisher_suscriber).unwrap();
         }
 
         Subscribe {
             _remaining_length: self._remaining_length,
             _packet_identifier: self._packet_identifier,
-            payload: self.payload,
-            suscriber: self.suscriber,
+            payload: self.payload.clone(),
+            suscriber: self.suscriber.clone(),
         }
     }
 

@@ -17,7 +17,7 @@ pub struct Connect {
 }
 
 impl Connect {
-    pub fn init(bytes: &[u8], stream: &TcpStream, user_manager: UserManager) -> Connect {
+    pub fn init(bytes: &[u8], stream: &TcpStream, mut user_manager: UserManager) -> Connect {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -71,7 +71,7 @@ impl Connect {
     }
 
     pub fn create_subscriber(&self, socket: &TcpStream) -> Subscriber {
-        Subscriber::new(self.payload.get_client_id(), socket)
+        Subscriber::new(self.payload.get_client_id(), socket.try_clone().unwrap())
     }
 
     pub fn get_client_id(&self) -> String {

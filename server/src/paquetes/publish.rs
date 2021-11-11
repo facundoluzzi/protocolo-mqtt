@@ -52,16 +52,24 @@ impl Publish {
         self._topic.to_string()
     }
 
-    pub fn send_response(&self, _stream: &TcpStream, _sender: &Sender<PublisherSuscriber>) {
+    pub fn send_response(&self, _stream: &TcpStream) {
         // to do Puback
     }
 
-    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>, stream: &TcpStream) {
+    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>) -> Self {
         let topic = self._topic.to_owned();
         let payload = self._payload.to_owned();
-        let publisher_suscriber = PublisherSuscriber::new(topic, payload, Publisher, *stream, None);
+        let publisher_suscriber = PublisherSuscriber::new(topic, payload, Publisher, None);
         sender.send(publisher_suscriber).unwrap();
-        self.send_response(stream, sender);
+        Publish {
+            _dup: self._dup,
+            _qos: self._qos,
+            _retain: self._retain,
+            _remaining_length: self._remaining_length,
+            _topic: self._topic.clone(),
+            _packet_identifier: self._packet_identifier,
+            _payload: self._payload.clone(),
+        }
     }
 }
 
