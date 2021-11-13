@@ -15,7 +15,7 @@ pub struct Connect {
 
 impl Connect {
     pub fn init(bytes: &[u8]) -> Connect {
-        let mut status_code = ConnectReturnCode::new();
+        let mut status_code = ConnectReturnCode::init();
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 

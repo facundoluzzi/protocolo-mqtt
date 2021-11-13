@@ -13,7 +13,7 @@ pub struct ConnectReturnCode {
 }
 
 impl ConnectReturnCode {
-    pub fn new() -> Self {
+    pub fn init() -> Self {
         ConnectReturnCode {
             status_code: ReturnCode::Success,
         }
@@ -121,13 +121,13 @@ mod tests {
 
     #[test]
     fn return_code_is_success() {
-        let connect_return_code = ConnectReturnCode::new();
+        let connect_return_code = ConnectReturnCode::init();
         assert_eq!(connect_return_code.apply_validations(), 0x00);
     }
 
     #[test]
     fn return_code_is_success_complete_validation() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -139,7 +139,7 @@ mod tests {
 
     #[test]
     fn return_code_is_unacceptable_protocol() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(2)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn return_code_is_malformed_username() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn return_code_is_malformed_password() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -175,7 +175,7 @@ mod tests {
 
     #[test]
     fn return_code_is_not_authorized_wrong_username() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn return_code_is_not_authorized_wrong_password() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn return_code_is_success_password_empty() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -211,7 +211,7 @@ mod tests {
 
     #[test]
     fn return_code_is_not_authorized_empty_password() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
@@ -223,7 +223,7 @@ mod tests {
 
     #[test]
     fn return_code_is_not_authorized_empty_username() {
-        let connect_return_code = ConnectReturnCode::new()
+        let connect_return_code = ConnectReturnCode::init()
             .check_protocol_level(4)
             .check_client_identifier(1)
             .check_server_unavailable()
