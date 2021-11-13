@@ -1,5 +1,5 @@
-use crate::authentication::main::is_authenticated;
 use crate::flags::connect_flags::ConnectFlags;
+use crate::helper::status_code::ConnectReturnCode;
 use crate::helper::utf8_parser::UTF8;
 
 pub struct ConnectPayload {
@@ -11,7 +11,11 @@ pub struct ConnectPayload {
 }
 
 impl ConnectPayload {
-    pub fn init(connect_flags: &ConnectFlags, remaining_bytes: &[u8]) -> ConnectPayload {
+    pub fn init(
+        connect_flags: &ConnectFlags,
+        remaining_bytes: &[u8],
+        mut return_code: ConnectReturnCode,
+    ) -> (ConnectPayload, ConnectReturnCode) {
         let mut pointer: usize = 0;
         let client_identifier: String;
         let username: Option<String>;
@@ -19,8 +23,10 @@ impl ConnectPayload {
         let will_topic: Option<String>;
         let will_message: Option<String>;
 
+        let parser = UTF8::utf8_parser;
+
         if remaining_bytes != [0x00u8] {
-            let (client_identifier_copy, index) = UTF8::utf8_parser(remaining_bytes);
+            let (client_identifier_copy, index) = parser(remaining_bytes);
             client_identifier = client_identifier_copy;
             pointer += index;
         } else {
@@ -28,50 +34,54 @@ impl ConnectPayload {
         }
 
         if connect_flags.get_username_flag() {
-            let (username_copy, index) =
-                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+            let (username_copy, index) = parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+            return_code = return_code.check_malformed_username(username_copy.to_string());
             username = Some(username_copy);
             pointer += index;
+
+            if !connect_flags.get_password_flag() {
+                return_code = return_code.check_malformed_password("".to_string());
+                password = None;
+            } else {
+                let (password_copy, index) =
+                    parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                return_code = return_code.check_malformed_password(password_copy.to_string());
+                password = Some(password_copy);
+                pointer += index;
+            }
         } else {
             username = None;
-        }
-
-        if connect_flags.get_password_flag() & connect_flags.get_username_flag() {
-            let (password_copy, index) =
-                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
-            password = Some(password_copy);
-            pointer += index;
-        } else {
             password = None;
         }
 
         if connect_flags.get_will_flag() {
-            let (will_topic_copy, index) =
-                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+            let (will_topic_copy, index) = parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_topic = Some(will_topic_copy);
             pointer += index;
             let (will_message_copy, _index) =
-                UTF8::utf8_parser(&remaining_bytes[pointer..remaining_bytes.len()]);
+                parser(&remaining_bytes[pointer..remaining_bytes.len()]);
             will_message = Some(will_message_copy);
         } else {
             will_topic = None;
             will_message = None;
         }
-        ConnectPayload {
+        let new_connect_payload = ConnectPayload {
             _client_identifier: client_identifier,
             username,
             password,
             _will_topic: will_topic,
             _will_message: will_message,
-        }
+        };
+
+        (new_connect_payload, return_code)
     }
 
-    pub fn check_authentication(&self) -> bool {
-        match (self.username.as_ref(), self.password.as_ref()) {
-            (Some(uname), Some(pass)) => is_authenticated(uname.to_string(), pass.to_string()),
-            (None, None) => true,
-            _ => false,
-        }
+    pub fn get_username(&self) -> Option<&String> {
+        self.username.as_ref()
+    }
+
+    pub fn get_password(&self) -> Option<&String> {
+        self.password.as_ref()
     }
 
     pub fn get_client_id(&self) -> String {
@@ -99,41 +109,52 @@ mod tests {
         let remaining_bytes = [
             0x00, 0x02, 0x5C, 0x0B, 0x00, 0x06, 0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F,
         ];
-        let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
+        let connect_return_code = ConnectReturnCode::new();
+        let (connect, return_code) =
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
         assert_eq!(connect.get_will_topic(), None);
         assert_eq!(connect.get_will_message(), None);
-        assert_eq!(connect.check_authentication(), false);
+        assert_eq!(connect.get_username(), Some(&"ALTEGO".to_string()));
+        assert_eq!(connect.get_password(), None);
+        assert_eq!(return_code.apply_validations(), 0x04);
     }
 
     #[test]
     fn create_payload_with_username_and_password() {
-        let flags: u8 = 0b11000000;
+        let flags: u8 = 0xC0;
         let connect_flags = ConnectFlags::init(&flags);
         let remaining_bytes = [
             0x00, 0x02, 0x5C, 0x0B, 0x00, 0x06, 0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F, 0x00, 0x03,
             0x41, 0x4C, 0x54,
         ];
-        let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
-        assert_eq!(connect.check_authentication(), true);
+        let connect_return_code = ConnectReturnCode::new();
+        let (connect, return_code) =
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
+        assert_eq!(connect.get_password(), Some(&"ALT".to_string()));
+        assert_eq!(connect.get_username(), Some(&"ALTEGO".to_string()));
         assert_eq!(connect.get_will_topic(), None);
         assert_eq!(connect.get_will_message(), None);
+        assert_eq!(return_code.apply_validations(), 0x00);
     }
 
     #[test]
     fn create_payload_with_will_topic_and_message() {
-        let flags: u8 = 0b00111110;
+        let flags: u8 = 0x3E;
         let connect_flags = ConnectFlags::init(&flags);
         let remaining_bytes = [
             0x00, 0x02, 0x5C, 0x0B, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x07, 0x00, 0x45,
             0x47, 0x41, 0x53, 0x53, 0x45,
             0x4D, // EGASSEM en hexa, al parsearlo queda como MESSAGE
         ];
-        let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
+        let connect_return_code = ConnectReturnCode::new();
+        let (connect, return_code) =
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
         assert_eq!(connect.get_will_topic(), Some("TOPIC".to_owned()).as_ref());
         assert_eq!(
             connect.get_will_message(),
             Some("MESSAGE".to_owned()).as_ref()
         );
+        assert_eq!(return_code.apply_validations(), 0x00);
     }
 
     #[test]
@@ -145,7 +166,9 @@ mod tests {
             0x01, 0x02, 0x03, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x07, 0x00, 0x45, 0x47,
             0x41, 0x53, 0x53, 0x45, 0x4D, // EGASSEM en hexa, al parsearlo queda como MESSAGE
         ];
-        let connect = ConnectPayload::init(&connect_flags, &remaining_bytes);
+        let connect_return_code = ConnectReturnCode::new();
+        let (connect, _) =
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
         assert_eq!(connect.get_will_topic(), Some("TOPIC".to_owned()).as_ref());
         assert_eq!(
             connect.get_will_message(),
