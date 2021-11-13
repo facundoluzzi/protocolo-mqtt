@@ -1,8 +1,9 @@
+use std::io::BufWriter;
 use std::{io::Write, net::TcpStream};
 
 #[derive(Debug)]
 pub struct Subscriber {
-    socket: Option<TcpStream>,
+    socket: Option<BufWriter<TcpStream>>,
     queue: Vec<String>,
     client_id: String,
 }
@@ -11,7 +12,7 @@ impl Clone for Subscriber {
     fn clone(&self) -> Self {
         Subscriber {
             socket: if let Some(socket) = &self.socket {
-                Some(socket.try_clone().unwrap())
+                Some(*socket.clone())
             } else {
                 None
             },
@@ -24,7 +25,7 @@ impl Clone for Subscriber {
 impl Subscriber {
     pub fn new(client_id: String, socket: TcpStream) -> Subscriber {
         Subscriber {
-            socket: Some(socket),
+            socket: Some(BufWriter::new(socket)),
             queue: Vec::new(),
             client_id,
         }
@@ -32,42 +33,42 @@ impl Subscriber {
 
     pub fn publish_message(&mut self, message: String) {
         if let Some(socket) = &self.socket {
-            socket.try_clone().unwrap().write(&message.as_bytes());
+            socket.clone().write(&message.as_bytes());
         } else {
             self.queue.push(message);
         }
     }
 
-    pub fn disconnect(&mut self) {
-        self.socket = None;
-    }
+    // pub fn disconnect(&mut self) {
+    //     self.socket = None;
+    // }
 
-    pub fn reconnect(&mut self, socket: TcpStream) {
-        self.socket = Some(socket);
-        for message in self.queue.clone() {
-            self.publish_message(message)
-        }
-    }
+    // pub fn reconnect(&mut self, socket: TcpStream) {
+    //     self.socket = Some(socket);
+    //     for message in self.queue.clone() {
+    //         self.publish_message(message)
+    //     }
+    // }
 
-    pub fn equals(&self, client_id: String) -> bool {
-        self.client_id == client_id
-    }
+    // pub fn equals(&self, client_id: String) -> bool {
+    //     self.client_id == client_id
+    // }
 
-    pub fn assign_socket(&self, stream: &std::net::TcpStream) {}
+    // pub fn assign_socket(&self, stream: &std::net::TcpStream) {}
 
-    pub fn delete_subscriber(&self, name: String) {}
+    // pub fn delete_subscriber(&self, name: String) {}
 }
 
 #[cfg(test)]
 mod tests {
-    use std::io::Read;
     use super::*;
+    use std::io::Read;
 
     #[test]
     fn create_a_subscriber_and_receive_a_publish() {
         let stream = match TcpStream::connect("0.0.0.0:1883") {
             Ok(ok_stream) => ok_stream,
-            Err(err) => panic!(err)
+            Err(err) => panic!(err),
         };
         let subscriber = Subscriber::new("1234".to_owned(), stream);
         // subscriber.publish_message("message".to_owned());
