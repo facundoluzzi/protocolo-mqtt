@@ -1,7 +1,6 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
-use crate::helper::status_code::ReturnCode;
 use crate::helper::user_manager::UserManager;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::topics::subscriber::Subscriber;
@@ -86,7 +85,7 @@ impl Connect {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    // use super::*;
 
     #[test]
     fn crear_paquete_connect_correctamente() {

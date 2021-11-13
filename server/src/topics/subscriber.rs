@@ -1,34 +1,47 @@
 use std::io::BufWriter;
+use std::sync::mpsc::{self, Receiver, Sender, channel};
 use std::{io::Write, net::TcpStream};
+use std::thread;
 
 #[derive(Debug)]
 pub struct Subscriber {
-    socket: Option<BufWriter<TcpStream>>,
+    socket: Option<TcpStream>,
     queue: Vec<String>,
     client_id: String,
+    sender: Sender<String>,
 }
 
 impl Clone for Subscriber {
     fn clone(&self) -> Self {
         Subscriber {
             socket: if let Some(socket) = &self.socket {
-                Some(*socket.clone())
+                Some(*socket)
             } else {
                 None
             },
             queue: self.queue.clone(),
             client_id: self.client_id.clone(),
+            sender: self.sender.clone(),
         }
+        
     }
 }
 
 impl Subscriber {
     pub fn new(client_id: String, socket: TcpStream) -> Subscriber {
-        Subscriber {
-            socket: Some(BufWriter::new(socket)),
+        let (tx, rx): (Sender<String>, Receiver<String>) = mpsc::channel();
+        let mut subscriber = Subscriber {
+            socket: Some(socket),
             queue: Vec::new(),
             client_id,
-        }
+            sender: tx,
+        };
+        thread::spawn(move || {
+            for receive in rx {
+                subscriber.publish_message(receive);
+            }
+        });
+        subscriber
     }
 
     pub fn publish_message(&mut self, message: String) {
@@ -38,10 +51,10 @@ impl Subscriber {
             self.queue.push(message);
         }
     }
-
-    // pub fn disconnect(&mut self) {
-    //     self.socket = None;
-    // }
+ 
+    pub fn disconnect(&mut self) {
+        self.socket = None;
+    }
 
     // pub fn reconnect(&mut self, socket: TcpStream) {
     //     self.socket = Some(socket);
@@ -50,11 +63,13 @@ impl Subscriber {
     //     }
     // }
 
-    // pub fn equals(&self, client_id: String) -> bool {
-    //     self.client_id == client_id
-    // }
+    pub fn equals(&self, client_id: String) -> bool {
+        self.client_id == client_id
+    }
 
-    // pub fn assign_socket(&self, stream: &std::net::TcpStream) {}
+    pub fn assign_socket(&mut self, stream: &std::net::TcpStream) {
+        self.socket = Some(*stream);
+    }
 
     // pub fn delete_subscriber(&self, name: String) {}
 }

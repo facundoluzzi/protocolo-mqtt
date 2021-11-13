@@ -1,13 +1,10 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
-use crate::paquetes::subscribe::Subscribe;
-use crate::topics::subscriber;
 use crate::topics::topic::Topic;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
-use super::subscriber::Subscriber;
 
 pub struct TopicManager {
     publisher_subscriber_sender: Sender<PublisherSuscriber>,
