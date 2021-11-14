@@ -1,14 +1,9 @@
 use crate::flags::connack_flags::ConnackFlags;
-use crate::paquetes::Paquetes;
-use client::return_connack::get_code;
-
-use std::io::Write;
-use std::net::TcpStream;
-
+use crate::trait_paquetes::Paquetes;
 pub struct Connack {
     remaining_length: usize,
     _flags: ConnackFlags,
-    _return_code: String,
+    status_code: u8,
 }
 
 impl Paquetes for Connack {
@@ -20,48 +15,27 @@ impl Paquetes for Connack {
      * En cada byte procesado se multiplica el valor representado con esos 7 bits por 128^n siendo n
      * la posición del byte procesado.
      */
-    fn save_remaining_length(&mut self, _bytes: &[u8]) -> Result<usize, String> {
-        Ok(2)
-    }
 
     fn get_remaining_length(&self) -> usize {
         self.remaining_length
     }
 
+    fn get_status_code(self) -> u8 {
+        self.status_code
+    }
+
     fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
         let variable_header = &bytes[2..4];
         let connack_flags = ConnackFlags::init(&variable_header[0]);
-        let connack_code = get_code(variable_header[1]);
+        let connack_code = variable_header[1];
         Box::new(Connack {
             remaining_length: 2,
             _flags: connack_flags,
-            _return_code: connack_code,
+            status_code: connack_code,
         })
     }
 
     fn get_type(&self) -> String {
         "connack".to_owned()
-    }
-    fn send_response(&self, mut stream: &TcpStream) {
-        if let Err(msg_error) = stream.write(b"connack\n") {
-            println!("Error in sending response: {}", msg_error);
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{connack::Connack, paquetes::Paquetes};
-
-    #[test]
-    fn create_connack() {
-        let first_bytes = [
-            0x20, // Paquete CONNACK
-            0x02, // Remaining Length - 2 para paquete CONNACK, ya que no tiene payload
-            0x01, 0x00,
-        ];
-
-        let first_connack_packet = Connack::init(&first_bytes);
-        assert_eq!(first_connack_packet.get_remaining_length(), 2)
     }
 }

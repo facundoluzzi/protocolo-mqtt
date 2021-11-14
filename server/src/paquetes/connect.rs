@@ -52,8 +52,12 @@ impl Connect {
     }
 
     pub fn send_response(&self, mut stream: &TcpStream) {
-        let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
-        let connack_response = [0x20, 0x02, session_present_bit, self.status_code];
+        let session_present_bit = 0x01 & self.flags.get_clean_session_flag() as u8;
+        let status_code = match self.status_code {
+            ReturnCode::Success => 0x00,
+            ReturnCode::NotAuthorized => 0x05,
+        };
+        let connack_response = [0x20, 0x02, session_present_bit, status_code];
         if let Err(msg_error) = stream.write(&connack_response) {
             println!("Error in sending response: {}", msg_error);
         }
