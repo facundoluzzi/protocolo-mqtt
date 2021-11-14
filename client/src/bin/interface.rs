@@ -17,15 +17,19 @@ fn build_ui(app: &gtk::Application) {
     let connect_button: gtk::Button = builder.object("connect_button").unwrap();
     //let conn_window: gtk::Box = builder.object("conn_window").unwrap();
     let result_label: gtk::Label = builder.object("result_label").unwrap();
+    let user_input: gtk::Entry = builder.object("user_input").unwrap();
+    let password_input: gtk::Entry = builder.object("password_input").unwrap();
     let (tx, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    connect_button.connect_clicked(clone!(@weak input_port, @weak ip_input => move |_| {
+    connect_button.connect_clicked(clone!(@weak input_port, @weak ip_input, @weak password_input, @weak user_input => move |_| {
         let port = input_port.text().to_string();
         let ip = ip_input.text().to_string();
         let tx = tx.clone();
+        let user = user_input.text().to_string();
+        let password = password_input.text().to_string();
         thread::spawn(move || {
             let client = Client::new();
-            let result = client.connect_to_server(ip, port);
+            let result = client.connect_to_server(ip, port, user, password);
             tx.send(result).unwrap();
         });
     }));
