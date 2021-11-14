@@ -1,21 +1,21 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
-use crate::helper::status_code::ConnectReturnCode;
+use crate::helper::status_code::ReturnCode;
 use crate::payload::connect_payload::ConnectPayload;
 
 use std::io::Write;
 use std::net::TcpStream;
+use std::sync::mpsc::Sender;
 
 pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
     _payload: ConnectPayload,
-    status_code: u8,
+    status_code: ReturnCode,
 }
 
 impl Connect {
     pub fn init(bytes: &[u8]) -> Connect {
-        let mut status_code = ConnectReturnCode::init();
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -23,27 +23,24 @@ impl Connect {
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
 
-        status_code = status_code.check_protocol_level(variable_header[6]);
-
         let connect_flags = ConnectFlags::init(&variable_header[7]);
-        let (payload, new_status_code) = ConnectPayload::init(
+
+        let payload = ConnectPayload::init(
             &connect_flags,
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
-            status_code,
         );
-
-        status_code = new_status_code;
-        let username = payload.get_username();
-        let password = payload.get_password();
-        status_code = status_code.check_authentication(username, password);
-
         let flags = connect_flags;
+        let status_code = match payload.check_authentication("server/credenciales.txt".to_string())
+        {
+            true => ReturnCode::Success,
+            false => ReturnCode::NotAuthorized,
+        };
 
         Connect {
             _remaining_length: remaining_length,
             flags,
             _payload: payload,
-            status_code: status_code.apply_validations(),
+            status_code,
         }
     }
 
@@ -56,11 +53,17 @@ impl Connect {
         let status_code = match self.status_code {
             ReturnCode::Success => 0x00,
             ReturnCode::NotAuthorized => 0x05,
+            ReturnCode::MalformedData => 0x04,
+            ReturnCode::UnacceptableProtocol => 0x01,
         };
         let connack_response = [0x20, 0x02, session_present_bit, status_code];
         if let Err(msg_error) = stream.write(&connack_response) {
             println!("Error in sending response: {}", msg_error);
         }
+    }
+
+    pub fn send_message(&self, _stream: &Sender<String>) {
+        //todo
     }
 }
 
@@ -72,7 +75,7 @@ mod tests {
     fn crear_paquete_connect_correctamente() {
         // Todos los vectores que se envian en los tests tienen desde la posición que finaliza la lectura del remaining length,
         // lo siguiente:
-        // 6 bytes de protocol name 0x00u8 (length MSB(0)), 0x04u8 (length LSB(4)), 0x4Du8 (M), 0x15u8 (Q), 0x45u8 (T), 0x45u8 (T)
+        // 6 bytes de protocol name 0x00u8 (length MSB(0)), 0x04u8 (length LSB(4)), 0x4Du8 (M), 0x51u8 (Q), 0x54u8 (T), 0x54u8 (T)
         // 1 byte de protocol level 0x04 que es lo que determina la versión del protocolo
         // 1 byte de content flag que representa que información puede haber en el payload
         // 2 bytes de keep alive
@@ -82,7 +85,7 @@ mod tests {
         // indice 9 -> byte 9 -> 0x00
 
         let bytes = [
-            0x10, 0x0E, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
+            0x10, 0x0E, 0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
             0x00, 0x00,
         ];
 
