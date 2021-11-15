@@ -64,7 +64,6 @@ impl PublisherWriter for TcpWriter {
         }
     }
 
-
     fn equals(&self, client_id: String) -> bool {
         self.client_id == client_id
     }

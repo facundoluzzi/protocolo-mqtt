@@ -1,13 +1,13 @@
 use std::io::Write;
 use std::{net::TcpStream, sync::mpsc::Sender};
 
-use crate::topics::publisher_writer::PublisherWriter;
+use crate::writers::publisher_writer::PublisherWriter;
 
-pub struct UserManager<W> {
-    users: Vec<PublisherWriter<W>>,
+pub struct UserManager {
+    users: Vec<PublisherWriter>,
 }
 
-impl<W> Clone for UserManager<&mut W> where W: Write {
+impl Clone for UserManager {
     fn clone(&self) -> Self {
         UserManager {
             users: self.users.clone(),
@@ -15,8 +15,8 @@ impl<W> Clone for UserManager<&mut W> where W: Write {
     }
 }
 
-impl<W: Write + Sized + Send> UserManager<W> {
-    pub fn new() -> UserManager<W> where W: Write {
+impl UserManager {
+    pub fn new() -> UserManager {
         UserManager { users: Vec::new() }
     }
 
@@ -27,8 +27,8 @@ impl<W: Write + Sized + Send> UserManager<W> {
     /// ```
     /// user_manager.add(publisher_writer)
     /// ```
-    pub fn add(&mut self, client_id: String, stream: W) {
-        let publisher_writer = PublisherWriter::init(&mut stream, client_id);
+    pub fn add(&mut self, client_id: String, stream: TcpStream) {
+        let publisher_writer = TcpWriter::init( stream, client_id);
         self.users.push(publisher_writer);
     }
 
@@ -39,7 +39,7 @@ impl<W: Write + Sized + Send> UserManager<W> {
     /// ```
     /// user_manager.find_user("123".to_string())
     /// ```
-    pub fn find_user(&self, client_id: String) -> Option<PublisherWriter> {
+    pub fn find_user(&self, client_id: String) -> Option<PublisherWriter>  {
         for publisher_writer in self.users.clone() {
             if publisher_writer.equals(client_id.to_string()) {
                 return Some(publisher_writer);
