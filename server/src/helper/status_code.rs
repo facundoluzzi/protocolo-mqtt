@@ -90,7 +90,8 @@ impl ConnectReturnCode {
         self.status_code = match self.status_code {
             ReturnCode::Success => match (username.as_ref(), password.as_ref()) {
                 (Some(uname), Some(pass)) => {
-                    let credentials = get_lines_as_key_values("/server/credenciales.txt".to_string());
+                    let credentials =
+                        get_lines_as_key_values("/server/credenciales.txt".to_string());
                     if is_authenticated(uname.to_string(), pass.to_string(), credentials) {
                         ReturnCode::Success
                     } else {

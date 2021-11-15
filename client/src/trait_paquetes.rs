@@ -4,5 +4,5 @@ pub trait Paquetes {
         Self: Sized;
     fn get_type(&self) -> String;
     fn get_remaining_length(&self) -> usize;
-    fn get_status_code(self) -> u8;
+    fn get_status_code(&self) -> u8;
 }

@@ -15,7 +15,7 @@ impl Paquetes for Default {
         0
     }
 
-    fn get_status_code(self) -> u8 {
+    fn get_status_code(&self) -> u8 {
         0x00
     }
 }
