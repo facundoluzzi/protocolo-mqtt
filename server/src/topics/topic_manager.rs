@@ -66,7 +66,7 @@ impl TopicManager {
                             .iter()
                             .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
 
-                        let subscriber = publish_suscriber.get_subscriber();
+                        let subscriber = publish_suscriber.get_sender();
 
                         if let Some(topic) = topic_found {
                             topic.clone().add(subscriber);
