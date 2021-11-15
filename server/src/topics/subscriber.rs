@@ -48,7 +48,7 @@
 //             self.queue.push(message);
 //         }
 //     }
- 
+
 //     pub fn disconnect(&mut self) {
 //         self.socket = None;
 //     }

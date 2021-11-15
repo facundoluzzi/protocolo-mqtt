@@ -1,30 +1,37 @@
 use std::{hash::Hasher, io::Write, net::TcpStream, sync::mpsc::{self, Receiver, Sender}};
 
-pub struct PublisherWriter {
+pub struct PublisherWriter<W> {
     sender: Sender<String>,
-    socket: TcpStream,
+    socket: Option<W>,
     client_id: String,
+    queue: Vec<String>,
 }
 
-impl Clone for PublisherWriter {
-    fn clone(&self) -> Self {
+impl<W> Clone for PublisherWriter<W> {
+    fn clone(&self) -> PublisherWriter<&mut W> where W: Write {
         PublisherWriter {
             sender: self.sender.clone(),
-            socket: self.socket.try_clone().unwrap(),
+            socket: if let Some(socket) = &self.socket {
+                Some(&mut socket.clone())
+            } else {
+                None
+            },
             client_id: self.client_id.to_string(),
-        } 
+            queue: self.queue.clone(),
+        }
     }
 }
 
-impl PublisherWriter {
+impl<W: Write + Sized + Send> PublisherWriter<W> {
 
-    pub fn init(socket: TcpStream, client_id: String) -> PublisherWriter {
+    pub fn init(socket: &'static mut W, client_id: String) -> PublisherWriter<&mut W> where W: Write {
         let (sender, receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
         // crear un receiver
         let mut publisher = PublisherWriter {
             sender,
-            socket,
+            socket: Some(socket),
             client_id,
+            queue: Vec::new(),
         };
         let publisher_cloned = publisher.clone();
         std::thread::spawn(move || {
@@ -40,14 +47,18 @@ impl PublisherWriter {
     }
 
     pub fn publish_message(&mut self, receive: String) {
-        self.socket.write(&receive.as_bytes()).unwrap();
+        if let Some(socket) = &self.socket {
+            socket.clone().write(&receive.as_bytes());
+        } else {
+            self.queue.push(receive);
+        }
     }
 
-    pub fn reconnect(&mut self, stream: TcpStream) {
-        self.socket = stream;
-        //     for message in self.queue.clone() {
-        //         self.publish_message(message)
-        //     }
+    pub fn reconnect(&mut self, stream: W) {
+        self.socket = Some(stream);
+            for message in self.queue.clone() {
+            self.publish_message(message)
+        }
     }
 
     pub fn equals(&self, client_id: String) -> bool {

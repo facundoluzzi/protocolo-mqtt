@@ -35,7 +35,11 @@ impl Subscribe {
         "subscribe".to_owned()
     }
 
-    pub fn subscribe_topic(&self, sender: &Sender<PublisherSuscriber>, sender_for_publish: Sender<String>) -> Self {
+    pub fn subscribe_topic(
+        &self,
+        sender: &Sender<PublisherSuscriber>,
+        sender_for_publish: Sender<String>,
+    ) -> Self {
         let mut acumulator: i32 = -1;
 
         while self.payload.len() as i32 > acumulator + 1 {

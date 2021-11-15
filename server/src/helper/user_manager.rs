@@ -1,12 +1,13 @@
+use std::io::Write;
 use std::{net::TcpStream, sync::mpsc::Sender};
 
 use crate::topics::publisher_writer::PublisherWriter;
 
-pub struct UserManager {
-    users: Vec<PublisherWriter>,
+pub struct UserManager<W> {
+    users: Vec<PublisherWriter<W>>,
 }
 
-impl Clone for UserManager {
+impl<W> Clone for UserManager<&mut W> where W: Write {
     fn clone(&self) -> Self {
         UserManager {
             users: self.users.clone(),
@@ -14,8 +15,8 @@ impl Clone for UserManager {
     }
 }
 
-impl UserManager {
-    pub fn new() -> UserManager {
+impl<W: Write + Sized + Send> UserManager<W> {
+    pub fn new() -> UserManager<W> where W: Write {
         UserManager { users: Vec::new() }
     }
 
@@ -26,8 +27,8 @@ impl UserManager {
     /// ```
     /// user_manager.add(publisher_writer)
     /// ```
-    pub fn add(&mut self, client_id: String, stream: TcpStream) {
-        let publisher_writer = PublisherWriter::init(stream, client_id);
+    pub fn add(&mut self, client_id: String, stream: W) {
+        let publisher_writer = PublisherWriter::init(&mut stream, client_id);
         self.users.push(publisher_writer);
     }
 
