@@ -43,7 +43,7 @@ impl PacketManager {
                     .send_message(publisher_subscriber_sender)
                     .send_response(stream),
                 8 => Subscribe::init(bytes)
-                    .subscribe_topic(publisher_subscriber_sender, user_manager.get_sender(self.client_id))
+                    .subscribe_topic(publisher_subscriber_sender, user_manager.get_sender(self.client_id.to_string()))
                     .send_response(stream),
                 _ => Default::init(bytes).send_response(stream),
             },

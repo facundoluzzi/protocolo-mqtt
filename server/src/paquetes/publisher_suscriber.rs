@@ -37,6 +37,6 @@ impl PublisherSuscriber {
     }
 
     pub fn get_sender(&self) -> Option<Sender<String>> {
-        self.sender
+        self.sender.clone()
     }
 }

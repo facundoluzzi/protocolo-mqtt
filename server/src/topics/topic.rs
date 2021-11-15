@@ -1,5 +1,4 @@
 use std::sync::mpsc::Sender;
-use crate::topics::subscriber::Subscriber;
 
 pub struct Topic {
     name: String,

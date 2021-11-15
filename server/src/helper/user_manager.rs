@@ -1,6 +1,6 @@
 use std::{net::TcpStream, sync::mpsc::Sender};
 
-use crate::red::publisher_writer::PublisherWriter;
+use crate::topics::publisher_writer::PublisherWriter;
 
 pub struct UserManager {
     users: Vec<PublisherWriter>,

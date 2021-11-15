@@ -1,4 +1,4 @@
-use std::{hash::Hasher, io::Write, net::TcpStream, os::windows::thread, sync::mpsc::{self, Receiver, Sender}};
+use std::{hash::Hasher, io::Write, net::TcpStream, sync::mpsc::{self, Receiver, Sender}};
 
 pub struct PublisherWriter {
     sender: Sender<String>,
@@ -11,7 +11,7 @@ impl Clone for PublisherWriter {
         PublisherWriter {
             sender: self.sender.clone(),
             socket: self.socket.try_clone().unwrap(),
-            client_id: self.client_id,
+            client_id: self.client_id.to_string(),
         } 
     }
 }

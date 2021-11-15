@@ -45,7 +45,7 @@ impl Subscribe {
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
             let publisher_suscriber =
-                PublisherSuscriber::new(topic, message, type_s, Some(sender_for_publish));
+                PublisherSuscriber::new(topic, message, type_s, Some(sender_for_publish.clone()));
             sender.send(publisher_suscriber).unwrap();
         }
 
