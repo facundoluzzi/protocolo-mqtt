@@ -6,7 +6,7 @@ pub struct PublisherSuscriber {
     code: PublisherSubscriberCode,
     topic: String,
     message: String,
-    sender: Sender<String>,
+    sender: Option<Sender<String>>,
 }
 
 impl PublisherSuscriber {
@@ -14,7 +14,7 @@ impl PublisherSuscriber {
         topic: String,
         message: String,
         code: PublisherSubscriberCode,
-        sender: Sender<String>,
+        sender: Option<Sender<String>>,
     ) -> PublisherSuscriber {
         PublisherSuscriber {
             topic,
@@ -36,7 +36,7 @@ impl PublisherSuscriber {
         self.message.to_owned()
     }
 
-    pub fn get_sender(&self) -> Sender<String> {
+    pub fn get_sender(&self) -> Option<Sender<String>> {
         self.sender
     }
 }
