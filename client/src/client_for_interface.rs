@@ -4,9 +4,8 @@ use std::{
     thread,
 };
 
-use std::sync::mpsc;
-
 use crate::packet_manager::PacketManager;
+use std::sync::mpsc;
 
 pub struct Client {
     stream: Option<TcpStream>,
@@ -23,7 +22,7 @@ impl Client {
         Client { stream: None }
     }
 
-    fn send_connect(&self, user: String, password: String, stream: TcpStream, id_client: String) {
+    fn send_connect(&self, user: String, password: String, stream: &TcpStream, id_client: String) {
         match Option::Some(stream) {
             Some(mut stream) => {
                 let mut flags: u8 = 0x00;
@@ -68,17 +67,14 @@ impl Client {
         let address = format!("{}:{}", host, port);
         match TcpStream::connect(address) {
             Ok(stream) => {
-                let stream_clone_for_receiving =
-                    stream.try_clone().expect("Could not clone the stream");
-                let stream_clone_to_publish =
-                    stream.try_clone().expect("Could not clone the stream");
                 let (tx, rx) = mpsc::channel::<u8>();
-                self.stream = Some(stream_clone_for_receiving);
-                self.send_connect(user, password, stream_clone_to_publish, id_client);
+                let stream_copy = stream.try_clone().expect("Could not clone");
+                self.send_connect(user, password, &stream_copy, id_client);
                 thread::spawn(move || {
-                    receive_responses_from_broker(stream, tx);
+                    receive_responses_from_broker(stream_copy, tx);
                 });
                 let connack_code_received = rx.recv().unwrap();
+                self.stream = Some(stream);
                 self.check_connack_code(connack_code_received)
             }
             Err(e) => {
