@@ -4,7 +4,10 @@ use std::{
     thread,
 };
 
-use crate::packet_factory::PacketManager;
+use std::sync::mpsc;
+
+use crate::packet_manager::PacketManager;
+
 pub struct Client {
     stream: Option<TcpStream>,
 }
@@ -20,8 +23,8 @@ impl Client {
         Client { stream: None }
     }
 
-    fn send_connect(self, user: String, password: String) {
-        match self.stream {
+    fn send_connect(&self, user: String, password: String, stream: TcpStream, id_client: String) {
+        match Option::Some(stream) {
             Some(mut stream) => {
                 let mut flags: u8 = 0x00;
                 let mut bytes = vec![
@@ -31,31 +34,26 @@ impl Client {
                     0x04, // Protocol
                     0x00, //Flags
                     0x00, 0x0B, //Keep Alive
-                    0x00, 0x02, 0x00, 0x00, // Payload - Client ID
                 ];
-                if !user.is_empty() {
-                    flags |= 0b10000000;
-                    let user_length = user.len();
-                    let mut user_in_bytes = user.as_bytes().to_vec();
-                    bytes.push(0x00);
-                    bytes.push(user_length as u8);
-                    bytes.append(&mut user_in_bytes);
-                }
-                if !password.is_empty() {
-                    flags |= 0b01000000;
-                    let password_length = password.len();
-                    let mut password_in_bytes = password.as_bytes().to_vec();
-                    bytes.push(0x00);
-                    bytes.push(password_length as u8);
-                    bytes.append(&mut password_in_bytes);
-                }
+                add_client_id_bytes(id_client, &mut bytes);
+                add_username_bytes(user, &mut flags, &mut bytes);
+                add_password_bytes(password, &mut flags, &mut bytes);
                 bytes[8] = flags;
                 let length = bytes.len();
-
                 bytes.insert(1, (length - 1) as u8);
                 stream.write_all(&bytes).unwrap();
             }
             None => panic!("No pude enviar"),
+        }
+    }
+
+    fn check_connack_code(&self, code: u8) -> Result<String, String> {
+        match code {
+            0x00 => Ok("Conexion realizada con exito".to_string()),
+            0x01 => Err("Error: la version del protocolo no es compatible".to_string()),
+            0x04 => Err("Error: los datos enviados no son correctos".to_string()),
+            0x05 => Err("Error: no esta autorizado".to_string()),
+            _ => Err("Error desconocido".to_string()),
         }
     }
 
@@ -65,15 +63,23 @@ impl Client {
         port: String,
         user: String,
         password: String,
+        id_client: String,
     ) -> Result<String, String> {
         let address = format!("{}:{}", host, port);
         match TcpStream::connect(address) {
             Ok(stream) => {
-                let stream_clone = stream.try_clone().expect("Could not clone the stream");
-                self.stream = Some(stream_clone);
-                self.send_connect(user, password);
-                thread::spawn(move || receive_responses_from_broker(stream));
-                Ok("La conexion ha sido exitosa".to_string())
+                let stream_clone_for_receiving =
+                    stream.try_clone().expect("Could not clone the stream");
+                let stream_clone_to_publish =
+                    stream.try_clone().expect("Could not clone the stream");
+                let (tx, rx) = mpsc::channel::<u8>();
+                self.stream = Some(stream_clone_for_receiving);
+                self.send_connect(user, password, stream_clone_to_publish, id_client);
+                thread::spawn(move || {
+                    receive_responses_from_broker(stream, tx);
+                });
+                let connack_code_received = rx.recv().unwrap();
+                self.check_connack_code(connack_code_received)
             }
             Err(e) => {
                 println!("Failed to connect: {}", e);
@@ -83,15 +89,15 @@ impl Client {
     }
 }
 
-fn receive_responses_from_broker(mut stream: TcpStream) {
+fn receive_responses_from_broker(mut stream: TcpStream, channel_producer: mpsc::Sender<u8>) {
     let mut data = vec![0_u8; 100]; // using 6 byte buffer
     while match stream.read(&mut data) {
         Ok(_) => {
             let packet_manager = PacketManager::new();
-            println!(
-                "received {:?}",
-                packet_manager.process_message(&data).get_type()
-            );
+            let packet_received = packet_manager.process_message(&data);
+            println!("received {:?}", &packet_received.get_type());
+            let code = packet_received.get_status_code();
+            channel_producer.send(code).unwrap();
             true
         }
         Err(e) => {
@@ -99,4 +105,38 @@ fn receive_responses_from_broker(mut stream: TcpStream) {
             false
         }
     } {}
+}
+
+fn add_client_id_bytes(id_client: String, bytes: &mut Vec<u8>) {
+    if !id_client.is_empty() {
+        let id_length = id_client.len();
+        let mut id_client_in_bytes = id_client.as_bytes().to_vec();
+        bytes.push(0x00);
+        bytes.push(id_length as u8);
+        bytes.append(&mut id_client_in_bytes);
+    } else {
+        bytes.append(&mut vec![0x00, 0x02, 0x00, 0x00]);
+    }
+}
+
+fn add_password_bytes(password: String, flags: &mut u8, bytes: &mut Vec<u8>) {
+    if !password.is_empty() {
+        *flags |= 0b01000000;
+        let password_length = password.len();
+        let mut password_in_bytes = password.as_bytes().to_vec();
+        bytes.push(0x00);
+        bytes.push(password_length as u8);
+        bytes.append(&mut password_in_bytes);
+    }
+}
+
+fn add_username_bytes(user: String, flags: &mut u8, bytes: &mut Vec<u8>) {
+    if !user.is_empty() {
+        *flags |= 0b10000000;
+        let user_length = user.len();
+        let mut user_in_bytes = user.as_bytes().to_vec();
+        bytes.push(0x00);
+        bytes.push(user_length as u8);
+        bytes.append(&mut user_in_bytes);
+    }
 }

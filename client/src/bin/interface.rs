@@ -18,6 +18,7 @@ fn build_ui(app: &gtk::Application) {
     //let conn_window: gtk::Box = builder.object("conn_window").unwrap();
     let result_label: gtk::Label = builder.object("result_label").unwrap();
     let user_input: gtk::Entry = builder.object("user_input").unwrap();
+    let id_input: gtk::Entry = builder.object("id_input").unwrap();
     let password_input: gtk::Entry = builder.object("password_input").unwrap();
     let (tx, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -27,9 +28,10 @@ fn build_ui(app: &gtk::Application) {
         let tx = tx.clone();
         let user = user_input.text().to_string();
         let password = password_input.text().to_string();
+        let id_client = id_input.text().to_string();
         thread::spawn(move || {
             let client = Client::new();
-            let result = client.connect_to_server(ip, port, user, password);
+            let result = client.connect_to_server(ip, port, user, password, id_client);
             tx.send(result).unwrap();
         });
     }));
