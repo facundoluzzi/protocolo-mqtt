@@ -52,12 +52,10 @@ impl Connect {
             connect
         } else {
             if let Some(usuario) = user_manager.find_user(connect.get_client_id()) {
-                usuario.assign_socket(stream);
+                usuario.reconnect(stream.try_clone().unwrap());
             } else {
-                let subscriber = connect.create_subscriber(stream);
-                user_manager.add(subscriber);
+                user_manager.add(payload.get_client_id(), stream.try_clone().unwrap());
             };
-
             connect
         }
     }

@@ -3,8 +3,6 @@ use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use std::sync::mpsc::Sender;
 
-use crate::topics::subscriber::Subscriber;
-
 use std::io::Write;
 use std::net::TcpStream;
 
@@ -14,11 +12,10 @@ pub struct Subscribe {
     _remaining_length: usize,
     _packet_identifier: u8,
     payload: Vec<u8>,
-    suscriber: Option<Subscriber>,
 }
 
 impl Subscribe {
-    pub fn init(bytes: &[u8], user: Option<Subscriber>) -> Subscribe {
+    pub fn init(bytes: &[u8]) -> Subscribe {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -31,7 +28,6 @@ impl Subscribe {
             _remaining_length: remaining_length,
             _packet_identifier: bytes[init_variable_header],
             payload: (*payload).to_vec(),
-            suscriber: user,
         }
     }
 
@@ -39,7 +35,7 @@ impl Subscribe {
         "subscribe".to_owned()
     }
 
-    pub fn subscribe_topic(&self, sender: &Sender<PublisherSuscriber>) -> Self {
+    pub fn subscribe_topic(&self, sender: &Sender<PublisherSuscriber>, sender_for_publish: Sender<String>) -> Self {
         let mut acumulator: i32 = -1;
 
         while self.payload.len() as i32 > acumulator + 1 {
@@ -49,7 +45,7 @@ impl Subscribe {
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
             let publisher_suscriber =
-                PublisherSuscriber::new(topic, message, type_s, self.suscriber.clone());
+                PublisherSuscriber::new(topic, message, type_s, sender_for_publish);
             sender.send(publisher_suscriber).unwrap();
         }
 
@@ -57,7 +53,6 @@ impl Subscribe {
             _remaining_length: self._remaining_length,
             _packet_identifier: self._packet_identifier,
             payload: self.payload.clone(),
-            suscriber: self.suscriber.clone(),
         }
     }
 

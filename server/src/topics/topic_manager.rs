@@ -52,7 +52,7 @@ impl TopicManager {
                 // Dependiendo de que haga, lo podemos mandar a dos threads diferentes o no. Pero nos puede servir para bloquear
                 // los publishers mientras hayan subscripciones en proceso o lo opuesto.
                 // // topics_copy.push(Topic::new(publish_suscriber));
-
+                
                 match publish_suscriber.get_packet_type() {
                     PublisherSubscriberCode::Publisher => {
                         for topic in &topics_copy {

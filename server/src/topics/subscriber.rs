@@ -1,14 +1,12 @@
-use std::io::BufWriter;
 use std::sync::mpsc::{self, Receiver, Sender, channel};
 use std::{io::Write, net::TcpStream};
-use std::thread;
 
 #[derive(Debug)]
 pub struct Subscriber {
     socket: Option<TcpStream>,
     queue: Vec<String>,
     client_id: String,
-    sender: Sender<String>,
+    // sender: Sender<String>,
 }
 
 impl Clone for Subscriber {
@@ -21,26 +19,25 @@ impl Clone for Subscriber {
             },
             queue: self.queue.clone(),
             client_id: self.client_id.clone(),
-            sender: self.sender.clone(),
+            // sender: self.sender.clone(),
         }
-        
     }
 }
 
 impl Subscriber {
     pub fn new(client_id: String, socket: TcpStream) -> Subscriber {
-        let (tx, rx): (Sender<String>, Receiver<String>) = mpsc::channel();
+        // let (tx, rx): (Sender<String>, Receiver<String>) = mpsc::channel();
         let mut subscriber = Subscriber {
             socket: Some(socket),
             queue: Vec::new(),
             client_id,
-            sender: tx,
+            // sender: tx,
         };
-        thread::spawn(move || {
-            for receive in rx {
-                subscriber.publish_message(receive);
-            }
-        });
+        // thread::spawn(move || {
+        //     for receive in rx {
+        //         subscriber.publish_message(receive);
+        //     }
+        // });
         subscriber
     }
 

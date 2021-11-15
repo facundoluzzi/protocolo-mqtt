@@ -1,7 +1,9 @@
-use crate::topics::subscriber::Subscriber;
+use std::{net::TcpStream, sync::mpsc::Sender};
+
+use crate::red::publisher_writer::PublisherWriter;
 
 pub struct UserManager {
-    users: Vec<Subscriber>,
+    users: Vec<PublisherWriter>,
 }
 
 impl Clone for UserManager {
@@ -17,21 +19,48 @@ impl UserManager {
         UserManager { users: Vec::new() }
     }
 
-    pub fn add(&mut self, user: Subscriber) {
-        self.users.push(user);
+    /// TODO: ACTUALIZAR
+    ///
+    /// # Ejemplo
+    ///
+    /// ```
+    /// user_manager.add(publisher_writer)
+    /// ```
+    pub fn add(&mut self, client_id: String, stream: TcpStream) {
+        let publisher_writer = PublisherWriter::init(stream, client_id);
+        self.users.push(publisher_writer);
     }
 
-    pub fn find_user(&self, client_id: String) -> Option<Subscriber> {
-        for subscriber in self.users.clone() {
-            if subscriber.equals(client_id.to_string()) {
-                return Some(subscriber);
+    /// Itera los usuarios buscando un publisher que contenga el client_id solicitado, devuelve el usuario encontrado, sino devuelve None
+    ///
+    /// # Ejemplo
+    ///
+    /// ```
+    /// user_manager.find_user("123".to_string())
+    /// ```
+    pub fn find_user(&self, client_id: String) -> Option<PublisherWriter> {
+        for publisher_writer in self.users.clone() {
+            if publisher_writer.equals(client_id.to_string()) {
+                return Some(publisher_writer);
             }
         }
         None
     }
 
-    pub fn delete_subscriber(&mut self, client_id: String) {
-        self.users.retain(|x| x.equals(client_id.to_string()))
+    /// Busca por client_id, y elimina el usuario
+    ///
+    /// # Ejemplo
+    ///
+    /// ```
+    /// user_manager.delete_user("123".to_string())
+    /// ```
+    pub fn delete_user(&mut self, client_id: String) {
+        // self.users.retain(|x| x.equals(client_id.to_string()))
+    }
+
+    pub fn get_sender(&self, client_id: String) -> Sender<String> {
+        let publisher_writer = self.find_user(client_id).unwrap();
+        publisher_writer.get_sender()
     }
 }
 
