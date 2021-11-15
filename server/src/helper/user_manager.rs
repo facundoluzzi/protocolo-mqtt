@@ -1,7 +1,6 @@
-use std::io::Write;
 use std::{net::TcpStream, sync::mpsc::Sender};
 
-use crate::writers::publisher_writer::PublisherWriter;
+use crate::writers::{publisher_writer::PublisherWriter, tcp_writer::TcpWriter};
 
 pub struct UserManager {
     users: Vec<PublisherWriter>,
@@ -17,7 +16,9 @@ impl Clone for UserManager {
 
 impl UserManager {
     pub fn new() -> UserManager {
-        UserManager { users: Vec::new() }
+        UserManager { 
+            users: Vec::new() 
+        }
     }
 
     /// TODO: ACTUALIZAR
