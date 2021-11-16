@@ -31,7 +31,7 @@ impl Topic {
     }
 
     pub fn publish_msg(self, message: String) {
-        for mut subscriber in self.subscribers {
+        for subscriber in self.subscribers {
             subscriber.send(message.to_string());
         }
     }

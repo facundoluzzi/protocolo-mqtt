@@ -7,4 +7,3 @@ pub mod paquetes;
 pub mod payload;
 pub mod topics;
 pub mod variable_header;
-pub mod writers;

@@ -1,6 +1,6 @@
 use std::{net::TcpStream, sync::mpsc::Sender};
 
-use crate::writers::{publisher_writer::PublisherWriter, tcp_writer::TcpWriter};
+use crate::topics::publisher_writer::PublisherWriter;
 
 pub struct UserManager {
     users: Vec<PublisherWriter>,
@@ -29,7 +29,7 @@ impl UserManager {
     /// user_manager.add(publisher_writer)
     /// ```
     pub fn add(&mut self, client_id: String, stream: TcpStream) {
-        let publisher_writer = TcpWriter::init( stream, client_id);
+        let publisher_writer = PublisherWriter::init( stream, client_id);
         self.users.push(publisher_writer);
     }
 
@@ -57,7 +57,7 @@ impl UserManager {
     /// user_manager.delete_user("123".to_string())
     /// ```
     pub fn delete_user(&mut self, client_id: String) {
-        // self.users.retain(|x| x.equals(client_id.to_string()))
+        self.users.retain(|x| x.equals(client_id.to_string()))
     }
 
     pub fn get_sender(&self, client_id: String) -> Sender<String> {
