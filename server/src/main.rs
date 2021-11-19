@@ -1,4 +1,5 @@
 use server::config_parser::ServerConfigs;
+use server::helper::user_manager::UserManager;
 use server::logs::logger::Logger;
 use server::server::main::run_server;
 use server::topics::topic_manager::TopicManager;
@@ -24,8 +25,9 @@ fn main() {
     ));
 
     let publish_subscriber_sender = TopicManager::new();
+    let user_manager = UserManager::new();
 
-    run_server(&listener, logger, publish_subscriber_sender);
+    run_server(&listener, logger, publish_subscriber_sender, user_manager);
     drop(listener);
 }
 

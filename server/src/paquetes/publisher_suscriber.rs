@@ -1,9 +1,12 @@
+use std::sync::mpsc::Sender;
+
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 
 pub struct PublisherSuscriber {
     code: PublisherSubscriberCode,
     topic: String,
     message: String,
+    sender: Option<Sender<String>>,
 }
 
 impl PublisherSuscriber {
@@ -11,11 +14,13 @@ impl PublisherSuscriber {
         topic: String,
         message: String,
         code: PublisherSubscriberCode,
+        sender: Option<Sender<String>>,
     ) -> PublisherSuscriber {
         PublisherSuscriber {
             topic,
             message,
             code,
+            sender,
         }
     }
 
@@ -29,5 +34,9 @@ impl PublisherSuscriber {
 
     pub fn get_message(&self) -> String {
         self.message.to_owned()
+    }
+
+    pub fn get_sender(&self) -> Option<Sender<String>> {
+        self.sender.clone()
     }
 }
