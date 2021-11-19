@@ -18,14 +18,15 @@ impl Connect {
         let mut status_code = ConnectReturnCode::init();
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
-
+        
         let init_variable_header = 1 + readed_index;
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
 
         status_code = status_code.check_protocol_level(variable_header[6]);
-
+        
         let connect_flags = ConnectFlags::init(&variable_header[7]);
+
         let (payload, new_status_code) = ConnectPayload::init(
             &connect_flags,
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
@@ -78,7 +79,9 @@ mod tests {
         // indice 9 -> byte 9 -> 0x00
 
         let bytes = [
-            0x10, 0x0E, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
+            0x10, 
+            0x0E, 
+            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
             0x00, 0x00,
         ];
 

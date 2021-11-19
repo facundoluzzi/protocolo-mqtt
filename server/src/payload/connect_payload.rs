@@ -2,6 +2,7 @@ use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::status_code::ConnectReturnCode;
 use crate::helper::utf8_parser::UTF8;
 
+#[derive(Debug)]
 pub struct ConnectPayload {
     _client_identifier: String,
     _will_topic: Option<String>,
