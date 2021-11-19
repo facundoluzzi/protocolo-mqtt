@@ -11,7 +11,7 @@ impl Clone for PublisherWriter {
     fn clone(&self) -> PublisherWriter {
         PublisherWriter {
             sender: self.sender.clone(),
-            socket: Some(self.socket.as_ref().unwrap().try_clone().unwrap()),
+            socket: Some(self.socket.as_ref().unwrap().try_clone().expect("Error")),
             client_id: self.client_id.to_string(),
             queue: self.queue.clone(),
         }
@@ -44,7 +44,11 @@ impl PublisherWriter {
 
     pub fn publish_message(&mut self, receive: String) {
         if let Some(socket) = &self.socket {
-            socket.clone().write(&receive.as_bytes());
+            if let Ok(a) = socket.clone().write(&receive.as_bytes()){
+                println!("Enviado")
+            } else {
+                println!("Error") 
+            };
         } else {
             self.queue.push(receive);
         }
