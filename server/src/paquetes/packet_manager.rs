@@ -2,7 +2,6 @@ use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
 use crate::paquetes::publish::Publish;
 use crate::paquetes::subscribe::Subscribe;
-use crate::topics::topic_manager::TopicManager;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -51,7 +50,7 @@ impl PacketManager {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    //use super::*;
 
     //#[test]
     // fn crear_paquete_connect_correctamente() {

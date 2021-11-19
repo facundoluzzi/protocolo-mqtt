@@ -1,9 +1,7 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Publisher;
 use crate::helper::remaining_length::save_remaining_length;
-use crate::payload;
 use crate::variable_header::publish_variable_header::get_variable_header;
 
-use std::io::Read;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -54,7 +52,7 @@ impl Publish {
         self._topic.to_string()
     }
 
-    pub fn send_response(&self, stream: &TcpStream, sender: &Sender<PublisherSuscriber>) {
+    pub fn send_response(&self, _stream: &TcpStream, _sender: &Sender<PublisherSuscriber>) {
         // to do Puback
     }
 

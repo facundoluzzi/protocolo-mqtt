@@ -22,7 +22,7 @@ impl Topic {
         }
     }
 
-    pub fn add(mut self, subscriber: String) {
+    pub fn add(mut self, _subscriber: String) {
         // let new_subscriber = Subscriber::new(subscriber);
         let new_subscriber = Subscriber::new();
         self.subscribers.push(new_subscriber);

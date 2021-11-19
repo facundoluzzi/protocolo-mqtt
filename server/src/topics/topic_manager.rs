@@ -10,6 +10,12 @@ pub struct TopicManager {
     topics: Vec<Topic>,
 }
 
+impl Default for TopicManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Clone for TopicManager {
     fn clone(&self) -> Self {
         // let topics = &self.topics;

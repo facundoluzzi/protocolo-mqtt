@@ -1,4 +1,4 @@
-use std::io::{Read, Write};
+use std::io::Write;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -19,7 +19,7 @@ impl Default {
         }
     }
 
-    pub fn send_message(&self, stream: &Sender<String>) {
+    pub fn send_message(&self, _stream: &Sender<String>) {
         //todo
     }
 }

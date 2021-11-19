@@ -10,6 +10,11 @@ impl Clone for Subscriber {
         }
     }
 }
+impl Default for Subscriber {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl Subscriber {
     pub fn new() -> Subscriber {

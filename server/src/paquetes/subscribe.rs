@@ -1,14 +1,12 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Subscriber;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
-use crate::topics::topic_manager::TopicManager;
 use std::sync::mpsc::Sender;
 
 use std::io::Write;
 use std::net::TcpStream;
 
 use super::publisher_suscriber::PublisherSuscriber;
-use std::thread;
 
 pub struct Subscribe<'a> {
     _remaining_length: usize,
@@ -64,8 +62,8 @@ impl Subscribe<'_> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use std::{thread, time};
+    //use super::*;
+    //use std::{thread, time};
 
     // #[test]
     // fn crear_paquete_subscribe_correctamente() {
