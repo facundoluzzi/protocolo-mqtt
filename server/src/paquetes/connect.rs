@@ -96,12 +96,10 @@ mod tests {
         // Se considera que los flags están vacíos en el índice 9, de otra manera habría que agregar tantos bytes como los flags indiquen
         // indice 9 -> byte 9 -> 0x00
 
-        let bytes = [
-            0x10, 
-            0x0E, 
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
-            0x00, 0x00,
-        ];
+        // let bytes = [
+        //     0x10, 0x0E, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
+        //     0x00, 0x00,
+        // ];
 
         // let connect_packet = Connect::init(&bytes);
         // assert_eq!(connect_packet.get_type(), "connect".to_owned());

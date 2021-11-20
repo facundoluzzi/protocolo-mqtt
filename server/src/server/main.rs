@@ -25,7 +25,12 @@ fn handle_new_client(
                 false
             } else {
                 logger.info(format!("Received from client {:?}", &data[0..size]));
-                packet_factory.process_message(&data[0..size], &stream, &publish_subscriber_sender, user_manager.clone());
+                packet_factory.process_message(
+                    &data[0..size],
+                    &stream,
+                    publish_subscriber_sender,
+                    user_manager.clone(),
+                );
                 true
             }
         }
@@ -44,7 +49,7 @@ pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,
     publish_subscriber_sender: TopicManager,
-    user_manager: UserManager,
+    user_manager: UserManager
 ) {
     for stream in listener.incoming() {
         match stream {
@@ -54,7 +59,12 @@ pub fn run_server(
                 let publish_subscriber_sender_cloned = publish_subscriber_sender.get_sender();
                 let user_manager_cloned = user_manager.clone();
                 thread::spawn(move || {
-                    handle_new_client(stream, logger_clone, &publish_subscriber_sender_cloned, user_manager_cloned);
+                    handle_new_client(
+                        stream,
+                        logger_clone,
+                        &publish_subscriber_sender_cloned,
+                        user_manager_cloned,
+                    );
                 });
             }
             Err(e) => {
