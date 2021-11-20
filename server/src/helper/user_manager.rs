@@ -16,13 +16,11 @@ impl Clone for UserManager {
 
 impl UserManager {
     pub fn new() -> UserManager {
-        UserManager { 
-            users: Vec::new() 
-        }
+        UserManager { users: Vec::new() }
     }
 
     pub fn add(&mut self, client_id: String, stream: TcpStream) {
-        let publisher_writer = PublisherWriter::init( stream, client_id);
+        let publisher_writer = PublisherWriter::init(stream, client_id);
         self.users.push(publisher_writer);
     }
 

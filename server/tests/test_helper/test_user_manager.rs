@@ -27,7 +27,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn add_and_find_a_subscriber() {
+    fn should_find_the_created_subscriber() {
+        setup();
         let mut user_manager = UserManager::new();
         let stream = TcpStream::connect("localhost:1883");
         user_manager.add("Pablito".to_owned(), stream.unwrap());
@@ -38,7 +39,7 @@ mod tests {
     }
 
     #[test]
-    fn add_and_find_then_delete_a_subscriber() {
+    fn should_not_find_a_removed_subscriber() {
         setup();
         let mut user_manager = UserManager::new();
         
@@ -53,7 +54,8 @@ mod tests {
     }
 
     #[test]
-    fn find_a_non_existent_subscriber_and_get_none() {
+    fn should_not_find_uncreated_subscriber() {
+        setup();
         let user_manager = UserManager::new();
         let user = user_manager.find_user("Pablito".to_owned());
         assert!(user.is_none());

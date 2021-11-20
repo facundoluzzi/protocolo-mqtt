@@ -1,4 +1,8 @@
-use std::{io::Write, net::TcpStream, sync::mpsc::{self, Receiver, Sender}};
+use std::{
+    io::Write,
+    net::TcpStream,
+    sync::mpsc::{self, Receiver, Sender},
+};
 
 pub struct PublisherWriter {
     sender: Sender<String>,
@@ -19,7 +23,6 @@ impl Clone for PublisherWriter {
 }
 
 impl PublisherWriter {
-
     pub fn init(socket: TcpStream, client_id: String) -> PublisherWriter {
         let (sender, receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
         // crear un receiver
@@ -44,10 +47,10 @@ impl PublisherWriter {
 
     pub fn publish_message(&mut self, receive: String) {
         if let Some(socket) = &self.socket {
-            if let Ok(a) = socket.clone().write(&receive.as_bytes()){
+            if let Ok(a) = socket.clone().write(&receive.as_bytes()) {
                 println!("Enviado")
             } else {
-                println!("Error") 
+                println!("Error")
             };
         } else {
             self.queue.push(receive);
@@ -56,7 +59,7 @@ impl PublisherWriter {
 
     pub fn reconnect(&mut self, stream: TcpStream) {
         self.socket = Some(stream);
-            for message in self.queue.clone() {
+        for message in self.queue.clone() {
             self.publish_message(message)
         }
     }
