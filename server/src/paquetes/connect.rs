@@ -19,13 +19,13 @@ impl Connect {
         let mut status_code = ConnectReturnCode::init();
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
-        
+
         let init_variable_header = 1 + readed_index;
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
 
         status_code = status_code.check_protocol_level(variable_header[6]);
-        
+
         let connect_flags = ConnectFlags::init(&variable_header[7]);
 
         let (payload, new_status_code) = ConnectPayload::init(

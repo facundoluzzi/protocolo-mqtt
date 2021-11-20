@@ -49,7 +49,7 @@ pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,
     publish_subscriber_sender: TopicManager,
-    user_manager: UserManager
+    user_manager: UserManager,
 ) {
     for stream in listener.incoming() {
         match stream {
