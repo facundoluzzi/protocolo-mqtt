@@ -1,3 +1,4 @@
+use crate::helper::user_manager::UserManager;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
 use crate::paquetes::publish::Publish;
@@ -31,15 +32,21 @@ impl PacketManager {
         bytes: &[u8],
         stream: &TcpStream,
         publisher_subscriber_sender: &Sender<PublisherSuscriber>,
+        user_manager: UserManager,
     ) {
         let first_byte = bytes.get(0);
 
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
-                1 => Connect::init(bytes).send_response(stream),
-                3 => Publish::init(bytes).send_message(stream, &publisher_subscriber_sender),
+                1 => Connect::init(bytes, stream, user_manager).send_response(stream),
+                3 => Publish::init(bytes)
+                    .send_message(publisher_subscriber_sender)
+                    .send_response(stream),
                 8 => Subscribe::init(bytes)
-                    .subscribe_topic(&publisher_subscriber_sender)
+                    .subscribe_topic(
+                        publisher_subscriber_sender,
+                        user_manager.get_sender(self.client_id.to_string()),
+                    )
                     .send_response(stream),
                 _ => Default::init(bytes).send_response(stream),
             },

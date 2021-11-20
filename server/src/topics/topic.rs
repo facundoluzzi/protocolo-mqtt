@@ -1,8 +1,8 @@
-use crate::topics::subscriber::Subscriber;
+use std::sync::mpsc::Sender;
 
 pub struct Topic {
     name: String,
-    subscribers: Vec<Subscriber>,
+    subscribers: Vec<Sender<String>>,
 }
 
 impl Clone for Topic {
@@ -22,10 +22,8 @@ impl Topic {
         }
     }
 
-    pub fn add(mut self, _subscriber: String) {
-        // let new_subscriber = Subscriber::new(subscriber);
-        let new_subscriber = Subscriber::new();
-        self.subscribers.push(new_subscriber);
+    pub fn add(mut self, sender: Sender<String>) {
+        self.subscribers.push(sender);
     }
 
     pub fn remove(self, _subscriber: String) -> Result<String, String> {
@@ -34,7 +32,7 @@ impl Topic {
 
     pub fn publish_msg(self, message: String) {
         for subscriber in self.subscribers {
-            subscriber.publish_message(message.to_string());
+            subscriber.send(message.to_string());
         }
     }
 
