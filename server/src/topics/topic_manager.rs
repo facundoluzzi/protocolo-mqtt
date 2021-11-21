@@ -36,13 +36,13 @@ impl TopicManager {
         ) = mpsc::channel();
         let topics: Vec<Topic> = Vec::new();
 
-        let mut topic_manager = TopicManager {
+        let topic_manager = TopicManager {
             publisher_subscriber_sender,
             topics,
         };
 
         // TODO: revisar esto, no sabemos si funciona bien o funciona mal.
-        let mut topics_copy = topic_manager.topics.clone();
+        let topics_copy = topic_manager.topics.clone();
         let mut topic_manager_copy = topic_manager.clone();
 
         thread::spawn(move || {
