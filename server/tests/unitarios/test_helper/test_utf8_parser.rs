@@ -2,8 +2,6 @@
 mod tests {
     use server::helper::utf8_parser::UTF8;
 
-    use super::*;
-
     #[test]
     fn parse_msb() {
         let vec: &[u8] = &[0x02, 0x00, 0x41, 0x42];

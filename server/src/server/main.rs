@@ -18,7 +18,7 @@ fn handle_new_client(
     // TODO: revisar el largo
     let mut data = [0_u8; 100];
     // TODO: ver que onda el while
-    let packet_factory = PacketManager::init();
+    let mut packet_factory = PacketManager::init();
     while match stream.read(&mut data) {
         Ok(size) => {
             if size == 0 {
