@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::flags::connect_flags::ConnectFlags;
+    use server::flags::connect_flags::ConnectFlags;
 
     #[test]
     fn should_create_flags_with_username() {
