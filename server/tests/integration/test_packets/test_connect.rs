@@ -51,7 +51,6 @@ fn connect_should_be_success() {
             }
         }
     }
-    
 }
 
 #[test]

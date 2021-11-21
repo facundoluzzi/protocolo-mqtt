@@ -47,4 +47,31 @@ ERROR | Error on connection: Either the application has not called WSAStartup, o
 ERROR | Error on connection: Either the application has not called WSAStartup, or WSAStartup failed. (os error 10093)
 ERROR | Error on connection: Either the application has not called WSAStartup, or WSAStartup failed. (os error 10093)
 ERROR | Error on connection: Either the application has not called WSAStartup, or WSAStartup failed. (os error 10093)
-ERROR | Error on connection: Either the application has not called WSAStartup, or WSAStartup failed. (os error 10093)
+ERROR | Error on connection: Either the application has not called WSAStartup, or WSAStartup failed. (os error 10093)INFO | New connection: 127.0.0.1:57672
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:62403
+INFO | Received from client [16, 14, 0, 4, 77, 21, 69, 69, 4, 0, 0, 11, 0, 2, 0, 0]
+INFO | New connection: 127.0.0.1:62404
+INFO | Received from client [16, 27, 0, 4, 77, 21, 69, 69, 4, 192, 0, 11, 0, 2, 0, 0, 0, 6, 65, 76, 84, 69, 71, 79, 0, 3, 65, 76, 84]
+INFO | New connection: 127.0.0.1:64398
+INFO | Received from client [16, 14, 0, 4, 77, 21, 69, 69, 4, 0, 0, 11, 0, 2, 0, 0]
+INFO | New connection: 127.0.0.1:64399
+INFO | Received from client [16, 27, 0, 4, 77, 21, 69, 69, 4, 192, 0, 11, 0, 2, 0, 0, 0, 6, 65, 76, 84, 69, 71, 79, 0, 3, 65, 76, 84]
+INFO | New connection: 127.0.0.1:64402
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:52283
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:52285
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:64392
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:54118
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:54123
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:51845
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:50068
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
+INFO | New connection: 127.0.0.1:50073
+INFO | Received from client [50, 7, 0, 3, 97, 47, 98, 0, 16]
