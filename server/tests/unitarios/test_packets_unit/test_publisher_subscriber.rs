@@ -10,7 +10,7 @@ mod tests {
         let (sender, receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
         let topic = "ALTEGO".to_owned();
         let message = "A B C".to_owned();
-        let publisher_subscriber = PublisherSuscriber::new(topic, message, publisher_code, Some(sender));
+        let publisher_subscriber = PublisherSuscriber::new(topic, message, publisher_code, Some(sender), "jaja".to_owned());
 
         assert_eq!(publisher_subscriber.get_topic(), "ALTEGO".to_owned());
         assert_eq!(publisher_subscriber.get_message(), "A B C".to_owned());

@@ -44,12 +44,13 @@ impl PacketManager {
                     connect.send_response(stream);
                     },
                 3 => Publish::init(bytes)
-                    .send_message(publisher_subscriber_sender)
+                    .send_message(publisher_subscriber_sender, self.client_id.to_owned())
                     .send_response(stream),
                 8 => Subscribe::init(bytes)
                     .subscribe_topic(
                         publisher_subscriber_sender,
                         user_manager.get_sender(self.client_id.to_string()),
+                        self.client_id.to_owned()
                     )
                     .send_response(stream),
                 _ => Default::init(bytes).send_response(stream),

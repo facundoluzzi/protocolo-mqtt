@@ -64,10 +64,10 @@ impl Publish {
         }
     }
     
-    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>) -> Self {
+    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>, client_id: String) -> Self {
         let topic = self._topic.to_owned();
         let payload = self._payload.to_owned();
-        let publisher_suscriber = PublisherSuscriber::new(topic, payload, Publisher, None);
+        let publisher_suscriber = PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
         sender.send(publisher_suscriber).unwrap();
         Publish {
             _dup: self._dup,
