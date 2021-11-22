@@ -41,15 +41,4 @@ impl Topic {
     pub fn equals(&self, other_topic: String) -> bool {
         self.name == other_topic
     }
-
-    pub fn get(self, name: String) -> Result<Self, String> {
-        if self.name == name {
-            Ok(Self {
-                name: self.name,
-                subscribers: self.subscribers,
-            })
-        } else {
-            Err("".to_string())
-        }
-    }
 }
