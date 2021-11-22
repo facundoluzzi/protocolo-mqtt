@@ -2,7 +2,6 @@ use crate::helper::user_manager::UserManager;
 use crate::logs::logger::Logger;
 use crate::paquetes::packet_manager::PacketManager;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
-use crate::topics::topic_manager::TopicManager;
 
 use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
@@ -18,7 +17,7 @@ fn handle_new_client(
     // TODO: revisar el largo
     let mut data = [0_u8; 100];
     // TODO: ver que onda el while
-    let packet_factory = PacketManager::init();
+    let mut packet_factory = PacketManager::init();
     while match stream.read(&mut data) {
         Ok(size) => {
             if size == 0 {
@@ -48,7 +47,7 @@ fn handle_new_client(
 pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,
-    publish_subscriber_sender: TopicManager,
+    publish_subscriber_sender: Sender<PublisherSuscriber>,
     user_manager: UserManager,
 ) {
     for stream in listener.incoming() {
@@ -56,7 +55,7 @@ pub fn run_server(
             Ok(stream) => {
                 logger.info(format!("New connection: {}", stream.peer_addr().unwrap()));
                 let logger_clone = logger.clone();
-                let publish_subscriber_sender_cloned = publish_subscriber_sender.get_sender();
+                let publish_subscriber_sender_cloned = publish_subscriber_sender.clone();
                 let user_manager_cloned = user_manager.clone();
                 thread::spawn(move || {
                     handle_new_client(

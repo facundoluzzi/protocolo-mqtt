@@ -30,15 +30,15 @@ fn setup() {
 fn connect_should_be_success() {
     setup();
     let stream = TcpStream::connect("localhost:1883");
-    if let Ok(mut stream) = stream{
+    if let Ok(mut stream) = stream {
         let connect_bytes = [
-        0x10, // packet type
-        0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
-        0x04, // protocol name
-        0x00, // flags
-        0x00, 0x0B, // keep alive
-        0x00, 0x02, 0x00, 0x00, // client identifier
+            0x10, // packet type
+            0x0E, // remaining length
+            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+            0x04, // protocol name
+            0x00, // flags
+            0x00, 0x0B, // keep alive
+            0x00, 0x02, 0x00, 0x00, // client identifier
         ];
         stream.write(&connect_bytes).unwrap();
         let mut data = vec![0; 100];
@@ -51,7 +51,6 @@ fn connect_should_be_success() {
             }
         }
     }
-    
 }
 
 #[test]

@@ -24,7 +24,7 @@ impl UserManager {
         self.users.push(publisher_writer);
     }
 
-    pub fn find_user(&self, client_id: String) -> Option<PublisherWriter>  {
+    pub fn find_user(&self, client_id: String) -> Option<PublisherWriter> {
         for publisher_writer in self.users.clone() {
             if publisher_writer.equals(client_id.to_string()) {
                 return Some(publisher_writer);

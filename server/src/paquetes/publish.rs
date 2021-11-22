@@ -2,6 +2,8 @@ use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Publisher
 use crate::helper::remaining_length::save_remaining_length;
 use crate::variable_header::publish_variable_header::get_variable_header;
 
+use std::convert::TryInto;
+use std::io::Write;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -9,18 +11,18 @@ use super::publisher_suscriber::PublisherSuscriber;
 
 pub struct Publish {
     _dup: u8,
-    _qos: u8,
+    qos: u8,
     _retain: u8,
     _remaining_length: usize,
     _topic: String,
-    _packet_identifier: u8,
+    packet_identifier: [u8; 2],
     _payload: String,
 }
 
 impl Publish {
     pub fn init(bytes: &[u8]) -> Publish {
-        let dup_flag = 0x08 & bytes[0];
-        let qos_flag = 0x06 & bytes[0];
+        let dup_flag = (0x08 & bytes[0]) >> 3;
+        let qos_flag = (0x06 & bytes[0]) >> 1;
         let retain_flag = 0x01 & bytes[0];
 
         let bytes_rem_len = &bytes[1..bytes.len()];
@@ -30,64 +32,59 @@ impl Publish {
 
         let (topic, packet_identifier, length) =
             get_variable_header(&bytes[init_variable_header..bytes.len()]);
-
         let payload = &bytes[init_variable_header + length..bytes.len()];
 
         Publish {
             _dup: dup_flag,
-            _qos: qos_flag,
+            qos: qos_flag,
             _retain: retain_flag,
             _remaining_length: remaining_length,
             _topic: topic,
-            _packet_identifier: packet_identifier[0],
+            packet_identifier: packet_identifier[0..2]
+                .try_into()
+                .expect("slice with incorrect length"),
             _payload: std::str::from_utf8(payload).unwrap().to_string(),
         }
     }
 
-    pub fn get_type(&self) -> String {
-        "publish".to_owned()
-    }
-
-    pub fn get_name(&self) -> String {
+    pub fn get_topic(&self) -> String {
         self._topic.to_string()
     }
 
-    pub fn send_response(&self, _stream: &TcpStream) {
-        // to do Puback
+    pub fn send_response(&self, mut stream: &TcpStream) {
+        match self.qos {
+            0x00 => {}
+            0x01 => {
+                let puback_response = [
+                    0x40,
+                    0x01,
+                    self.packet_identifier[0],
+                    self.packet_identifier[1],
+                ];
+                if let Err(msg_error) = stream.write(&puback_response) {
+                    println!("Error in sending response: {}", msg_error);
+                }
+            }
+            _ => {
+                println!("Error");
+            }
+        }
     }
 
-    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>) -> Self {
+    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>, client_id: String) -> Self {
         let topic = self._topic.to_owned();
         let payload = self._payload.to_owned();
-        let publisher_suscriber = PublisherSuscriber::new(topic, payload, Publisher, None);
+        let publisher_suscriber =
+            PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
         sender.send(publisher_suscriber).unwrap();
         Publish {
             _dup: self._dup,
-            _qos: self._qos,
+            qos: self.qos,
             _retain: self._retain,
             _remaining_length: self._remaining_length,
             _topic: self._topic.clone(),
-            _packet_identifier: self._packet_identifier,
+            packet_identifier: self.packet_identifier,
             _payload: self._payload.clone(),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn crear_paquete_publish_correctamente() {
-        // El primer byte está compuesto por el control packet header y por algunos flags.
-        // El segundo byte es el remaining length que indica el largo del variable header mas el payload
-        // el tercer y cuarto byte indican el largo del topic name, según el encoding msb o lsb, en este caso de 5 bytes
-        // el byte nro 10 y 11 son los dos últimos bytes del variable header y son el packet identifier
-        // los n siguientes bugs son parte del payload, en este caso vacío
-        let bytes = [
-            0x30, 0x0A, 0x00, 0x05, 0x54, 0x4F, 0x50, 0x49, 0x43, 0x00, 0x06, 0x54,
-        ];
-        let publish_packet = Publish::init(&bytes);
-        assert_eq!(publish_packet.get_type(), "publish".to_owned());
     }
 }

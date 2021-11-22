@@ -39,6 +39,7 @@ impl Subscribe {
         &self,
         sender: &Sender<PublisherSuscriber>,
         sender_for_publish: Sender<String>,
+        client_id: String,
     ) -> Self {
         let mut acumulator: i32 = -1;
 
@@ -48,9 +49,16 @@ impl Subscribe {
             acumulator += length as i32;
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
-            let publisher_suscriber =
-                PublisherSuscriber::new(topic, message, type_s, Some(sender_for_publish.clone()));
-            sender.send(publisher_suscriber).unwrap();
+            let publisher_suscriber = PublisherSuscriber::new(
+                topic,
+                message,
+                type_s,
+                Some(sender_for_publish.clone()),
+                client_id.to_string(),
+            );
+            if let Err(sender_err) = sender.send(publisher_suscriber) {
+                println!("Error sending to publisher_subscriber: {}", sender_err);
+            }
         }
 
         Subscribe {

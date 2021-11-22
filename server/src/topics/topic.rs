@@ -1,8 +1,8 @@
-use std::sync::mpsc::Sender;
+use std::{collections::HashMap, sync::mpsc::Sender};
 
 pub struct Topic {
     name: String,
-    subscribers: Vec<Sender<String>>,
+    subscribers: HashMap<String, Sender<String>>,
 }
 
 impl Clone for Topic {
@@ -18,21 +18,23 @@ impl Topic {
     pub fn new(name: String) -> Self {
         Topic {
             name,
-            subscribers: Vec::new(),
+            subscribers: HashMap::new(),
         }
     }
 
-    pub fn add(mut self, sender: Sender<String>) {
-        self.subscribers.push(sender);
+    pub fn add(&mut self, sender: Sender<String>, client_id: String) {
+        self.subscribers.insert(client_id, sender);
     }
 
-    pub fn remove(self, _subscriber: String) -> Result<String, String> {
-        Ok("".to_string())
+    pub fn remove(&mut self, subscriber: String) {
+        self.subscribers.remove(&subscriber);
     }
 
-    pub fn publish_msg(self, message: String) {
-        for subscriber in self.subscribers {
-            subscriber.send(message.to_string());
+    pub fn publish_msg(&self, message: String) {
+        for subscriber in self.subscribers.values() {
+            if let Err(_msg) = subscriber.send(message.to_string()) {
+                println!("Error al publicar el mensaje")
+            };
         }
     }
 
