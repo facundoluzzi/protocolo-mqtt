@@ -38,8 +38,8 @@ impl TopicManager {
                 match publish_suscriber.get_packet_type() {
                     PublisherSubscriberCode::Publisher => {
                         for topic in &topics_copy {
-                            if topic.clone().equals(publish_suscriber.get_topic()) {
-                                topic.clone().publish_msg(publish_suscriber.get_message());
+                            if topic.equals(publish_suscriber.get_topic()) {
+                                topic.publish_msg(publish_suscriber.get_message());
                             }
                         }
                     }
