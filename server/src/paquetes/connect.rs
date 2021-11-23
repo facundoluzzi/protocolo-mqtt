@@ -1,6 +1,7 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
+use crate::helper::user_manager::UserManager;
 use crate::payload::connect_payload::ConnectPayload;
 
 use std::io::Write;
@@ -9,12 +10,12 @@ use std::net::TcpStream;
 pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
-    _payload: ConnectPayload,
+    payload: ConnectPayload,
     status_code: u8,
 }
 
 impl Connect {
-    pub fn init(bytes: &[u8]) -> Connect {
+    pub fn init(bytes: &[u8], stream: &TcpStream, mut user_manager: UserManager) -> Connect {
         let mut status_code = ConnectReturnCode::init();
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
@@ -26,6 +27,7 @@ impl Connect {
         status_code = status_code.check_protocol_level(variable_header[6]);
 
         let connect_flags = ConnectFlags::init(&variable_header[7]);
+
         let (payload, new_status_code) = ConnectPayload::init(
             &connect_flags,
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
@@ -39,11 +41,24 @@ impl Connect {
 
         let flags = connect_flags;
 
-        Connect {
+        let client_id = payload.get_client_id();
+
+        let connect = Connect {
             _remaining_length: remaining_length,
             flags,
-            _payload: payload,
+            payload: payload,
             status_code: status_code.apply_validations(),
+        };
+
+        if connect.status_code != 0x00 {
+            connect
+        } else {
+            if let Some(mut usuario) = user_manager.find_user(connect.get_client_id()) {
+                usuario.reconnect(stream.try_clone().unwrap());
+            } else {
+                user_manager.add(client_id, stream.try_clone().unwrap());
+            };
+            connect
         }
     }
 
@@ -58,31 +73,8 @@ impl Connect {
             println!("Error in sending response: {}", msg_error);
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn crear_paquete_connect_correctamente() {
-        // Todos los vectores que se envian en los tests tienen desde la posición que finaliza la lectura del remaining length,
-        // lo siguiente:
-        // 6 bytes de protocol name 0x00u8 (length MSB(0)), 0x04u8 (length LSB(4)), 0x4Du8 (M), 0x15u8 (Q), 0x45u8 (T), 0x45u8 (T)
-        // 1 byte de protocol level 0x04 que es lo que determina la versión del protocolo
-        // 1 byte de content flag que representa que información puede haber en el payload
-        // 2 bytes de keep alive
-        // 0x0A -->  0 = 0000, A = 0110
-        // el segundo byte indica el remaining length de largo 18, considerando el header variable, y 8 extras del payload: Client ID.
-        // Se considera que los flags están vacíos en el índice 9, de otra manera habría que agregar tantos bytes como los flags indiquen
-        // indice 9 -> byte 9 -> 0x00
-
-        let bytes = [
-            0x10, 0x0E, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x04, 0x00, 0x00, 0x0B, 0x00, 0x02,
-            0x00, 0x00,
-        ];
-
-        let connect_packet = Connect::init(&bytes);
-        assert_eq!(connect_packet.get_type(), "connect".to_owned());
+    pub fn get_client_id(&self) -> String {
+        self.payload.get_client_id()
     }
 }
