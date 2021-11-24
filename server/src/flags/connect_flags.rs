@@ -43,19 +43,3 @@ impl ConnectFlags {
         self.will_qos
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::flags::connect_flags::ConnectFlags;
-
-    #[test]
-    fn creacion_correcta_de_flags() {
-        let flags: u8 = 0b11000000;
-        let connect_flags = ConnectFlags::init(&flags);
-        assert_eq!(connect_flags.get_username_flag(), true);
-        assert_eq!(connect_flags.get_password_flag(), true);
-        assert_eq!(connect_flags.get_will_retain_flag(), false);
-        assert_eq!(connect_flags.get_will_flag(), false);
-        assert_eq!(connect_flags.get_clean_session_flag(), false);
-    }
-}
