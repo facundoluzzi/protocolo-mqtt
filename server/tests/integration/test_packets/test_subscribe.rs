@@ -12,7 +12,7 @@ fn setup() {
             thread::spawn(move || {
                 let logger = Logger::new("subscribe-tests.txt".to_string())
                     .expect("Logger could not be created");
-                let publish_subscriber_sender = TopicManager::new();
+                let publish_subscriber_sender = TopicManager::init();
                 let user_manager = UserManager::new();
                 run_server(&listener, logger, publish_subscriber_sender, user_manager);
             });
@@ -33,7 +33,7 @@ mod tests {
     fn create_subscribe_packet_succesfully() {
         setup();
         let bytes = [0x30, 0x08, 0x00, 0x0A, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45];
-        let sender_publisher_subscriber = TopicManager::new();
+        let sender_publisher_subscriber = TopicManager::init();
         let (sender_subscriber, _receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
         let subscribe = Subscribe::init(&bytes).subscribe_topic(
             &sender_publisher_subscriber,
