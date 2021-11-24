@@ -46,20 +46,18 @@ impl Connect {
         let connect = Connect {
             _remaining_length: remaining_length,
             flags,
-            payload: payload,
+            payload,
             status_code: status_code.apply_validations(),
         };
 
-        if connect.status_code != 0x00 {
-            connect
-        } else {
+        if connect.status_code == 0x00 {
             if let Some(mut usuario) = user_manager.find_user(connect.get_client_id()) {
                 usuario.reconnect(stream.try_clone().unwrap());
             } else {
                 user_manager.add(client_id, stream.try_clone().unwrap());
             };
-            connect
         }
+        connect
     }
 
     pub fn get_type(&self) -> String {

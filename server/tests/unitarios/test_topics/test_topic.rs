@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use std::sync::Mutex;
-    use std::sync::Arc;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
     use std::sync::mpsc::Sender;
+    use std::sync::Arc;
+    use std::sync::Mutex;
     use std::thread;
 
     use server::topics::topic::Topic;
@@ -19,7 +19,7 @@ mod tests {
 
         topic.add(sender_one, "Facundo".to_owned());
         topic.add(sender_two, "Nacho".to_owned());
-        
+
         let messages: Vec<String> = Vec::new();
         let data = Arc::new(Mutex::new(messages));
         let data_for_thread = data.clone();
@@ -62,7 +62,7 @@ mod tests {
         topic.add(sender_two, "Nacho".to_owned());
 
         topic.remove("Facundo".to_owned());
-        
+
         let t = thread::spawn(move || {
             for _recv in receiver_one.recv() {
                 panic!("Should be fail");
@@ -77,7 +77,7 @@ mod tests {
                 data.push(received_data_success);
             }
         });
-        
+
         topic.publish_msg("Bienvenidos a Altego".to_owned());
         t.join().unwrap();
         let data = data.lock().unwrap();

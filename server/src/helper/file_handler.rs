@@ -3,10 +3,10 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 pub fn open_configuration_file(path: String) -> File {
-    let file = File::open(path);
+    let file = File::open(&path);
     match file {
         Ok(file) => file,
-        Err(error_file) => panic!("Error opening config file {}", error_file),
+        Err(error_file) => panic!("Error opening file in path {}: {}", path, error_file),
     }
 }
 

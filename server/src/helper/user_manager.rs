@@ -14,6 +14,12 @@ impl Clone for UserManager {
     }
 }
 
+impl Default for UserManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UserManager {
     pub fn new() -> UserManager {
         UserManager { users: Vec::new() }

@@ -21,7 +21,7 @@ impl Clone for TopicManager {
 }
 
 impl TopicManager {
-    pub fn new() -> Sender<PublisherSuscriber> {
+    pub fn init() -> Sender<PublisherSuscriber> {
         let (publisher_subscriber_sender, publisher_subscriber_receiver): (
             Sender<PublisherSuscriber>,
             Receiver<PublisherSuscriber>,

@@ -47,7 +47,12 @@ impl PublisherWriter {
 
     pub fn publish_message(&mut self, receive: String) {
         if let Some(socket) = &self.socket {
-            if let Ok(_) = socket.clone().write(&receive.as_bytes()) {
+            if socket
+                .try_clone()
+                .unwrap()
+                .write(receive.as_bytes())
+                .is_ok()
+            {
                 println!("Enviado")
             } else {
                 println!("Error")
