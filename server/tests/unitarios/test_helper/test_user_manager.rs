@@ -12,7 +12,7 @@ fn setup() {
             thread::spawn(move || {
                 let logger = Logger::new("subscribe-tests.txt".to_string())
                     .expect("Logger could not be created");
-                let publish_subscriber_sender = TopicManager::new();
+                let publish_subscriber_sender = TopicManager::init();
                 let user_manager = UserManager::new();
                 run_server(&listener, logger, publish_subscriber_sender, user_manager);
             });

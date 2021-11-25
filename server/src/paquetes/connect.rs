@@ -47,7 +47,7 @@ impl Connect {
         let connect = Connect {
             _remaining_length: remaining_length,
             flags,
-            payload: payload,
+            payload,
             status_code: status_code.apply_validations(),
         };
 
@@ -60,8 +60,8 @@ impl Connect {
             } else {
                 user_manager.add(client_id, stream.try_clone().unwrap());
             };
-            connect
         }
+        connect
     }
 
     pub fn send_response(&self, mut stream: &TcpStream) {

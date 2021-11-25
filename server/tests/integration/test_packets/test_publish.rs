@@ -17,7 +17,7 @@ fn setup() {
                 let user_manager = UserManager::new();
                 let logger = Logger::new("connect-tests.txt".to_string())
                     .expect("Logger could not be created");
-                let publish_subscriber_sender = TopicManager::new();
+                let publish_subscriber_sender = TopicManager::init();
                 run_server(&listener, logger, publish_subscriber_sender, user_manager);
             });
             thread::sleep(time::Duration::from_millis(100));

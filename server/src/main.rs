@@ -24,7 +24,7 @@ fn main() {
         server_configs.get_conf_named("port".to_string())
     ));
 
-    let publish_subscriber_sender = TopicManager::new();
+    let publish_subscriber_sender = TopicManager::init();
     let user_manager = UserManager::new();
 
     run_server(&listener, logger, publish_subscriber_sender, user_manager);
