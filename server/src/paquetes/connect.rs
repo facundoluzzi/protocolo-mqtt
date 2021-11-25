@@ -15,7 +15,7 @@ pub struct Connect {
 }
 
 impl Connect {
-    pub fn init(bytes: &[u8], stream: &TcpStream, mut user_manager: UserManager) -> Connect {
+    pub fn init(bytes: &[u8], stream: &TcpStream, user_manager: &mut UserManager) -> Connect {
         let mut status_code = ConnectReturnCode::init();
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
@@ -32,7 +32,8 @@ impl Connect {
             &connect_flags,
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
             status_code,
-        );
+        )
+        .unwrap();
 
         status_code = new_status_code;
         let username = payload.get_username();
@@ -51,6 +52,7 @@ impl Connect {
         };
 
         if connect.status_code != 0x00 {
+            // TODO: Cortar la conexión
             connect
         } else {
             if let Some(mut usuario) = user_manager.find_user(connect.get_client_id()) {
@@ -60,10 +62,6 @@ impl Connect {
             };
             connect
         }
-    }
-
-    pub fn get_type(&self) -> String {
-        "connect".to_owned()
     }
 
     pub fn send_response(&self, mut stream: &TcpStream) {

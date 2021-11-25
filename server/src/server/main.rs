@@ -12,7 +12,7 @@ fn handle_new_client(
     mut stream: TcpStream,
     mut logger: Logger,
     publish_subscriber_sender: &Sender<PublisherSuscriber>,
-    user_manager: UserManager,
+    mut user_manager: UserManager,
 ) {
     // TODO: revisar el largo
     let mut data = [0_u8; 100];
@@ -28,7 +28,7 @@ fn handle_new_client(
                     &data[0..size],
                     &stream,
                     publish_subscriber_sender,
-                    user_manager.clone(),
+                    &mut user_manager,
                 );
                 true
             }

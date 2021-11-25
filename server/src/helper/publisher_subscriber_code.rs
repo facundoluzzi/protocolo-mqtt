@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum PublisherSubscriberCode {
     Publisher,
     Subscriber,
