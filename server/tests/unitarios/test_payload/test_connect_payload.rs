@@ -14,7 +14,7 @@ mod tests {
         ];
         let connect_return_code = ConnectReturnCode::init();
         let (connect, return_code) =
-            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code).unwrap();
         assert_eq!(connect.get_will_topic(), None);
         assert_eq!(connect.get_will_message(), None);
         assert_eq!(connect.get_username(), Some(&"ALTEGO".to_string()));
@@ -32,7 +32,7 @@ mod tests {
         ];
         let connect_return_code = ConnectReturnCode::init();
         let (connect, return_code) =
-            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code).unwrap();
         assert_eq!(connect.get_password(), Some(&"ALT".to_string()));
         assert_eq!(connect.get_username(), Some(&"ALTEGO".to_string()));
         assert_eq!(connect.get_will_topic(), None);
@@ -51,7 +51,7 @@ mod tests {
         ];
         let connect_return_code = ConnectReturnCode::init();
         let (connect, return_code) =
-            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code).unwrap();
         assert_eq!(connect.get_will_topic(), Some("TOPIC".to_owned()).as_ref());
         assert_eq!(
             connect.get_will_message(),
@@ -71,7 +71,7 @@ mod tests {
         ];
         let connect_return_code = ConnectReturnCode::init();
         let (connect, _) =
-            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code);
+            ConnectPayload::init(&connect_flags, &remaining_bytes, connect_return_code).unwrap();
         assert_eq!(connect.get_will_topic(), Some("TOPIC".to_owned()).as_ref());
         assert_eq!(
             connect.get_will_message(),

@@ -30,11 +30,3 @@ fn main() {
     run_server(&listener, logger, publish_subscriber_sender, user_manager);
     drop(listener);
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_sample_server() {
-        assert_eq!(1, 1)
-    }
-}

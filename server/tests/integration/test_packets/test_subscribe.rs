@@ -24,23 +24,215 @@ fn setup() {
 
 #[cfg(test)]
 mod tests {
-    use server::paquetes::subscribe::Subscribe;
-
     use super::*;
-    use std::sync::mpsc::{self, Receiver, Sender};
+    use std::io::Read;
+    use std::io::Write;
+    use std::net::TcpStream;
 
     #[test]
-    fn create_subscribe_packet_succesfully() {
+    fn should_create_subscribe_packet_succesfully_qos_0() {
         setup();
-        let bytes = [0x30, 0x08, 0x00, 0x0A, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45];
-        let sender_publisher_subscriber = TopicManager::init();
-        let (sender_subscriber, _receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
-        let subscribe = Subscribe::init(&bytes).subscribe_topic(
-            &sender_publisher_subscriber,
-            sender_subscriber,
-            "jaja".to_owned(),
-        );
-        thread::sleep(time::Duration::from_millis(100));
-        assert_eq!(subscribe.get_type(), "subscribe".to_owned());
+
+        let stream = TcpStream::connect("localhost:1883");
+
+        if let Ok(mut stream) = stream {
+            let mut data = vec![0; 1000];
+
+            let connect_bytes = [
+                0x10, // packet type
+                0x0E, // remaining length
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+                0x04, // protocol name
+                0x00, // flags
+                0x00, 0x0B, // keep alive
+                0x00, 0x02, 0x00, 0x00, // client identifier
+            ];
+            stream.write(&connect_bytes).unwrap();
+            stream.read(&mut data).unwrap();
+
+            let subscribe_bytes = [
+                0x80, // packet type
+                0x08, // remaining length
+                0x00, 0x0A, // variable header, en particular packet identifier
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje
+            ];
+
+            stream.write(&subscribe_bytes).unwrap();
+
+            match stream.read(&mut data) {
+                Ok(size) => {
+                    assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x00]);
+                }
+                _ => {
+                    panic!();
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn should_create_subscribe_packet_succesfully_qos_1() {
+        setup();
+
+        let stream = TcpStream::connect("localhost:1883");
+
+        if let Ok(mut stream) = stream {
+            let mut data = vec![0; 1000];
+
+            let connect_bytes = [
+                0x10, // packet type
+                0x0E, // remaining length
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+                0x04, // protocol name
+                0x00, // flags
+                0x00, 0x0B, // keep alive
+                0x00, 0x02, 0x00, 0x00, // client identifier
+            ];
+            stream.write(&connect_bytes).unwrap();
+            stream.read(&mut data).unwrap();
+
+            let subscribe_bytes = [
+                0x80, // packet type
+                0x08, // remaining length
+                0x00, 0x0A, // variable header, en particular packet identifier
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x01, // payload MQTT como mensaje
+            ];
+
+            stream.write(&subscribe_bytes).unwrap();
+
+            match stream.read(&mut data) {
+                Ok(size) => {
+                    assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
+                }
+                _ => {
+                    panic!();
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn should_fail_subscribe_packet_qos_2() {
+        setup();
+
+        let stream = TcpStream::connect("localhost:1883");
+
+        if let Ok(mut stream) = stream {
+            let mut data = vec![0; 1000];
+
+            let connect_bytes = [
+                0x10, // packet type
+                0x0E, // remaining length
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+                0x04, // protocol name
+                0x00, // flags
+                0x00, 0x0B, // keep alive
+                0x00, 0x02, 0x00, 0x00, // client identifier
+            ];
+            stream.write(&connect_bytes).unwrap();
+            stream.read(&mut data).unwrap();
+
+            let subscribe_bytes = [
+                0x80, // packet type
+                0x08, // remaining length
+                0x00, 0x0A, // variable header, en particular packet identifier
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x02, // payload MQTT como mensaje
+            ];
+
+            stream.write(&subscribe_bytes).unwrap();
+
+            match stream.read(&mut data) {
+                Ok(size) => {
+                    assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x80]);
+                }
+                _ => {
+                    panic!();
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn should_fail_subscribe_packet_with_a_random_value() {
+        setup();
+
+        let stream = TcpStream::connect("localhost:1883");
+
+        if let Ok(mut stream) = stream {
+            let mut data = vec![0; 1000];
+
+            let connect_bytes = [
+                0x10, // packet type
+                0x0E, // remaining length
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+                0x04, // protocol name
+                0x00, // flags
+                0x00, 0x0B, // keep alive
+                0x00, 0x02, 0x00, 0x00, // client identifier
+            ];
+            stream.write(&connect_bytes).unwrap();
+            stream.read(&mut data).unwrap();
+
+            let subscribe_bytes = [
+                0x80, // packet type
+                0x08, // remaining length
+                0x00, 0x0A, // variable header, en particular packet identifier
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x03, // payload MQTT como mensaje
+            ];
+
+            stream.write(&subscribe_bytes).unwrap();
+
+            match stream.read(&mut data) {
+                Ok(size) => {
+                    assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x80]);
+                }
+                _ => {
+                    panic!();
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn should_subscribe_some_topics() {
+        setup();
+
+        let stream = TcpStream::connect("localhost:1883");
+
+        if let Ok(mut stream) = stream {
+            let mut data = vec![0; 1000];
+
+            let connect_bytes = [
+                0x10, // packet type
+                0x0E, // remaining length
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+                0x04, // protocol name
+                0x00, // flags
+                0x00, 0x0B, // keep alive
+                0x00, 0x02, 0x00, 0x00, // client identifier
+            ];
+            stream.write(&connect_bytes).unwrap();
+            stream.read(&mut data).unwrap();
+
+            let subscribe_bytes = [
+                0x80, // packet type
+                0x08, // remaining length
+                0x00, 0x0A, // variable header, en particular packet identifier
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x03, // payload MQTT como mensaje
+                0x00, 0x03, 0x4D, 0x15, 0x45, 0x00, // payload MQT como mensaje
+                0x00, 0x02, 0x4D, 0x15, 0x01, // payload MQ como mensaje
+            ];
+
+            stream.write(&subscribe_bytes).unwrap();
+
+            match stream.read(&mut data) {
+                Ok(size) => {
+                    assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x80, 0x00, 0x01]);
+                }
+                _ => {
+                    panic!();
+                }
+            }
+        }
     }
 }

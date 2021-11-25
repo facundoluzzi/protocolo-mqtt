@@ -31,7 +31,7 @@ impl Publish {
         let init_variable_header = 1 + readed_index;
 
         let (topic, packet_identifier, length) =
-            get_variable_header(&bytes[init_variable_header..bytes.len()]);
+            get_variable_header(&bytes[init_variable_header..bytes.len()]).unwrap();
         let payload = &bytes[init_variable_header + length..bytes.len()];
 
         Publish {
@@ -74,9 +74,10 @@ impl Publish {
     pub fn send_message(&self, sender: &Sender<PublisherSuscriber>, client_id: String) -> Self {
         let topic = self._topic.to_owned();
         let payload = self._payload.to_owned();
-        let publisher_suscriber =
+        let publisher_subscriber =
             PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
-        sender.send(publisher_suscriber).unwrap();
+
+        sender.send(publisher_subscriber).unwrap();
         Publish {
             _dup: self._dup,
             qos: self.qos,

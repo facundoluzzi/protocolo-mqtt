@@ -27,12 +27,13 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
+    // TODO: validar que un paquete que no es connect, siempre tenga que estar ya conectado (haber hecho un connect packet previamente)
     pub fn process_message(
         &mut self,
         bytes: &[u8],
         stream: &TcpStream,
         publisher_subscriber_sender: &Sender<PublisherSuscriber>,
-        user_manager: UserManager,
+        user_manager: &mut UserManager,
     ) {
         let first_byte = bytes.get(0);
 

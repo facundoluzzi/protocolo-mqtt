@@ -80,7 +80,10 @@ mod tests {
 
         topic.publish_msg("Bienvenidos a Altego".to_owned());
         t.join().unwrap();
-        let data = data.lock().unwrap();
-        assert_eq!(*data.get(0).unwrap(), "Bienvenidos a Altego".to_owned());
+        let locked_data = data.lock().unwrap();
+        assert_eq!(
+            *locked_data.get(0).unwrap(),
+            "Bienvenidos a Altego".to_owned()
+        );
     }
 }

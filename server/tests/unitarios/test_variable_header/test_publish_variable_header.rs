@@ -5,7 +5,7 @@ mod tests {
     #[test]
     fn obtiene_variable_header_en_publish_correctamente() {
         let vec: &[u8] = &[0x00, 0x03, 0x41, 0x2F, 0x42, 0x00, 0x00];
-        let (topic, packet_identifier, length) = get_variable_header(vec);
+        let (topic, packet_identifier, length) = get_variable_header(vec).unwrap();
         assert_eq!(topic, "A/B".to_owned());
         assert_eq!(packet_identifier, [0x00, 0x00]);
         assert_eq!(length, 7);
