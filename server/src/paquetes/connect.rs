@@ -53,7 +53,7 @@ impl Connect {
 
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
-            connect
+            return connect;
         } else {
             if let Some(mut usuario) = user_manager.find_user(connect.get_client_id()) {
                 usuario.reconnect(stream.try_clone().unwrap());
