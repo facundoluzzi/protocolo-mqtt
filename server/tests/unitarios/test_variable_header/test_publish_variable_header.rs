@@ -17,5 +17,47 @@ mod tests {
         let topic = "A/B".to_string();
         let is_valid = verify_publish_wilcard(topic);
         assert_eq!(is_valid, true);
-    }    
+    }
+
+    #[test]
+    fn should_verify_topic_A_successfully() {
+        let topic = "A".to_string();
+        let is_valid = verify_publish_wilcard(topic);
+        assert_eq!(is_valid, true);
+    }
+
+    #[test]
+    fn should_fail_verify_topic_with_slash() {
+        let topic = "A/".to_string();
+        let is_valid = verify_publish_wilcard(topic);
+        assert_eq!(is_valid, false);
+    }
+
+    #[test]
+    fn should_fail_verify_topic_with_slash_at_the_beginning() {
+        let topic = "/A".to_string();
+        let is_valid = verify_publish_wilcard(topic);
+        assert_eq!(is_valid, false);
+    }
+    
+    #[test]
+    fn should_fail_verify_topic_with_numeral() {
+        let topic = "A/B#".to_string();
+        let is_valid = verify_publish_wilcard(topic);
+        assert_eq!(is_valid, false);
+    }
+    
+    #[test]
+    fn should_fail_verify_topic_with_dolar_sign() {
+        let topic = "A/B$".to_string();
+        let is_valid = verify_publish_wilcard(topic);
+        assert_eq!(is_valid, false);
+    }
+
+    #[test]
+    fn should_fail_verify_topic_with_plus_sign() {
+        let topic = "A/B+".to_string();
+        let is_valid = verify_publish_wilcard(topic);
+        assert_eq!(is_valid, false);
+    }
 }
