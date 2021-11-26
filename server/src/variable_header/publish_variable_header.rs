@@ -11,3 +11,8 @@ pub fn get_variable_header(bytes: &[u8]) -> Result<(String, &[u8], usize), Strin
         Err(err) => Err(err.to_string()),
     }
 }
+
+pub fn verify_publish_wilcard(topic: String) -> bool {
+    let last_index = topic.len() - 1;
+    return !(topic.contains("#") || topic.contains("$") || topic.contains("+")) && topic.chars().last().unwrap() != '/';
+}

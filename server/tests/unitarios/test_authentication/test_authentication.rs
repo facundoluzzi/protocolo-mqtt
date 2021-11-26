@@ -5,12 +5,14 @@ mod tests {
     use server::authentication::main::is_authenticated;
     
     fn make_credentials() -> HashMap<String, String> {
-        let users: HashMap<String, String> = HashMap::from_iter([
+
+        let a: Vec<(String, String)> = vec![
             ("user1".to_string(), "pass1".to_string()),
             ("user2".to_string(), "pass2".to_string()),
             ("user3".to_string(), "pass3".to_string()),
             ("ALTEGO".to_string(), "ALT".to_string()),
-        ]);
+        ];
+        let users: HashMap<String, String> = HashMap::from_iter(a);
         users
     }
 

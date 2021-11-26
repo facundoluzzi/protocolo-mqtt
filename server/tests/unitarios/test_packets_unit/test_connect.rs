@@ -23,7 +23,7 @@ use server::helper::user_manager::UserManager;
     #[test]
     fn create_connect_packet_and_get_client_id() {
         setup();
-        let stream = TcpStream::connect("0.0.0.0:1883").unwrap();
+        let stream = TcpStream::connect("localhost:1883").unwrap();
         let mut user_manager = UserManager::new();
         let connect_bytes = [
             0x10, // packet type
@@ -42,7 +42,7 @@ use server::helper::user_manager::UserManager;
     #[test]
     fn create_connect_packet_and_verify_correct_add_to_user_manager() {
         setup();
-        let stream = TcpStream::connect("0.0.0.0:1883").unwrap();
+        let stream = TcpStream::connect("localhost:1883").unwrap();
         let mut user_manager = UserManager::new();
         let connect_bytes = [
             0x10, // packet type

@@ -48,6 +48,8 @@ impl TopicManager {
                             .iter()
                             .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
                         let subscriber = publish_suscriber.get_sender().unwrap();
+                        // ToDo ! Wilcard: Por cada subscriber que nos llega tenemos un topico. Ni bien lo recibimos tenemos que verificar si tiene alguna wilcard
+                        // Si posee alguna wilcard, tenemos que iterar todos los topicos como hacemos aca abajo
                         if let Some(topic) = topic_found {
                             topic
                                 .clone()
