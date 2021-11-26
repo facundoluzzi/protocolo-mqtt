@@ -31,7 +31,7 @@ mod tests {
         setup();
         let mut user_manager = UserManager::new();
         let stream = TcpStream::connect("localhost:1883");
-        user_manager.add("Pablito".to_owned(), stream.unwrap());
+        user_manager.add("Pablito".to_owned(), stream.unwrap(), true);
         if let Some(publisher) = user_manager.find_user("Pablito".to_owned()) {
             assert_eq!("Pablito".to_owned(), publisher.get_client_id());
         };
@@ -43,7 +43,11 @@ mod tests {
         let mut user_manager = UserManager::new();
 
         let stream = TcpStream::connect("localhost:1883");
-        user_manager.add("Pablito".to_owned(), stream.unwrap().try_clone().unwrap());
+        user_manager.add(
+            "Pablito".to_owned(),
+            stream.unwrap().try_clone().unwrap(),
+            true,
+        );
         if let Some(publisher) = user_manager.find_user("Pablito".to_owned()) {
             assert_eq!("Pablito".to_owned(), publisher.get_client_id());
         };

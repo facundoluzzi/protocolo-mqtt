@@ -40,6 +40,7 @@ impl Connect {
         let password = payload.get_password();
         status_code = status_code.check_authentication(username, password);
 
+        let session_flag = connect_flags.get_clean_session_flag();
         let flags = connect_flags;
 
         let client_id = payload.get_client_id();
@@ -50,7 +51,6 @@ impl Connect {
             payload,
             status_code: status_code.apply_validations(),
         };
-
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
             return connect;
