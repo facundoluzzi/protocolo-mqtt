@@ -1,6 +1,6 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Publisher;
 use crate::helper::remaining_length::save_remaining_length;
-use crate::variable_header::publish_variable_header::get_variable_header;
+use crate::variable_header::publish_variable_header::{self, get_variable_header};
 
 use std::convert::TryInto;
 use std::io::Write;
@@ -21,8 +21,13 @@ pub struct Publish {
 
 impl Publish {
     pub fn init(bytes: &[u8]) -> Publish {
-        let dup_flag = (0x08 & bytes[0]) >> 3;
+        let mut dup_flag = (0x08 & bytes[0]) >> 3;
         let qos_flag = (0x06 & bytes[0]) >> 1;
+
+        if qos_flag == 0x00 {
+            dup_flag = 0x00;
+        }
+
         let retain_flag = 0x01 & bytes[0];
 
         let bytes_rem_len = &bytes[1..bytes.len()];
@@ -32,6 +37,12 @@ impl Publish {
 
         let (topic, packet_identifier, length) =
             get_variable_header(&bytes[init_variable_header..bytes.len()]).unwrap();
+
+        //https://docs.solace.com/Basics/Wildcard-Charaters-Topic-Subs.htm?Highlight=wildcard
+        let wrong_topic = publish_variable_header::verify_publish_wilcard(topic.to_owned());
+        
+
+
         let payload = &bytes[init_variable_header + length..bytes.len()];
 
         Publish {
@@ -89,3 +100,4 @@ impl Publish {
         }
     }
 }
+

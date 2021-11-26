@@ -64,7 +64,7 @@ impl Subscribe {
             acumulator += length + 1;
 
             let type_s = PublisherSubscriberCode::Subscriber;
-            let message = "None".to_owned();
+            let message = "None".to_owned(); 
             let publisher_subscriber = PublisherSuscriber::new(
                 topic,
                 message,
@@ -111,5 +111,20 @@ impl Subscribe {
         if let Err(msg_error) = stream.write(&bytes_response) {
             println!("Error in sending response: {}", msg_error);
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use crate::variable_header::subscribe_variable_header;
+
+    #[test]
+    fn test_wilcard() {
+        let prueba = subscribe_variable_header::verify_wilcard("A/B#".to_owned());
+        let prueba2 = subscribe_variable_header::verify_wilcard("A/#".to_owned());
+
+        assert_ne!(prueba, false);
+        assert!(prueba2);
     }
 }
