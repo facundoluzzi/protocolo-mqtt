@@ -20,7 +20,7 @@ mod tests {
     }
 
     #[test]
-    fn should_verify_topic_A_successfully() {
+    fn should_verify_topic_a_successfully() {
         let topic = "A".to_string();
         let is_valid = verify_publish_wilcard(topic);
         assert_eq!(is_valid, true);
@@ -39,14 +39,14 @@ mod tests {
         let is_valid = verify_publish_wilcard(topic);
         assert_eq!(is_valid, false);
     }
-    
+
     #[test]
     fn should_fail_verify_topic_with_numeral() {
         let topic = "A/B#".to_string();
         let is_valid = verify_publish_wilcard(topic);
         assert_eq!(is_valid, false);
     }
-    
+
     #[test]
     fn should_fail_verify_topic_with_dolar_sign() {
         let topic = "A/B$".to_string();

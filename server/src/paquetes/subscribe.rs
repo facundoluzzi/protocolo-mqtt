@@ -64,7 +64,7 @@ impl Subscribe {
             acumulator += length + 1;
 
             let type_s = PublisherSubscriberCode::Subscriber;
-            let message = "None".to_owned(); 
+            let message = "None".to_owned();
             let publisher_subscriber = PublisherSuscriber::new(
                 topic,
                 message,
@@ -113,7 +113,6 @@ impl Subscribe {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

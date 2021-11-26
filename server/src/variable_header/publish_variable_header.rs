@@ -8,7 +8,7 @@ pub fn get_variable_header(bytes: &[u8]) -> Result<(String, &[u8], usize), Strin
             let packet_identifier = &bytes[readed_bytes..readed_bytes + 2];
             Ok((parsed_topic, packet_identifier, readed_bytes + 2))
         }
-        Err(err) => Err(err.to_string()),
+        Err(err) => Err(err),
     }
 }
 
@@ -17,15 +17,15 @@ pub fn verify_publish_wilcard(topic: String) -> bool {
 
     let first_char = match chars.get(0) {
         Some(char_found) => char_found,
-        None => panic!("Unexpected error")
+        None => panic!("Unexpected error"),
     };
 
     let last_char = match topic.chars().last() {
         Some(char_found) => char_found,
-        None => panic!("Unexpected error")
+        None => panic!("Unexpected error"),
     };
 
-    let contains_wilcards = topic.contains("#") || topic.contains("$") || topic.contains("+");
+    let contains_wilcards = topic.contains('#') || topic.contains('$') || topic.contains('+');
 
-    return (!contains_wilcards) && (last_char != '/' && first_char != &'/');
+    (!contains_wilcards) && (last_char != '/' && first_char != &'/')
 }
