@@ -28,22 +28,20 @@ impl UserManager {
     pub fn add(&mut self, client_id: String, stream: TcpStream, clean_session: bool) {
         let publisher_writer = PublisherWriter::init(stream, client_id.to_owned());
         self.users
-            .insert(client_id.to_owned(), (publisher_writer, clean_session));
+            .insert(client_id, (publisher_writer, clean_session));
     }
 
     pub fn find_user(&self, client_id: String) -> Option<PublisherWriter> {
-        if let Some(publisher_writer) = self.users.get(&client_id.to_string()) {
-            return Some(publisher_writer.0.clone());
+        if let Some(publisher_writer) = self.users.get(&client_id) {
+            Some(publisher_writer.0.clone())
         } else {
             None
         }
     }
 
     pub fn delete_user(&mut self, client_id: String) {
-        if let Some(s) = self.users.remove(&client_id.to_string()) {
-            return;
-        } else {
-            println!("Error al remover")
+        if self.users.remove(&client_id).is_none() {
+            println!("Unexpected error");
         }
     }
 

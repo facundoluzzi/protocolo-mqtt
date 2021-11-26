@@ -20,7 +20,7 @@ mod tests {
     }
 
     #[test]
-    fn should_verify_topic_A_successfully() {
+    fn should_verify_topic_a_successfully() {
         let topic = "A".to_string();
         let is_valid = verify_publish_wilcard(topic);
         assert_eq!(is_valid, true);

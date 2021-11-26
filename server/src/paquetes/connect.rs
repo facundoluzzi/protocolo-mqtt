@@ -57,7 +57,7 @@ impl Connect {
         } else if let Some(mut usuario) = user_manager.find_user(connect.get_client_id()) {
             usuario.reconnect(stream.try_clone().unwrap());
         } else {
-            user_manager.add(client_id, stream.try_clone().unwrap());
+            user_manager.add(client_id, stream.try_clone().unwrap(), session_flag);
         };
         connect
     }
