@@ -3,9 +3,8 @@ mod tests {
     use std::{collections::HashMap, iter::FromIterator};
 
     use server::authentication::main::is_authenticated;
-    
-    fn make_credentials() -> HashMap<String, String> {
 
+    fn make_credentials() -> HashMap<String, String> {
         let a: Vec<(String, String)> = vec![
             ("user1".to_string(), "pass1".to_string()),
             ("user2".to_string(), "pass2".to_string()),

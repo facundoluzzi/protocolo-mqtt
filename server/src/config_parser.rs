@@ -89,7 +89,9 @@ mod test_config_parser {
 
     #[test]
     fn configurations_does_not_have_commented_lines() {
-        create_test_config_file("testParser1.conf".to_string()).unwrap();
+        if let Err(error) = create_test_config_file("testParser1.conf".to_string()) {
+            println!("Unexpected error: {}", error);
+        };
         let configs = ServerConfigs::obtain_configurations("testParser1.conf".to_string());
         let keys = configs.get_config_names();
         for key in keys {

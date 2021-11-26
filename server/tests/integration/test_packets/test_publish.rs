@@ -31,7 +31,23 @@ mod tests {
     use std::net::TcpStream;
 
     #[test]
-    fn publish_should_be_success() {
+    fn should_publish_message_with_qos_0() {
+        setup();
+        let stream = TcpStream::connect("localhost:1883");
+        if let Ok(mut stream) = stream {
+            let bytes = [
+                0x31, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                0x07, // remaining length
+                0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
+                0x00, 0x10, // packet identifier
+                0x00, 0x03, 0x61, 0x2F, 0x62, // payload
+            ];
+            stream.write(&bytes).unwrap();
+        }
+    }
+
+    #[test]
+    fn should_publish_message_with_qos_1() {
         setup();
         let stream = TcpStream::connect("localhost:1883");
         if let Ok(mut stream) = stream {
@@ -43,15 +59,17 @@ mod tests {
                 0x00, 0x03, 0x61, 0x2F, 0x62, // payload
             ];
             stream.write(&bytes).unwrap();
+
             let mut data = vec![0; 100];
-            match stream.read(&mut data) {
+
+            thread::spawn(move || match stream.read(&mut data) {
                 Ok(size) => {
                     assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x10]);
                 }
                 _ => {
                     panic!();
                 }
-            }
+            });
         }
     }
 }

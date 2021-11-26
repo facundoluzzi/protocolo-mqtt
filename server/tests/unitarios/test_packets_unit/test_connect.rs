@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-use server::helper::user_manager::UserManager;
+    use server::helper::user_manager::UserManager;
     use server::paquetes::connect::Connect;
     use std::net::TcpListener;
     use std::net::TcpStream;
@@ -9,11 +9,7 @@ use server::helper::user_manager::UserManager;
     fn setup() {
         match TcpListener::bind("0.0.0.0:1883") {
             Ok(listener) => {
-                thread::spawn(move || { 
-                    for _i in listener.incoming() {
-
-                    }
-                });
+                thread::spawn(move || for _i in listener.incoming() {});
                 thread::sleep(time::Duration::from_millis(100));
             }
             Err(_) => {}
