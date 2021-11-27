@@ -9,7 +9,6 @@ use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
 use super::publisher_suscriber::PublisherSuscriber;
-
 pub struct Subscribe {
     remaining_length: usize,
     packet_identifier: [u8; 2],
@@ -18,7 +17,6 @@ pub struct Subscribe {
 }
 
 impl Subscribe {
-    // TODO: verificar el largo del payload mayor a 1
     pub fn init(bytes: &[u8]) -> Subscribe {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
@@ -62,7 +60,7 @@ impl Subscribe {
 
             let qos = self.payload[length + acumulator];
             acumulator += length + 1;
-
+            
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
             let publisher_subscriber = PublisherSuscriber::new(
@@ -111,19 +109,5 @@ impl Subscribe {
         if let Err(msg_error) = stream.write(&bytes_response) {
             println!("Error in sending response: {}", msg_error);
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::variable_header::subscribe_variable_header;
-
-    #[test]
-    fn test_wilcard() {
-        let prueba = subscribe_variable_header::verify_wilcard("A/B#".to_owned());
-        let prueba2 = subscribe_variable_header::verify_wilcard("A/#".to_owned());
-
-        assert_ne!(prueba, false);
-        assert!(prueba2);
     }
 }

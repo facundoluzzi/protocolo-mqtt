@@ -38,6 +38,10 @@ impl Topic {
         }
     }
 
+    pub fn get_name(&self) -> String {
+        self.name.to_string()
+    }
+
     pub fn equals(&self, other_topic: String) -> bool {
         self.name == other_topic
     }
