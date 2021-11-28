@@ -1,8 +1,8 @@
 use server::config_parser::ServerConfigs;
-use server::helper::user_manager::UserManager;
 use server::logs::logger::Logger;
 use server::server::main::run_server;
 use server::topics::topic_manager::TopicManager;
+use server::usermanager::user_manager::UserManager;
 
 use std::net::TcpListener;
 
@@ -24,9 +24,9 @@ fn main() {
         server_configs.get_conf_named("port".to_string())
     ));
 
-    let publish_subscriber_sender = TopicManager::init();
-    let user_manager = UserManager::new();
+    let sender_topic_manager = TopicManager::init();
+    let sender_user_manager = UserManager::init();
 
-    run_server(&listener, logger, publish_subscriber_sender, user_manager);
+    run_server(&listener, logger, sender_topic_manager, sender_user_manager);
     drop(listener);
 }

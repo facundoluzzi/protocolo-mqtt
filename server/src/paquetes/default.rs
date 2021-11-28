@@ -1,5 +1,5 @@
-use std::io::Write;
-use std::net::TcpStream;
+use crate::stream::stream_handler::StreamAction::WriteStream;
+use crate::stream::stream_handler::StreamType;
 use std::sync::mpsc::Sender;
 
 pub struct Default {}
@@ -13,8 +13,10 @@ impl Default {
         "default".to_owned()
     }
 
-    pub fn send_response(&self, mut stream: &TcpStream) {
-        if let Err(msg_error) = stream.write(b"default message\n") {
+    pub fn send_response(&self, stream: Sender<StreamType>) {
+        if let Err(msg_error) =
+            stream.send((WriteStream, Some(b"default message\n".to_vec()), None))
+        {
             println!("Error in sending response: {}", msg_error);
         }
     }

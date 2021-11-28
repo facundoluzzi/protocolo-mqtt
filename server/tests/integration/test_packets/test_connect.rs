@@ -1,4 +1,4 @@
-use server::helper::user_manager::UserManager;
+use server::usermanager::user_manager::UserManager;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
@@ -14,11 +14,11 @@ fn setup() {
     match TcpListener::bind("0.0.0.0:1883") {
         Ok(listener) => {
             thread::spawn(move || {
-                let user_manager = UserManager::new();
+                let sender_user_manager = UserManager::init();
                 let logger = Logger::new("connect-tests.txt".to_string())
                     .expect("Logger could not be created");
-                let publish_subscriber_sender = TopicManager::init();
-                run_server(&listener, logger, publish_subscriber_sender, user_manager);
+                let sender_topic_manager = TopicManager::init();
+                run_server(&listener, logger, sender_topic_manager, sender_user_manager);
             });
             thread::sleep(time::Duration::from_millis(100));
         }
@@ -27,7 +27,7 @@ fn setup() {
 }
 
 #[test]
-fn connect_should_be_success() {
+fn connect_should_be_success_01() {
     setup();
     let stream = TcpStream::connect("localhost:1883");
     if let Ok(mut stream) = stream {
