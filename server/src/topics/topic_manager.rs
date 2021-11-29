@@ -1,8 +1,8 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::topics::topic::Topic;
-use crate::{wilcard::trait_wilcard::{Wilcard}};
 use crate::wilcard::verify_wilcard;
+use crate::wilcard::wilcard::Wilcard;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
@@ -47,6 +47,7 @@ impl TopicManager {
                         }
                     }
                     PublisherSubscriberCode::Subscriber => {
+                        // 
                         let subscriber = publish_suscriber.get_sender().unwrap();
                         if let Some(wilcard) = verify_wilcard::get_wilcard(publish_suscriber.get_topic()){
                             topics_copy = topic_manager.subscribe_with_wilcard(topics_copy, wilcard, subscriber.clone(), publish_suscriber.get_client_id());
@@ -75,7 +76,7 @@ impl TopicManager {
         self.publisher_subscriber_sender.clone()
     }
 
-    pub fn subscribe_with_wilcard(&self, topics: Vec<Topic>, wilcard: Box<dyn Wilcard>, sender: Sender<String>, client_id: String) -> Vec<Topic> {
+    pub fn subscribe_with_wilcard(&self, topics: Vec<Topic>, wilcard: Wilcard, sender: Sender<String>, client_id: String) -> Vec<Topic> {
         let mut new_topics: Vec<Topic> = Vec::new();
         for mut topic in topics.clone() {
             if wilcard.verify_topic(topic.get_name()) {
