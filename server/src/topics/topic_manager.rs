@@ -1,7 +1,8 @@
-use crate::helper::verify_wilcard;
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::topics::topic::Topic;
+use crate::{wilcard::trait_wilcard::{Wilcard}};
+use crate::wilcard::verify_wilcard;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
@@ -33,7 +34,8 @@ impl TopicManager {
             publisher_subscriber_sender,
             topics,
         };
-        let topics_copy = topic_manager.topics.clone();
+        let mut topics_copy = topic_manager.topics.clone();
+
          thread::spawn(move || {
             for publish_suscriber in publisher_subscriber_receiver {
                 match publish_suscriber.get_packet_type() {
@@ -46,11 +48,8 @@ impl TopicManager {
                     }
                     PublisherSubscriberCode::Subscriber => {
                         let subscriber = publish_suscriber.get_sender().unwrap();
-                        if let Some(wilcard) = verify_wilcard::verify_wilcard(publish_suscriber.get_topic()){
-                            let topics_to_subscribe = topic_manager.get_topics(wilcard);
-                            for mut t in topics_to_subscribe {
-                                t.add(subscriber.clone(), publish_suscriber.get_client_id());
-                            }
+                        if let Some(wilcard) = verify_wilcard::get_wilcard(publish_suscriber.get_topic()){
+                            topics_copy = topic_manager.subscribe_with_wilcard(topics_copy, wilcard, subscriber.clone(), publish_suscriber.get_client_id());
                         } else{
                             let topic_found = topics_copy
                             .iter()
@@ -76,24 +75,15 @@ impl TopicManager {
         self.publisher_subscriber_sender.clone()
     }
 
-    pub fn get_topics(&self, wilcard: String) -> Vec<Topic> {
-        let mut topics_to_return : Vec<Topic> = Vec::new();
-        for topic in self.topics.clone() {
-            let name = topic.get_name();
-            let mut title = "".to_owned();
-            let mut contains = false;
-            for i in 0..name.len() {
-                let b = name.as_bytes()[i] as char;
-                title.push(b);
-                if title == wilcard {
-                    contains = true;
-                }
+    pub fn subscribe_with_wilcard(&self, topics: Vec<Topic>, wilcard: Box<dyn Wilcard>, sender: Sender<String>, client_id: String) -> Vec<Topic> {
+        let mut new_topics: Vec<Topic> = Vec::new();
+        for mut topic in topics.clone() {
+            if wilcard.verify_topic(topic.get_name()) {
+                topic.add(sender.clone(), client_id.to_string());
             }
-            if contains {
-                topics_to_return.push(topic);
-            }
+            new_topics.push(topic);
         }
-        topics_to_return
+        new_topics
     }
 }
 

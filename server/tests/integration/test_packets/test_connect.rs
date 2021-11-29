@@ -27,7 +27,7 @@ fn setup() {
 }
 
 #[test]
-fn connect_should_be_success() {
+fn connect_should_be_success_01() {
     setup();
     let stream = TcpStream::connect("localhost:1883");
     if let Ok(mut stream) = stream {

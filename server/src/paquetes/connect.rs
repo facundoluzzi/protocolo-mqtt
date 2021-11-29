@@ -3,6 +3,7 @@ use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
 use crate::helper::user_manager::UserManager;
 use crate::payload::connect_payload::ConnectPayload;
+use crate::variable_header::connect_variable_header::{check_variable_header_len, get_keep_alive};
 
 use std::io::Write;
 use std::net::TcpStream;
@@ -12,6 +13,7 @@ pub struct Connect {
     flags: ConnectFlags,
     payload: ConnectPayload,
     status_code: u8,
+    keep_alive: Option<u8>,
 }
 
 impl Connect {
@@ -23,6 +25,16 @@ impl Connect {
         let init_variable_header = 1 + readed_index;
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
+
+        match check_variable_header_len(variable_header) {
+            Ok(_) => {}
+            Err(msg) => {
+                // TODO: cortar conexión
+                panic!(msg);
+            }
+        }
+
+        let keep_alive = get_keep_alive(variable_header);
 
         status_code = status_code.check_protocol_level(variable_header[6]);
 
@@ -50,6 +62,7 @@ impl Connect {
             flags,
             payload,
             status_code: status_code.apply_validations(),
+            keep_alive,
         };
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
@@ -72,5 +85,9 @@ impl Connect {
 
     pub fn get_client_id(&self) -> String {
         self.payload.get_client_id()
+    }
+
+    pub fn get_keep_alive(&self) -> Option<u8> {
+        self.keep_alive
     }
 }

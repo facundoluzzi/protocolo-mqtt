@@ -1,4 +1,6 @@
-pub fn verify_wilcard(topic: String) -> Option<String> {
+use super::{last_astherisc::LastAstherisc, trait_wilcard::Wilcard};
+
+pub fn get_wilcard(topic: String) -> Option<Box<dyn Wilcard>> {
     let mut string_to_return = "".to_owned();
     for i in 0..topic.len() {
         let b: u8 = topic.as_bytes()[i];
@@ -7,7 +9,7 @@ pub fn verify_wilcard(topic: String) -> Option<String> {
             let c: u8 = topic.as_bytes()[i + 1];
             let d: char = c as char;
             if d == '#' && (i + 1) == (topic.len() - 1) {
-                return Some(string_to_return);
+                return Some(LastAstherisc::init(string_to_return));
             }
         }
         string_to_return.push(c);

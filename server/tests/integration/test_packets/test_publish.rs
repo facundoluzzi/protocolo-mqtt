@@ -37,7 +37,7 @@ mod tests {
         if let Ok(mut stream) = stream {
             let bytes = [
                 0x31, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
-                0x07, // remaining length
+                0x0A, // remaining length
                 0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                 0x00, 0x10, // packet identifier
                 0x00, 0x03, 0x61, 0x2F, 0x62, // payload
@@ -53,7 +53,7 @@ mod tests {
         if let Ok(mut stream) = stream {
             let bytes = [
                 0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
-                0x07, // remaining length
+                0x0A, // remaining length
                 0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                 0x00, 0x10, // packet identifier
                 0x00, 0x03, 0x61, 0x2F, 0x62, // payload

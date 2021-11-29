@@ -8,3 +8,4 @@ pub mod payload;
 pub mod server;
 pub mod topics;
 pub mod variable_header;
+pub mod wilcard;

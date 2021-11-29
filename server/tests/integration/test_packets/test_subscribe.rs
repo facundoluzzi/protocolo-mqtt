@@ -45,16 +45,16 @@ mod tests {
                 0x04, // protocol name
                 0x00, // flags
                 0x00, 0x0B, // keep alive
-                0x00, 0x02, 0x00, 0x00, // client identifier
+                0x00, 0x02, 0x00, 0x00 // client identifier
             ];
             stream.write(&connect_bytes).unwrap();
             stream.read(&mut data).unwrap();
 
             let subscribe_bytes = [
                 0x80, // packet type
-                0x08, // remaining length
+                0x09, // remaining length
                 0x00, 0x0A, // variable header, en particular packet identifier
-                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00 // payload MQTT como mensaje + qos
             ];
 
             stream.write(&subscribe_bytes).unwrap();
@@ -93,9 +93,9 @@ mod tests {
 
             let subscribe_bytes = [
                 0x80, // packet type
-                0x08, // remaining length
+                0x09, // remaining length
                 0x00, 0x0A, // variable header, en particular packet identifier
-                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x01, // payload MQTT como mensaje
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x01 // payload MQTT como mensaje
             ];
 
             stream.write(&subscribe_bytes).unwrap();
@@ -134,7 +134,7 @@ mod tests {
 
             let subscribe_bytes = [
                 0x80, // packet type
-                0x08, // remaining length
+                0x09, // remaining length
                 0x00, 0x0A, // variable header, en particular packet identifier
                 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x02, // payload MQTT como mensaje
             ];
@@ -175,7 +175,7 @@ mod tests {
 
             let subscribe_bytes = [
                 0x80, // packet type
-                0x08, // remaining length
+                0x09, // remaining length
                 0x00, 0x0A, // variable header, en particular packet identifier
                 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x03, // payload MQTT como mensaje
             ];
@@ -216,7 +216,7 @@ mod tests {
 
             let subscribe_bytes = [
                 0x80, // packet type
-                0x08, // remaining length
+                0x14, // remaining length
                 0x00, 0x0A, // variable header, en particular packet identifier
                 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x03, // payload MQTT como mensaje
                 0x00, 0x03, 0x4D, 0x15, 0x45, 0x00, // payload MQT como mensaje

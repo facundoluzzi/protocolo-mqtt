@@ -91,6 +91,7 @@ impl Subscribe {
     }
 
     pub fn send_response(&self, mut stream: &TcpStream) {
+
         let packet_type = 0x90;
         let remaining_length = 0x03;
         let packet_identifier_msb = self.packet_identifier[0];
