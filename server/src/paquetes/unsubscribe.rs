@@ -1,5 +1,5 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
-use crate::helper::remaining_length::{save_remaining_length, self};
+use crate::helper::remaining_length::{save_remaining_length};
 use crate::helper::utf8_parser::UTF8;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 
@@ -9,16 +9,15 @@ use std::sync::mpsc::Sender;
 
 use super::publisher_suscriber::PublisherSuscriber;
 
-pub struct Subscribe {
+pub struct Unsubscribe {
     remaining_length: usize,
     packet_identifier: Vec<u8>,
     payload: Vec<u8>,
-    return_codes: Vec<u8>,
 }
 
-impl Subscribe {
+impl Unsubscribe {
     // TODO: verificar el largo del payload mayor a 1
-    pub fn init(bytes: &[u8]) -> Subscribe {
+    pub fn init(bytes: &[u8]) -> Unsubscribe {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -29,27 +28,24 @@ impl Subscribe {
         if let Ok((packet_identifier_rec, length)) = variable_header{
             let payload = &bytes[init_variable_header + length..bytes.len()];
             let packet_identifier = packet_identifier_rec;
-            return Subscribe {
+            return Unsubscribe {
                 remaining_length,
                 packet_identifier: packet_identifier,
                 payload: (*payload).to_vec(),
-                return_codes: Vec::new(),
             }
         }
         let payload = &bytes[init_variable_header + 2..bytes.len()];
-        Subscribe {
+        Unsubscribe {
             remaining_length,
             packet_identifier: packet_identifier.to_vec(),
             payload: (*payload).to_vec(),
-            return_codes: Vec::new(),
         }
         }       
     
 
-    pub fn subscribe_topic(
+    pub fn unsubscribe_topic(
         &mut self,
         sender: &Sender<PublisherSuscriber>,
-        sender_for_publish: Sender<String>,
         client_id: String,
     ) -> Self {
         let mut acumulator: usize = 0;
@@ -58,22 +54,20 @@ impl Subscribe {
             let (topic, length) =
                 match UTF8::utf8_parser(&self.payload[acumulator..self.payload.len()]) {
                     Ok((topic, length)) => (topic, length),
-                    Err(_err_result) => {
-                        self.return_codes.push(0x80);
+                    Err(err_result) => {
+                        println!("{}", err_result);
                         continue;
                     }
                 };
+            acumulator += length ;
 
-            let qos = self.payload[length + acumulator];
-            acumulator += length + 1;
-
-            let type_s = PublisherSubscriberCode::Subscriber;
+            let type_s = PublisherSubscriberCode::Unsubscribe;
             let message = "None".to_owned();
             let publisher_subscriber = PublisherSuscriber::new(
                 topic,
                 message,
                 type_s,
-                Some(sender_for_publish.clone()),
+                None,
                 client_id.to_string(),
             );
 
@@ -81,18 +75,12 @@ impl Subscribe {
                 println!("Error sending to publisher_subscriber: {}", sender_err);
             }
 
-            match qos {
-                0 => self.return_codes.push(0x00),
-                1 => self.return_codes.push(0x01),
-                _ => self.return_codes.push(0x80),
-            };
         }
 
-        Subscribe {
+        Unsubscribe {
             remaining_length: self.remaining_length,
             packet_identifier: self.packet_identifier.clone(),
             payload: self.payload.clone(),
-            return_codes: self.return_codes.clone(),
         }
     }
 
@@ -109,26 +97,8 @@ impl Subscribe {
         bytes_response = [bytes_response, packet_identifier].concat();
 
 
-        for return_code in &self.return_codes {
-            bytes_response.push(*return_code);
-        }
-
         if let Err(msg_error) = stream.write(&bytes_response) {
             println!("Error in sending response: {}", msg_error);
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::variable_header::subscribe_variable_header;
-
-    #[test]
-    fn test_wilcard() {
-        let prueba = subscribe_variable_header::verify_wilcard("A/B#".to_owned());
-        let prueba2 = subscribe_variable_header::verify_wilcard("A/#".to_owned());
-
-        assert_ne!(prueba, false);
-        assert!(prueba2);
     }
 }
