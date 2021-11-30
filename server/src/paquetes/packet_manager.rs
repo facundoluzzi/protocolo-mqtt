@@ -7,6 +7,7 @@ use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
 use super::publisher_suscriber::PublisherSuscriber;
+use super::unsubscribe::Unsubscribe;
 
 pub struct PacketManager {
     client_id: String,
@@ -51,6 +52,12 @@ impl PacketManager {
                     .subscribe_topic(
                         publisher_subscriber_sender,
                         user_manager.get_sender(self.client_id.to_string()),
+                        self.client_id.to_owned(),
+                    )
+                    .send_response(stream),
+                10 => Unsubscribe::init(bytes)
+                    .unsubscribe_topic(
+                        publisher_subscriber_sender,
                         self.client_id.to_owned(),
                     )
                     .send_response(stream),

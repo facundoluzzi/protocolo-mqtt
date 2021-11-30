@@ -61,7 +61,7 @@ impl Unsubscribe {
                 };
             acumulator += length ;
 
-            let type_s = PublisherSubscriberCode::Unsubscribe;
+            let type_s = PublisherSubscriberCode::Unsubscriber;
             let message = "None".to_owned();
             let publisher_subscriber = PublisherSuscriber::new(
                 topic,
@@ -85,10 +85,10 @@ impl Unsubscribe {
     }
 
     pub fn send_response(&self, mut stream: &TcpStream) {
-        let packet_type = 0x90u8;
+        let packet_type = 0xA0u8;
         let packet_identifier = self.packet_identifier.clone();
         let mut bytes_response = Vec::new();
-        let remaining_length = packet_identifier.len()+3;
+        let remaining_length = packet_identifier.len()+2;
 
         bytes_response.push(packet_type);
         bytes_response.push(remaining_length as u8);
