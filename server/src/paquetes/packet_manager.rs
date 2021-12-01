@@ -11,12 +11,14 @@ use super::unsubscribe::Unsubscribe;
 
 pub struct PacketManager {
     client_id: String,
+    keep_alive: Option<u8>,
 }
 
 impl PacketManager {
     pub fn init() -> Self {
         PacketManager {
             client_id: "".to_string(),
+            keep_alive: None,
         }
     }
 
@@ -28,6 +30,10 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
+    pub fn set_keep_alive(&mut self, keep_alive: Option<u8>) {
+        self.keep_alive = keep_alive;
+    }
+
     // TODO: validar que un paquete que no es connect, siempre tenga que estar ya conectado (haber hecho un connect packet previamente)
     pub fn process_message(
         &mut self,
@@ -37,12 +43,12 @@ impl PacketManager {
         user_manager: &mut UserManager,
     ) {
         let first_byte = bytes.get(0);
-
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
                 1 => {
                     let connect = Connect::init(bytes, stream, user_manager);
                     self.set_client_id(connect.get_client_id());
+                    self.set_keep_alive(connect.get_keep_alive());
                     connect.send_response(stream);
                 }
                 3 => Publish::init(bytes)
