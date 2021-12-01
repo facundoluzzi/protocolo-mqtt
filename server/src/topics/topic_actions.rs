@@ -1,5 +1,5 @@
 pub enum TopicAction {
-    AddTopic,
-    RemoveTopic,
+    AddSubscriber,
+    RemoveSubscriber,
     PublishMessage
 }

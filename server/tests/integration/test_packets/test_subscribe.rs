@@ -53,7 +53,7 @@ mod tests {
             let subscribe_bytes = [
                 0x80, // packet type
                 0x09, // remaining length
-                0x00, 0x0A, // variable header, en particular packet identifier
+                0x06, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // variable header, en particular packet identifier
                 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00 // payload MQTT como mensaje + qos
             ];
 
@@ -94,7 +94,7 @@ mod tests {
             let subscribe_bytes = [
                 0x80, // packet type
                 0x09, // remaining length
-                0x00, 0x0A, // variable header, en particular packet identifier
+                0x04, 0x00, 0x02, 0x02, 0x04, // variable header, en particular packet identifier
                 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x01 // payload MQTT como mensaje
             ];
 
@@ -135,7 +135,7 @@ mod tests {
             let subscribe_bytes = [
                 0x80, // packet type
                 0x09, // remaining length
-                0x00, 0x0A, // variable header, en particular packet identifier
+                0x06, 0x00, 0x03, 0x00, 0x04, 0x4D, // variable header, en particular packet identifier
                 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x02, // payload MQTT como mensaje
             ];
 
@@ -143,7 +143,7 @@ mod tests {
 
             match stream.read(&mut data) {
                 Ok(size) => {
-                    assert_eq!(data[0..size], [0x90, 0x06, 0x00, 0x03, 0x00, 0x04, 0x4D, 0x80]);
+                    assert_eq!(data[0..size], [0x90, 0x05, 0x00, 0x03, 0x00, 0x04, 0x4D, 0x80]);
                 }
                 _ => {
                     panic!();

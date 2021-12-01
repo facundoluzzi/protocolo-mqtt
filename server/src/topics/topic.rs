@@ -1,10 +1,9 @@
-use std::process::id;
 use std::{collections::HashMap};
 use std::sync::mpsc::{Receiver, Sender, self};
 use std::thread;
 
 use crate::topics::topic_types::SenderTopicType;
-use crate::topics::topic_actions::TopicAction::{AddTopic,RemoveTopic,PublishMessage};
+use crate::topics::topic_actions::TopicAction::{AddSubscriber, RemoveSubscriber, PublishMessage};
 
 pub struct Topic {
     name: String,
@@ -25,7 +24,7 @@ impl Topic {
                 // info puede ser message en publish message o client_id en add topic o remove topic
                 let info = message.1;
                 match action_type {
-                    AddTopic => {
+                    AddSubscriber=>{
                         let sender = if let Some(sender) = message.2 {
                             sender
                         } else {
@@ -33,7 +32,7 @@ impl Topic {
                         };
                         topic.add(info, sender);
                     },
-                    RemoveTopic => {
+                    RemoveSubscriber => {
                         topic.remove(info);
                     },
                     PublishMessage => {
@@ -50,7 +49,7 @@ impl Topic {
         self.subscribers.insert(client_id, sender);
     }
 
-    pub fn remove(&mut self, client_id: String) {
+    fn remove(&mut self, client_id: String) {
         self.subscribers.remove(&client_id);
     }
 

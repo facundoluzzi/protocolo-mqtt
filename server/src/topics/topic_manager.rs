@@ -10,9 +10,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 use crate::topics::topic_types::SenderTopicType;
-use crate::topics::topic_actions::TopicAction::{ AddTopic, RemoveTopic, PublishMessage };
-
-use super::topic_actions::TopicAction;
+use crate::topics::topic_actions::TopicAction::{ AddSubscriber, RemoveSubscriber, PublishMessage };
 
 pub struct TopicManager {
     publisher_subscriber_sender: Sender<PublisherSuscriber>,
@@ -57,17 +55,10 @@ impl TopicManager {
                         }
                     }
                     PublisherSubscriberCode::Unsubscriber => {
-                    //     let topic_found = topics_copy
-                    //         .iter()
-                    //         .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
-                    //     // ToDo ! Wilcard: Por cada subscriber que nos llega tenemos un topico. Ni bien lo recibimos tenemos que verificar si tiene alguna wilcard
-                    //     // Si posee alguna wilcard, tenemos que iterar todos los topicos como hacemos aca abajo
-                    //     if let Some(topic) = topic_found {
-                    //         topic
-                    //             .clone()
-                    //             .remove(publish_suscriber.get_client_id());
-                    // }
-                }
+                        let topic_name = publish_suscriber.get_topic();
+                        let client_id = publish_suscriber.get_client_id();
+                        topic_manager.unsubscribe(topic_name.to_owned(), client_id.to_owned())
+                    }
                 };
             }
         });
@@ -82,18 +73,27 @@ impl TopicManager {
 
     fn subscribe(&mut self, topic_name: String, client_id: String, sender_subscriber: Sender<String>) {
         if let Some(topic_sender) = self.topics.get(&topic_name.to_owned()) {
-            topic_sender.send((AddTopic, client_id.to_owned(), Some(sender_subscriber))).unwrap();
+            topic_sender.send((AddSubscriber, client_id.to_owned(), Some(sender_subscriber))).unwrap();
         } else {
             let sender_topic = Topic::new(topic_name.to_owned());
             self.topics.insert(topic_name.to_owned(), sender_topic.clone());
-            sender_topic.send((AddTopic, client_id.to_owned(), Some(sender_subscriber))).unwrap();
+            sender_topic.send((AddSubscriber, client_id.to_owned(), Some(sender_subscriber))).unwrap();
+        }
+    }
+    fn unsubscribe(&mut self, topic_name: String, client_id: String) {
+        if let Some(topic_sender) = self.topics.get(&topic_name.to_owned()) {
+            topic_sender.send((RemoveSubscriber, client_id.to_owned(),None)).unwrap();
+        } else {    
+            let sender_topic = Topic::new(topic_name.to_owned());
+            self.topics.insert(topic_name.to_owned(), sender_topic.clone());
+            sender_topic.send((RemoveSubscriber, client_id.to_owned(), None)).unwrap();
         }
     }
 
     pub fn subscribe_with_wilcard(&self, wilcard: Wildcard, sender_subscribe: Sender<String>, client_id: String) {
         for (topic_name, topic_sender) in &self.topics {
             if wilcard.verify_topic(topic_name.to_owned()) {
-                topic_sender.send((AddTopic, client_id.to_owned(), Some(sender_subscribe.clone()))).unwrap();
+                topic_sender.send((AddSubscriber, client_id.to_owned(), Some(sender_subscribe.clone()))).unwrap();
             }
         }   
     }
