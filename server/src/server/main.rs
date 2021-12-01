@@ -1,8 +1,8 @@
+use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::user_manager::UserManager;
 use crate::logs::logger::Logger;
 use crate::paquetes::packet_manager::PacketManager;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
-use crate::helper::remaining_length::save_remaining_length;
 
 use std::io::Read;
 use std::net::{Shutdown, TcpListener, TcpStream};
@@ -28,7 +28,8 @@ fn handle_new_client(
     while match stream.read(&mut data) {
         Ok(size) => {
             if is_first_byte && size != 0 {
-                let (_readed_bytes, _packet_length) = save_remaining_length(&data[1..size]).unwrap();
+                let (_readed_bytes, _packet_length) =
+                    save_remaining_length(&data[1..size]).unwrap();
                 packet_length = _packet_length;
                 readed_bytes = _readed_bytes;
 
@@ -40,7 +41,10 @@ fn handle_new_client(
 
                 // readed bytes son los bytes leídos en el remaining_length y el +1 es el primer byte
                 if total_data.len() >= packet_length + readed_bytes + 1 {
-                    logger.info(format!("Received from client {:?}", &total_data[0..packet_length + readed_bytes + 1]));
+                    logger.info(format!(
+                        "Received from client {:?}",
+                        &total_data[0..packet_length + readed_bytes + 1]
+                    ));
                     is_first_byte = true;
                     packet_factory.process_message(
                         &total_data[0..packet_length + readed_bytes + 1],

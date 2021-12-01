@@ -74,7 +74,7 @@ impl Connect {
         };
         connect
     }
-    
+
     pub fn send_response(&self, mut stream: &TcpStream) {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let connack_response = [0x20, 0x02, session_present_bit, self.status_code];

@@ -1,5 +1,5 @@
 mod tests {
-    use server::wildcard::{wildcard::Wildcard, verify_wildcard};
+    use server::wildcard::{verify_wildcard};
 
     #[test]
     pub fn get_ok_on_verification_get_wilcard() {

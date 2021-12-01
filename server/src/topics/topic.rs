@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use std::sync::mpsc::{Receiver, Sender, self};
+use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 
+use crate::topics::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
 use crate::topics::topic_types::SenderTopicType;
-use crate::topics::topic_actions::TopicAction::{AddTopic,RemoveTopic,PublishMessage};
 
 pub struct Topic {
     name: String,
@@ -12,12 +12,13 @@ pub struct Topic {
 
 impl Topic {
     pub fn new(name: String) -> Sender<SenderTopicType> {
-        let (topic_sender, topic_receiver): (Sender<SenderTopicType>, Receiver<SenderTopicType>) = mpsc::channel();
+        let (topic_sender, topic_receiver): (Sender<SenderTopicType>, Receiver<SenderTopicType>) =
+            mpsc::channel();
         let mut topic = Topic {
             name,
             subscribers: HashMap::new(),
         };
-        
+
         thread::spawn(move || {
             for message in topic_receiver {
                 let action_type = message.0;
@@ -30,10 +31,10 @@ impl Topic {
                             panic!("unexpected error");
                         };
                         topic.add(info, sender);
-                    },
+                    }
                     RemoveTopic => {
                         topic.remove(info);
-                    },
+                    }
                     PublishMessage => {
                         topic.publish_msg(info);
                     }
