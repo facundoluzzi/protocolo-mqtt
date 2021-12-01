@@ -57,16 +57,16 @@ impl TopicManager {
                         }
                     }
                     PublisherSubscriberCode::Unsubscriber => {
-                        let topic_found = topics_copy
-                            .iter()
-                            .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
-                        // ToDo ! Wilcard: Por cada subscriber que nos llega tenemos un topico. Ni bien lo recibimos tenemos que verificar si tiene alguna wilcard
-                        // Si posee alguna wilcard, tenemos que iterar todos los topicos como hacemos aca abajo
-                        if let Some(topic) = topic_found {
-                            topic
-                                .clone()
-                                .remove(publish_suscriber.get_client_id());
-                    }
+                    //     let topic_found = topics_copy
+                    //         .iter()
+                    //         .find(|topic| -> bool { topic.equals(publish_suscriber.get_topic()) });
+                    //     // ToDo ! Wilcard: Por cada subscriber que nos llega tenemos un topico. Ni bien lo recibimos tenemos que verificar si tiene alguna wilcard
+                    //     // Si posee alguna wilcard, tenemos que iterar todos los topicos como hacemos aca abajo
+                    //     if let Some(topic) = topic_found {
+                    //         topic
+                    //             .clone()
+                    //             .remove(publish_suscriber.get_client_id());
+                    // }
                 }
                 };
             }

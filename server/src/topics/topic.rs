@@ -50,8 +50,8 @@ impl Topic {
         self.subscribers.insert(client_id, sender);
     }
 
-    fn remove(&mut self, subscriber: String) {
-        self.subscribers.remove(&subscriber);
+    pub fn remove(&mut self, client_id: String) {
+        self.subscribers.remove(&client_id);
     }
 
     fn publish_msg(&self, message: String) {

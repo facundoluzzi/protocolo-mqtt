@@ -97,17 +97,14 @@ impl Subscribe {
     pub fn send_response(&self, mut stream: &TcpStream) {
 
         let packet_type = 0x90;
-        let remaining_length = 0x03;
-        let packet_identifier_msb = self.packet_identifier[0];
-        let packet_identifier_lsb = self.packet_identifier[1];
         let mut bytes_response = Vec::new();
-        let remaining_length = packet_identifier.len()+3;
+        let remaining_length = self.packet_identifier.len()+3;
 
         bytes_response.push(packet_type);
         bytes_response.push(remaining_length as u8);
         bytes_response.push(0x00);
-        bytes_response.push(packet_identifier.len() as u8);
-        bytes_response = [bytes_response, packet_identifier].concat();
+        bytes_response.push(self.packet_identifier.len() as u8);
+        bytes_response = [bytes_response, self.packet_identifier.clone()].concat();
 
 
         for return_code in &self.return_codes {
