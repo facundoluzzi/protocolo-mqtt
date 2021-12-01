@@ -2,7 +2,11 @@
 mod tests {
     use server::paquetes::publish::Publish;
     use server::paquetes::publisher_suscriber::PublisherSuscriber;
+    use server::topics::topic::Topic;
     use server::topics::topic_manager::TopicManager;
+    use server::topics::topic_types::SenderTopicType;
+    use server::wildcard::verify_wildcard;
+    use std::collections::HashMap;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
     use std::sync::mpsc::Sender;
@@ -12,6 +16,10 @@ mod tests {
 
     use server::helper::publisher_subscriber_code::PublisherSubscriberCode;
     use server::paquetes::subscribe::Subscribe;
+    use server::topics::topic_actions::TopicAction::{ AddTopic, RemoveTopic, PublishMessage };
+
+
+
 
     #[test]
     fn should_create_subscribe_packet() {
@@ -70,84 +78,84 @@ mod tests {
         assert_eq!(receiver_two.recv().unwrap(), "message".to_string());
     }
 
-    // #[test]
-    // fn should_create_subscribe_packet_with_wilcard_astherisc_and_greater_than() {
-    //     let publish_subscriber_sender = TopicManager::init();
+    #[test]
+    fn should_create_subscribe_packet_with_wilcard_astherisc_and_greater_than() {
 
-    //     let subscribe_bytes = [
-    //         0x80, // packet type
-    //         0x1B, // remaining length ---------> RECALCULAR PORQUE ESTA MAL
-    //         0x00, 0x0A, // variable header, en particular packet identifier
-    //         0x00, 0x17, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // payload - futbol
-    //         0x2F, 0x62, 0x6F, 0x63, 0x61, // boca
-    //         0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, // cantidad
-    //         0x64, 0x65, 0x2A, // de*     -> /cantidadDe*
-    //         0x00, 
-    //     ];
+        let (publish_subscriber_sender, publisher_subscriber_receiver): (Sender<PublisherSuscriber>, Receiver<PublisherSuscriber>) =
+            mpsc::channel();
 
-    //     let subscribe_bytes_crear_cantidad_de_goles = [
-    //         0x80, // packet type
-    //         0x1F, // remaining length ---------> RECALCULAR PORQUE ESTA MAL
-    //         0x00, 0x0A, // variable header, en particular packet identifier
-    //         0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // payload - futbol
-    //         0x2F, 0x62, 0x6F, 0x63, 0x61, // boca
-    //         0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, // cantidad
-    //         0x64, 0x65, 0x67, 0x6F, 0x6C, 0x65, 0x73, // de*     -> CANTIDAD DE GOLES
-    //         0x00, 
-    //     ];
+        let topic_boca_goles = Topic::new("futbol/boca/cantidaddegoles".to_owned());
+        let topic_boca_partidos = Topic::new("futbol/boca/cantidaddepartidos".to_owned());
+        let mut topics: HashMap<String, Sender<SenderTopicType>> = HashMap::new();
+        topics.insert("futbol/boca/cantidaddegoles".to_owned(), topic_boca_goles);
+        topics.insert("futbol/boca/cantidaddepartidos".to_owned(), topic_boca_partidos);
 
-    //     let subscribe_bytes_crear_cantidad_de_partidos = [
-    //         0x80, // packet type
-    //         0x22, // remaining length ---------> RECALCULAR PORQUE ESTA MAL
-    //         0x00, 0x0A, // variable header, en particular packet identifier
-    //         0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 
-    //         0x2F, 0x62, 0x6F, 0x63, 0x61, 
-    //         0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, 
-    //         0x64, 0x65, 0x70, 0x61, 0x72, 0x74, 0x69, 0x64, 0x6F, 0x73,// CANTIDAD DE PARTIDOS
-    //         0x00, 
-    //     ];
+        let subscribe_bytes = [
+            0x80, // packet type
+            0x1B, // remaining length ---------> RECALCULAR PORQUE ESTA MAL
+            0x00, 0x0A, // variable header, en particular packet identifier
+            0x00, 0x17, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // payload - futbol
+            0x2F, 0x62, 0x6F, 0x63, 0x61, // boca
+            0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, // cantidad
+            0x64, 0x65, 0x2A, // de*     -> /cantidadDe*
+            0x00, 
+        ];
+        
+        let (sender_two, receiver_two): (Sender<String>, Receiver<String>) = mpsc::channel();
 
-    //     let (sender_two, receiver_two): (Sender<String>, Receiver<String>) = mpsc::channel();
+        std::thread::spawn(move || {
+            for publisher_subscriber in publisher_subscriber_receiver {
+                match publisher_subscriber.get_packet_type() {
+                    PublisherSubscriberCode::Publisher => {
+                        if let Some(topic_sender) = topics.get(&publisher_subscriber.get_topic()) {
+                            topic_sender.send((PublishMessage, publisher_subscriber.get_message(), None)).unwrap();
+                        }
+                    },
+                    PublisherSubscriberCode::Subscriber => {
+                        let subscriber = publisher_subscriber.get_sender();
+                        let topic_name = publisher_subscriber.get_topic();
+                        let client_id = publisher_subscriber.get_client_id();
+                        if let Some(wilcard) = verify_wildcard::get_wilcard(topic_name.to_owned()){
+                            for (topic_name, topic_sender) in &topics {
+                                if wilcard.verify_topic(topic_name.to_owned()) {
+                                    topic_sender.send((AddTopic, client_id.to_owned(), subscriber.clone())).unwrap();
+                                }
+                            }   
+                        } else {
+                            assert_eq!(0, 1);
+                        }
+                    }
+                };
+            }
+            for rx in receiver_two {
+                assert_eq!(rx, "ALTEG".to_owned())
+            }
+        });
 
-    //     let (sender_partidos, _receiver_partidos): (Sender<String>, Receiver<String>) = mpsc::channel();
-    //     let (sender_goles, _receiver_goles): (Sender<String>, Receiver<String>) = mpsc::channel();
+        let _subscribe = Subscribe::init(&subscribe_bytes).subscribe_topic(
+            &publish_subscriber_sender,
+            sender_two,
+            "clientId".to_string(),
+        );
 
-    //     let _subscribe_partidos = Subscribe::init(&subscribe_bytes_crear_cantidad_de_partidos).subscribe_topic(
-    //         &publish_subscriber_sender,
-    //         sender_partidos,
-    //         "CREARPARTIDOS".to_string(),
-    //     );
+        let publisher_subscriber = receiver.recv().unwrap();
 
-    //     let _subscribe_goles = Subscribe::init(&subscribe_bytes_crear_cantidad_de_goles).subscribe_topic(
-    //         &publish_subscriber_sender,
-    //         sender_goles,
-    //         "CREARGOLES".to_string(),
-    //     );
+        assert_eq!(publisher_subscriber.get_algo(), 'algo');
 
-    //     let _subscribe = Subscribe::init(&subscribe_bytes).subscribe_topic(
-    //         &publish_subscriber_sender,
-    //         sender_two,
-    //         "clientId".to_string(),
-    //     );
+        let bytes = [
+            0x32, // Paquete publish
+            0x29, // Remaining Length
+            0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // payload - futbol
+            0x2F, 0x62, 0x6F, 0x63, 0x61, // boca
+            0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, // cantidad
+            0x64, 0x65, 0x70, 0x61, 0x72, 0x74, 0x69, 0x64, 0x6F, 0x73, 
+            0x00, 0x10, // Packet Identifier
+            0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47, // Payload 'Message'
+        ];
 
-    //     let bytes = [
-    //         0x32, // Paquete publish
-    //         0x29, // Remaining Length
-    //         0x00, 0x1F, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // payload - futbol
-    //         0x2F, 0x62, 0x6F, 0x63, 0x61, // boca
-    //         0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, // cantidad
-    //         0x64, 0x65, 0x70, 0x61, 0x72, 0x74, 0x69, 0x64, 0x6F, 0x73, 
-    //         0x00, 0x10, // Packet Identifier
-    //         0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47, // Payload 'Message'
-    //     ];
-
-    //     let publish = Publish::init(&bytes);
-    //     let topic = publish.get_topic();
-    //     assert_ne!(topic, "futbol/boca/cantidaddepartidos".to_owned());
-    //     println!("AAAAAAAAAAAAAAAAAAAA");
-    //     assert_eq!(receiver_two.recv().unwrap(), "Message");
-    //     // assert_eq!(receiver_two.recv().unwrap(), "message".to_string());
-    // }
+        let publish = Publish::init(&bytes);
+        publish.send_message(&publish_subscriber_sender, "client_id".to_owned());
+    }
 
 
 }

@@ -1,5 +1,4 @@
-use std::process::id;
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use std::sync::mpsc::{Receiver, Sender, self};
 use std::thread;
 
@@ -22,7 +21,6 @@ impl Topic {
         thread::spawn(move || {
             for message in topic_receiver {
                 let action_type = message.0;
-                // info puede ser message en publish message o client_id en add topic o remove topic
                 let info = message.1;
                 match action_type {
                     AddTopic => {
@@ -42,7 +40,6 @@ impl Topic {
                 }
             }
         });
-        
         topic_sender
     }
 

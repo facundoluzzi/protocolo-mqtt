@@ -45,7 +45,8 @@ impl TopicManager {
         thread::spawn(move || {
             for publish_suscriber in publisher_subscriber_receiver {
                 match publish_suscriber.get_packet_type() {
-                    PublisherSubscriberCode::Publisher => topic_manager.publish_msg(publish_suscriber.get_topic(), publish_suscriber.get_message()),
+                    PublisherSubscriberCode::Publisher => {topic_manager.publish_msg(publish_suscriber.get_topic(), publish_suscriber.get_message());
+        },
                     PublisherSubscriberCode::Subscriber => {
                         let subscriber = publish_suscriber.get_sender().unwrap();
                         let topic_name = publish_suscriber.get_topic();
