@@ -86,10 +86,15 @@ impl UserManager {
     fn disconect(&mut self, client_id: String) {
         if let Some(user) = self.users.get(&client_id) {
             let mut publisher_writer_cloned = user.0.clone();
-            let persistent_session = user.1;
-            publisher_writer_cloned.disconect();
+            let clean_session = user.1;
+            if clean_session == true{
+                self.delete_user(client_id.to_owned())
+            } else{
+                publisher_writer_cloned.disconect();
             self.users
-                .insert(client_id, (publisher_writer_cloned, persistent_session));
+                .insert(client_id, (publisher_writer_cloned, false));
+            }
+            
         }
     }
 }
