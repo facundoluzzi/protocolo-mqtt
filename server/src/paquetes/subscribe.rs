@@ -1,11 +1,15 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::stream::stream_handler::StreamAction::WriteStream;
+use crate::stream::stream_handler::StreamType;
+use crate::usermanager::user_manager_action::UserManagerAction::GetSenderUserManager;
+use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 
 use std::convert::TryInto;
-use std::io::Write;
-use std::net::TcpStream;
+use std::sync::mpsc;
+use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 
 use super::publisher_suscriber::PublisherSuscriber;
@@ -44,8 +48,8 @@ impl Subscribe {
 
     pub fn subscribe_topic(
         &mut self,
-        sender: &Sender<PublisherSuscriber>,
-        sender_for_publish: Sender<String>,
+        sender_topic_manager: Sender<PublisherSuscriber>,
+        sender_user_manager: Sender<ChannelUserManager>,
         client_id: String,
     ) -> Self {
         let mut acumulator: usize = 0;
@@ -60,6 +64,21 @@ impl Subscribe {
                     }
                 };
 
+            let (sender, receiver): (Sender<Sender<String>>, Receiver<Sender<String>>) =
+                mpsc::channel();
+
+            sender_user_manager
+                .send((
+                    GetSenderUserManager,
+                    client_id.to_owned(),
+                    None,
+                    None,
+                    Some(sender),
+                ))
+                .unwrap();
+
+            let sender_received = receiver.recv().unwrap();
+
             let qos = self.payload[length + acumulator];
             acumulator += length + 1;
 
@@ -69,11 +88,11 @@ impl Subscribe {
                 topic,
                 message,
                 type_s,
-                Some(sender_for_publish.clone()),
+                Some(sender_received),
                 client_id.to_string(),
             );
 
-            if let Err(sender_err) = sender.send(publisher_subscriber) {
+            if let Err(sender_err) = sender_topic_manager.send(publisher_subscriber) {
                 println!("Error sending to publisher_subscriber: {}", sender_err);
             }
 
@@ -92,7 +111,7 @@ impl Subscribe {
         }
     }
 
-    pub fn send_response(&self, mut stream: &TcpStream) {
+    pub fn send_response(&self, stream: Sender<StreamType>) {
         let packet_type = 0x90;
         let remaining_length = 0x03;
         let packet_identifier_msb = self.packet_identifier[0];
@@ -108,7 +127,7 @@ impl Subscribe {
             bytes_response.push(*return_code);
         }
 
-        if let Err(msg_error) = stream.write(&bytes_response) {
+        if let Err(msg_error) = stream.send((WriteStream, Some(bytes_response.to_vec()), None)) {
             println!("Error in sending response: {}", msg_error);
         }
     }

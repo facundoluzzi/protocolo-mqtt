@@ -1,21 +1,28 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
-use crate::helper::user_manager::UserManager;
 use crate::payload::connect_payload::ConnectPayload;
-
-use std::io::Write;
-use std::net::TcpStream;
+use crate::stream::stream_handler::StreamAction::WriteStream;
+use crate::stream::stream_handler::StreamType;
+use crate::usermanager::user_manager_action::UserManagerAction::AddUserManager;
+use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::variable_header::connect_variable_header::{check_variable_header_len, get_keep_alive};
+use std::sync::mpsc::Sender;
 
 pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
     payload: ConnectPayload,
     status_code: u8,
+    keep_alive: Option<u8>,
 }
 
 impl Connect {
-    pub fn init(bytes: &[u8], stream: &TcpStream, user_manager: &mut UserManager) -> Connect {
+    pub fn init(
+        bytes: &[u8],
+        sender_stream: Sender<StreamType>,
+        user_manager_sender: Sender<ChannelUserManager>,
+    ) -> Connect {
         let mut status_code = ConnectReturnCode::init();
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
@@ -23,6 +30,16 @@ impl Connect {
         let init_variable_header = 1 + readed_index;
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
+
+        match check_variable_header_len(variable_header) {
+            Ok(_) => {}
+            Err(msg) => {
+                // TODO: cortar conexión
+                panic!(msg);
+            }
+        }
+
+        let keep_alive = get_keep_alive(variable_header);
 
         status_code = status_code.check_protocol_level(variable_header[6]);
 
@@ -50,27 +67,42 @@ impl Connect {
             flags,
             payload,
             status_code: status_code.apply_validations(),
+            keep_alive,
         };
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
             return connect;
-        } else if let Some(mut usuario) = user_manager.find_user(connect.get_client_id()) {
-            usuario.reconnect(stream.try_clone().unwrap());
         } else {
-            user_manager.add(client_id, stream.try_clone().unwrap(), session_flag);
-        };
+            user_manager_sender
+                .send((
+                    AddUserManager,
+                    client_id,
+                    Some(sender_stream),
+                    Some(session_flag),
+                    None,
+                ))
+                .unwrap();
+        }
         connect
     }
 
-    pub fn send_response(&self, mut stream: &TcpStream) {
+    pub fn send_response(&self, stream: Sender<StreamType>) {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
-        let connack_response = [0x20, 0x02, session_present_bit, self.status_code];
-        if let Err(msg_error) = stream.write(&connack_response) {
+        let connack_response = [0x20, 0x02, session_present_bit, self.status_code].to_vec();
+        if let Err(msg_error) = stream.send((WriteStream, Some(connack_response), None)) {
             println!("Error in sending response: {}", msg_error);
+        }
+
+        if self.status_code != 0x00 {
+            // cortamos conexión
         }
     }
 
     pub fn get_client_id(&self) -> String {
         self.payload.get_client_id()
+    }
+
+    pub fn get_keep_alive(&self) -> Option<u8> {
+        self.keep_alive
     }
 }

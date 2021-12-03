@@ -17,8 +17,7 @@ mod tests {
             0x00, 0x06, // Topic Length
             0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F, // Topic
             0x00, 0x10, // Packet Identifier
-            0x00, 0x01, // Message Length
-            0x41,
+            0x00, 0x01, 0x41,
         ];
         let publish = Publish::init(&bytes);
         let topic = publish.get_topic();

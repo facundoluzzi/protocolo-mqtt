@@ -1,68 +1,111 @@
-use crate::helper::user_manager::UserManager;
 use crate::logs::logger::Logger;
 use crate::paquetes::packet_manager::PacketManager;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
+use crate::server::types::TypeToCloseConnection;
+use crate::stream::stream_handler::Stream;
+use crate::stream::stream_handler::StreamAction::CloseConnectionStream;
+use crate::stream::stream_handler::StreamAction::ReadStream;
+use crate::stream::stream_handler::StreamType;
+use crate::usermanager::user_manager_action::UserManagerAction::DisconectUserManager;
+use crate::usermanager::user_manager_types::ChannelUserManager;
+use std::sync::mpsc::Receiver;
 
-use std::io::Read;
-use std::net::{Shutdown, TcpListener, TcpStream};
+use std::net::TcpListener;
+use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
 
 fn handle_new_client(
-    mut stream: TcpStream,
     mut logger: Logger,
-    publish_subscriber_sender: &Sender<PublisherSuscriber>,
-    mut user_manager: UserManager,
+    sender_stream: Sender<StreamType>,
+    sender_topic_manager: Sender<PublisherSuscriber>,
+    sender_user_manager: Sender<ChannelUserManager>,
 ) {
-    // TODO: revisar el largo
-    let mut data = [0_u8; 100];
-    // TODO: ver que onda el while
-    let mut packet_factory = PacketManager::init();
-    while match stream.read(&mut data) {
-        Ok(size) => {
-            if size == 0 {
-                false
+    let (sender_to_close_connection, receiver_to_close_connection): (
+        Sender<TypeToCloseConnection>,
+        Receiver<TypeToCloseConnection>,
+    ) = mpsc::channel();
+
+    let cloned_sender_user_manager = sender_user_manager.clone();
+    let cloned_sender_stream = sender_stream.clone();
+
+    let _t = thread::spawn(move || {
+        for receive_message in receiver_to_close_connection {
+            let (client_id, _msg) = receive_message;
+
+            let event_user_manager_disconection = cloned_sender_user_manager.send((
+                DisconectUserManager,
+                client_id.to_owned(),
+                None,
+                None,
+                None,
+            ));
+
+            if let Err(err_sender_um) = event_user_manager_disconection {
+                println!("Unexpected err: {}", err_sender_um);
             } else {
-                logger.info(format!("Received from client {:?}", &data[0..size]));
-                packet_factory.process_message(
-                    &data[0..size],
-                    &stream,
-                    publish_subscriber_sender,
-                    &mut user_manager,
-                );
-                true
+                let event = cloned_sender_stream.send((CloseConnectionStream, None, None));
+                if let Err(err_sender_stream) = event {
+                    println!("Unexpected err: {}", err_sender_stream);
+                }
             }
         }
-        Err(_) => {
-            logger.error(format!(
-                "An error occurred, terminating connection with {}",
-                stream.peer_addr().unwrap()
-            ));
-            stream.shutdown(Shutdown::Both).unwrap();
-            true
+    });
+
+    let mut packet_factory = PacketManager::init(
+        sender_user_manager,
+        sender_to_close_connection,
+        sender_stream.clone(),
+        sender_topic_manager,
+    );
+
+    let (sender, receiver): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
+    loop {
+        let message_sent = sender_stream
+            .clone()
+            .send((ReadStream, None, Some(sender.clone())));
+
+        if let Err(msg) = message_sent {
+            logger.info(format!("Error receiving a message: {}", msg.to_string()));
+        } else {
+            match receiver.recv() {
+                Ok(packet) => {
+                    let packet_u8: &[u8] = &packet;
+                    packet_factory.process_message(packet_u8);
+                }
+                Err(err) => {
+                    logger.info(format!(
+                        "Error processing the packet received: {}",
+                        err.to_string()
+                    ));
+                }
+            }
         }
-    } {}
+    }
 }
 
 pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,
-    publish_subscriber_sender: Sender<PublisherSuscriber>,
-    user_manager: UserManager,
+    sender_topic_manager: Sender<PublisherSuscriber>,
+    sender_user_manager: Sender<ChannelUserManager>,
 ) {
     for stream in listener.incoming() {
         match stream {
             Ok(stream) => {
                 logger.info(format!("New connection: {}", stream.peer_addr().unwrap()));
+
                 let logger_clone = logger.clone();
-                let publish_subscriber_sender_cloned = publish_subscriber_sender.clone();
-                let user_manager_cloned = user_manager.clone();
+                let sender_tm_cloned = sender_topic_manager.clone();
+                let sender_um_cloned = sender_user_manager.clone();
+                let sender_stream = Stream::init(stream);
+
                 thread::spawn(move || {
                     handle_new_client(
-                        stream,
                         logger_clone,
-                        &publish_subscriber_sender_cloned,
-                        user_manager_cloned,
+                        sender_stream,
+                        sender_tm_cloned,
+                        sender_um_cloned,
                     );
                 });
             }
