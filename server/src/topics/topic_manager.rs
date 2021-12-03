@@ -1,6 +1,7 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::topics::topic::Topic;
+use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::wildcard::verify_wildcard;
 use crate::wildcard::wildcard::Wildcard;
 use std::collections::HashMap;
@@ -8,10 +9,8 @@ use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
-use crate::topics::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
+use crate::topics::topic_actions::TopicAction::{AddTopic, PublishMessage};
 use crate::topics::topic_types::SenderTopicType;
-
-use super::topic_actions::TopicAction;
 
 pub struct TopicManager {
     publisher_subscriber_sender: Sender<PublisherSuscriber>,
@@ -54,6 +53,7 @@ impl TopicManager {
                         let subscriber = publish_suscriber.get_sender().unwrap();
                         let topic_name = publish_suscriber.get_topic();
                         let client_id = publish_suscriber.get_client_id();
+
                         if let Some(wilcard) = verify_wildcard::get_wilcard(topic_name.to_owned()) {
                             topic_manager.subscribe_with_wilcard(
                                 wilcard,
@@ -84,7 +84,7 @@ impl TopicManager {
         &mut self,
         topic_name: String,
         client_id: String,
-        sender_subscriber: Sender<String>,
+        sender_subscriber: Sender<ChannelUserManager>,
     ) {
         if let Some(topic_sender) = self.topics.get(&topic_name.to_owned()) {
             topic_sender
@@ -103,7 +103,7 @@ impl TopicManager {
     pub fn subscribe_with_wilcard(
         &self,
         wilcard: Wildcard,
-        sender_subscribe: Sender<String>,
+        sender_subscribe: Sender<ChannelUserManager>,
         client_id: String,
     ) {
         for (topic_name, topic_sender) in &self.topics {

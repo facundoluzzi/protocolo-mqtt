@@ -1,3 +1,5 @@
+use crate::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
+use crate::usermanager::user_manager_types::ChannelUserManager;
 use std::collections::HashMap;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
@@ -7,7 +9,7 @@ use crate::topics::topic_types::SenderTopicType;
 
 pub struct Topic {
     name: String,
-    subscribers: HashMap<String, Sender<String>>,
+    subscribers: HashMap<String, Sender<ChannelUserManager>>,
 }
 
 impl Topic {
@@ -44,7 +46,7 @@ impl Topic {
         topic_sender
     }
 
-    fn add(&mut self, client_id: String, sender: Sender<String>) {
+    fn add(&mut self, client_id: String, sender: Sender<ChannelUserManager>) {
         self.subscribers.insert(client_id, sender);
     }
 
@@ -53,8 +55,14 @@ impl Topic {
     }
 
     fn publish_msg(&self, message: String) {
-        for subscriber in self.subscribers.values() {
-            if let Err(_msg) = subscriber.send(message.to_string()) {
+        for (client_id, subscriber) in &self.subscribers {
+            if let Err(_msg) = subscriber.send((
+                PublishMessageUserManager,
+                client_id.to_string(),
+                None,
+                None,
+                Some(message.to_string()),
+            )) {
                 println!("Error al publicar el mensaje")
             };
         }

@@ -1,79 +1,80 @@
-use std::{
-    io::Write,
-    net::TcpStream,
-    sync::mpsc::{self, Receiver, Sender},
-};
+use crate::stream::stream_handler::StreamAction::WriteStream;
+use crate::stream::stream_handler::StreamType;
+use std::sync::mpsc::{self, Receiver, Sender};
+
+pub enum PublisherSubscriberAction {
+    PublishMessagePublisherSubscriber,
+    ReconnectPublisherSubscriber,
+    DisconectPublisherSubscriber,
+}
+
+pub type ChannelPublisherWriter = (
+    PublisherSubscriberAction,
+    Option<String>,
+    Option<Sender<StreamType>>,
+);
 
 pub struct PublisherWriter {
-    sender: Sender<String>,
-    socket: Option<TcpStream>,
-    client_id: String,
+    socket: Option<Sender<StreamType>>,
     queue: Vec<String>,
 }
 
-impl Clone for PublisherWriter {
-    fn clone(&self) -> PublisherWriter {
-        PublisherWriter {
-            sender: self.sender.clone(),
-            socket: Some(self.socket.as_ref().unwrap().try_clone().expect("Error")),
-            client_id: self.client_id.to_string(),
-            queue: self.queue.clone(),
-        }
-    }
-}
-
 impl PublisherWriter {
-    pub fn init(socket: TcpStream, client_id: String) -> PublisherWriter {
-        let (sender, receiver): (Sender<String>, Receiver<String>) = mpsc::channel();
-        // crear un receiver
+    pub fn init(socket: Sender<StreamType>) -> Sender<ChannelPublisherWriter> {
+        let (sender, receiver): (
+            Sender<ChannelPublisherWriter>,
+            Receiver<ChannelPublisherWriter>,
+        ) = mpsc::channel();
+
         let mut publisher = PublisherWriter {
-            sender,
             socket: Some(socket),
-            client_id,
             queue: Vec::new(),
         };
-        let publisher_cloned = publisher.clone();
+
         std::thread::spawn(move || {
             for receive in receiver {
-                publisher.publish_message(receive);
+                let action = receive.0;
+                match action {
+                    PublisherSubscriberAction::PublishMessagePublisherSubscriber => {
+                        publisher.publish_message(receive.1.unwrap());
+                    }
+                    PublisherSubscriberAction::ReconnectPublisherSubscriber => {
+                        publisher.reconnect(receive.2.unwrap());
+                    }
+                    PublisherSubscriberAction::DisconectPublisherSubscriber => {
+                        publisher.disconect();
+                    }
+                };
             }
         });
-        publisher_cloned
+        sender.clone()
     }
 
-    pub fn get_sender(&self) -> Sender<String> {
-        self.sender.clone()
-    }
+    // pub fn get_sender(&self) -> Sender<ChannelPublisherWriter> {
+    //     self.sender.clone()
+    // }
 
-    pub fn publish_message(&mut self, receive: String) {
+    fn publish_message(&mut self, receive: String) {
         if let Some(socket) = &self.socket {
-            if socket
-                .try_clone()
-                .unwrap()
-                .write(receive.as_bytes())
-                .is_ok()
-            {
-                println!("Enviado")
-            } else {
-                println!("Error")
-            };
+            let new_vec: Vec<u8> = receive.as_bytes().to_vec();
+            match socket.send((WriteStream, Some(new_vec), None)) {
+                Ok(_) => {}
+                Err(_err) => {}
+            }
         } else {
+            println!("NO HAY SOCKET");
             self.queue.push(receive);
         }
     }
 
-    pub fn reconnect(&mut self, stream: TcpStream) {
+    fn reconnect(&mut self, stream: Sender<StreamType>) {
         self.socket = Some(stream);
         for message in self.queue.clone() {
             self.publish_message(message)
         }
     }
 
-    pub fn get_client_id(&self) -> String {
-        self.client_id.to_string()
-    }
-
-    pub fn equals(&self, client_id: String) -> bool {
-        self.client_id == client_id
+    fn disconect(&mut self) {
+        self.socket = None;
     }
 }

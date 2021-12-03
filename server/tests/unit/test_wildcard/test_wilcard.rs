@@ -14,7 +14,10 @@ mod tests {
 
     #[test]
     pub fn testing_simple_astherisc_at_the_end_of_a_word() {
-        let vec: Vec<String> = "Futbol/Boca/Cant*".split('/').map(|s| s.to_string()).collect();
+        let vec: Vec<String> = "Futbol/Boca/Cant*"
+            .split('/')
+            .map(|s| s.to_string())
+            .collect();
         let wildcard = Wildcard::init(vec);
 
         let test_case = "Futbol/Boca/CantidadDeGoles".to_owned();
@@ -29,7 +32,10 @@ mod tests {
 
     #[test]
     pub fn testing_simple_astherisc_at_the_end_of_a_word_and_greater_than_on_the_end() {
-        let vec: Vec<String> = "Futbol/Boca/Cant*/>".split('/').map(|s| s.to_string()).collect();
+        let vec: Vec<String> = "Futbol/Boca/Cant*/>"
+            .split('/')
+            .map(|s| s.to_string())
+            .collect();
         let wildcard = Wildcard::init(vec);
 
         let test_case = "Futbol/Boca/CantidadDeGoles/2021/4".to_owned();
@@ -55,7 +61,10 @@ mod tests {
 
     #[test]
     pub fn testing_multiple_astherisc() {
-        let vec: Vec<String> = "Futbol/Boca/*/4/*".split('/').map(|s| s.to_string()).collect();
+        let vec: Vec<String> = "Futbol/Boca/*/4/*"
+            .split('/')
+            .map(|s| s.to_string())
+            .collect();
         let wildcard = Wildcard::init(vec);
 
         let test_case = "Futbol/Boca/CantidadDeGoles/4/2021".to_owned();
@@ -77,7 +86,10 @@ mod tests {
 
     #[test]
     pub fn testing_with_multiple_astheriscs_and_greater_than_on_the_end() {
-        let vec: Vec<String> = "Futbol/*/CantidadDeGoles/*/>".split('/').map(|s| s.to_string()).collect();
+        let vec: Vec<String> = "Futbol/*/CantidadDeGoles/*/>"
+            .split('/')
+            .map(|s| s.to_string())
+            .collect();
         let wildcard = Wildcard::init(vec);
 
         let test_case = "Futbol/Boca/CantidadDeGoles/2020/2/Empate".to_owned();
@@ -92,7 +104,10 @@ mod tests {
 
     #[test]
     pub fn testing_with_multiple_astheriscs_and_greater_than_on_the_end_should_failed() {
-        let vec: Vec<String> = "Futbol/*/CantidadDeGoles/*/>".split('/').map(|s| s.to_string()).collect();
+        let vec: Vec<String> = "Futbol/*/CantidadDeGoles/*/>"
+            .split('/')
+            .map(|s| s.to_string())
+            .collect();
         let wildcard = Wildcard::init(vec);
 
         let test_case = "Futbol/Boca/CantidadDeGoles".to_owned();

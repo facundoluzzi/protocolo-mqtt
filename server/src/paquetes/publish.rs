@@ -1,10 +1,10 @@
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Publisher;
 use crate::helper::remaining_length::save_remaining_length;
+use crate::stream::stream_handler::StreamAction::WriteStream;
+use crate::stream::stream_handler::StreamType;
 use crate::variable_header::publish_variable_header::{self, get_variable_header};
 
 use std::convert::TryInto;
-use std::io::Write;
-use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
 use super::publisher_suscriber::PublisherSuscriber;
@@ -45,7 +45,7 @@ impl Publish {
 
         // TODO: cerrar la conexión
 
-        let payload = &bytes[init_variable_header + length + 2..bytes.len()];
+        let payload = &bytes[init_variable_header + length..bytes.len()];
 
         Publish {
             _dup: dup_flag,
@@ -64,7 +64,7 @@ impl Publish {
         self.topic.to_string()
     }
 
-    pub fn send_response(&self, mut stream: &TcpStream) {
+    pub fn send_response(&self, stream: Sender<StreamType>) {
         match self.qos {
             0x00 => {}
             0x01 => {
@@ -74,7 +74,9 @@ impl Publish {
                     self.packet_identifier[0],
                     self.packet_identifier[1],
                 ];
-                if let Err(msg_error) = stream.write(&puback_response) {
+                if let Err(msg_error) =
+                    stream.send((WriteStream, Some(puback_response.to_vec()), None))
+                {
                     println!("Error in sending response: {}", msg_error);
                 }
             }
@@ -84,13 +86,17 @@ impl Publish {
         }
     }
 
-    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>, client_id: String) -> Self {
+    pub fn send_message(
+        &self,
+        sender_topic_manager: &Sender<PublisherSuscriber>,
+        client_id: String,
+    ) -> Self {
         let topic = self.topic.to_owned();
         let payload = self.payload.to_owned();
         let publisher_subscriber =
             PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
 
-        if let Err(sender_err) = sender.send(publisher_subscriber) {
+        if let Err(sender_err) = sender_topic_manager.send(publisher_subscriber) {
             println!("Error sending to publisher_subscriber: {}", sender_err);
         }
 
