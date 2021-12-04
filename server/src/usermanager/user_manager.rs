@@ -60,10 +60,14 @@ impl UserManager {
                     PublishMessageUserManager => {
                         let client_id = receive.1;
                         let message = receive.4.unwrap();
-                        let sender_for_publish = user_manager.get_sender(client_id).unwrap();
-                        sender_for_publish
-                            .send((PublishMessagePublisherSubscriber, Some(message), None))
-                            .unwrap();
+                        match user_manager.get_sender(client_id) {
+                            Some(sender_for_publish) => {
+                                sender_for_publish
+                                    .send((PublishMessagePublisherSubscriber, Some(message), None))
+                                    .unwrap();
+                            }
+                            None => {}
+                        }
                     }
                 }
             }
