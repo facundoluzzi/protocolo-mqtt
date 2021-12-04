@@ -1,4 +1,5 @@
 use crate::flags::connack_flags::ConnackFlags;
+use crate::packet_manager::ResponsePacket;
 use crate::trait_paquetes::Paquetes;
 pub struct Connack {
     remaining_length: usize,
@@ -35,7 +36,7 @@ impl Paquetes for Connack {
         })
     }
 
-    fn get_type(&self) -> String {
-        "connack".to_owned()
+    fn get_type(&self) -> ResponsePacket {
+        ResponsePacket::Connack
     }
 }

@@ -1,4 +1,4 @@
-use crate::trait_paquetes::Paquetes;
+use crate::{packet_manager::ResponsePacket, trait_paquetes::Paquetes};
 
 pub struct Default {}
 
@@ -7,8 +7,8 @@ impl Paquetes for Default {
         Box::new(Default {})
     }
 
-    fn get_type(&self) -> String {
-        "default".to_owned()
+    fn get_type(&self) -> ResponsePacket {
+        ResponsePacket::Default
     }
 
     fn get_remaining_length(&self) -> usize {

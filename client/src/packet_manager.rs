@@ -1,6 +1,15 @@
 use crate::connack::Connack;
 use crate::default;
+use crate::puback::Puback;
+use crate::suback::Suback;
 use crate::trait_paquetes::Paquetes;
+
+pub enum ResponsePacket {
+    Connack,
+    Suback,
+    Puback,
+    Default,
+}
 
 pub struct PacketManager {
     client_id: String,
@@ -33,6 +42,8 @@ impl PacketManager {
         match first_byte {
             Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
                 2 => Connack::init(bytes),
+                4 => Puback::init(bytes),
+                9 => Suback::init(bytes),
                 _ => default::Default::init(bytes),
             },
             None => default::Default::init(bytes),
