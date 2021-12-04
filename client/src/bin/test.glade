@@ -288,7 +288,7 @@
                   </object>
                   <packing>
                     <property name="x">120</property>
-                    <property name="y">300</property>
+                    <property name="y">260</property>
                   </packing>
                 </child>
                 <child>
@@ -299,7 +299,7 @@
                   </object>
                   <packing>
                     <property name="x">145</property>
-                    <property name="y">360</property>
+                    <property name="y">310</property>
                   </packing>
                 </child>
                 <child>
@@ -314,6 +314,66 @@
                   <packing>
                     <property name="x">150</property>
                     <property name="y">515</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="qos_publish_0">
+                    <property name="label" translatable="yes">0</property>
+                    <property name="width_request">1</property>
+                    <property name="height_request">40</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                    <property name="group">qos_publish_1</property>
+                  </object>
+                  <packing>
+                    <property name="x">145</property>
+                    <property name="y">380</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="qos_publish_1">
+                    <property name="label" translatable="yes">1</property>
+                    <property name="width_request">1</property>
+                    <property name="height_request">40</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                    <property name="group">qos_publish_0</property>
+                  </object>
+                  <packing>
+                    <property name="x">145</property>
+                    <property name="y">410</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="width_request">100</property>
+                    <property name="height_request">0</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">QoS</property>
+                  </object>
+                  <packing>
+                    <property name="x">115</property>
+                    <property name="y">360</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="result_label1">
+                    <property name="width_request">500</property>
+                    <property name="height_request">50</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <attributes>
+                      <attribute name="scale" value="2"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="x">120</property>
+                    <property name="y">700</property>
                   </packing>
                 </child>
               </object>
@@ -355,7 +415,7 @@
                   </object>
                   <packing>
                     <property name="x">150</property>
-                    <property name="y">225</property>
+                    <property name="y">330</property>
                   </packing>
                 </child>
                 <child>
@@ -372,7 +432,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="input_topic_suscribe">
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -392,7 +452,7 @@
                   </object>
                   <packing>
                     <property name="x">125</property>
-                    <property name="y">285</property>
+                    <property name="y">380</property>
                   </packing>
                 </child>
                 <child>
@@ -403,7 +463,7 @@
                   </object>
                   <packing>
                     <property name="x">225</property>
-                    <property name="y">310</property>
+                    <property name="y">405</property>
                   </packing>
                 </child>
                 <child>
@@ -419,11 +479,11 @@
                   </object>
                   <packing>
                     <property name="x">150</property>
-                    <property name="y">400</property>
+                    <property name="y">490</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="suscribe_button">
                     <property name="label" translatable="yes">Suscribirse</property>
                     <property name="width_request">123</property>
                     <property name="visible">True</property>
@@ -444,7 +504,69 @@
                   </object>
                   <packing>
                     <property name="x">550</property>
-                    <property name="y">310</property>
+                    <property name="y">405</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="qos_suscriber_1">
+                    <property name="label" translatable="yes">1</property>
+                    <property name="width_request">10</property>
+                    <property name="height_request">40</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw_indicator">True</property>
+                    <property name="group">qos_suscriber_0</property>
+                  </object>
+                  <packing>
+                    <property name="x">150</property>
+                    <property name="y">290</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="qos_suscriber_0">
+                    <property name="label" translatable="yes">0</property>
+                    <property name="width_request">10</property>
+                    <property name="height_request">40</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw_indicator">True</property>
+                    <property name="group">qos_suscriber_1</property>
+                  </object>
+                  <packing>
+                    <property name="x">150</property>
+                    <property name="y">260</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="width_request">100</property>
+                    <property name="height_request">80</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">QoS</property>
+                  </object>
+                  <packing>
+                    <property name="x">120</property>
+                    <property name="y">200</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="result_label2">
+                    <property name="width_request">500</property>
+                    <property name="height_request">50</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <attributes>
+                      <attribute name="scale" value="2"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="x">180</property>
+                    <property name="y">710</property>
                   </packing>
                 </child>
               </object>
