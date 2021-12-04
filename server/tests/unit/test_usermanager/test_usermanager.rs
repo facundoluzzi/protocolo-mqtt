@@ -41,12 +41,8 @@ mod tests {
             ))
             .unwrap();
         match receiver_extraction.recv() {
-            Ok(_) => {
-                assert_eq!(1, 1)
-            }
-            Err(_) => {
-                assert_eq!(0, 1)
-            }
+            Ok(_) => assert_eq!(1, 1),
+            Err(_) => assert_eq!(0, 1),
         }
     }
     #[test]
@@ -80,12 +76,8 @@ mod tests {
             ))
             .unwrap();
         match receiver_extraction.recv() {
-            Err(_) => {
-                assert_eq!(1, 1)
-            }
-            Ok(_) => {
-                assert_eq!(0, 1)
-            }
+            Err(_) => assert_eq!(1, 1),
+            Ok(_) => assert_eq!(0, 1),
         }
     }
     #[test]
@@ -116,12 +108,8 @@ mod tests {
             ))
             .unwrap();
         match receiver_extraction.recv() {
-            Ok(_) => {
-                assert_eq!(1, 1)
-            }
-            Err(_) => {
-                assert_eq!(0, 1)
-            }
+            Ok(_) => assert_eq!(1, 1),
+            Err(_) => assert_eq!(0, 1),
         }
         sender
             .send((DisconectUserManager, "Nacho".to_owned(), None, None, None))
@@ -136,12 +124,8 @@ mod tests {
             ))
             .unwrap();
         match receiver_extraction.recv() {
-            Ok(_) => {
-                assert_eq!(0, 1)
-            }
-            Err(_) => {
-                assert_eq!(1, 1)
-            }
+            Ok(_) => assert_eq!(0, 1),
+            Err(_) => assert_eq!(1, 1),
         }
     }
     #[test]
@@ -172,12 +156,8 @@ mod tests {
             ))
             .unwrap();
         match receiver_extraction.recv() {
-            Ok(_) => {
-                assert_eq!(1, 1)
-            }
-            Err(_) => {
-                assert_eq!(0, 1)
-            }
+            Ok(_) => assert_eq!(1, 1),
+            Err(_) => assert_eq!(0, 1),
         }
         sender
             .send((DisconectUserManager, "Nacho".to_owned(), None, None, None))
@@ -192,12 +172,8 @@ mod tests {
             ))
             .unwrap();
         match receiver_extraction.recv() {
-            Ok(_) => {
-                assert_eq!(0, 1)
-            }
-            Err(_) => {
-                assert_eq!(1, 1)
-            }
+            Ok(_) => assert_eq!(0, 1),
+            Err(_) => assert_eq!(1, 1),
         }
         sender
             .send((
@@ -218,12 +194,8 @@ mod tests {
             ))
             .unwrap();
         match receiver_extraction.recv() {
-            Ok(_) => {
-                assert_eq!(1, 1)
-            }
-            Err(_) => {
-                assert_eq!(0, 1)
-            }
+            Ok(_) => assert_eq!(1, 1),
+            Err(_) => assert_eq!(0, 1),
         }
     }
 }

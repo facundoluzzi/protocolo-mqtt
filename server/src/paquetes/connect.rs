@@ -22,22 +22,17 @@ impl Connect {
         bytes: &[u8],
         sender_stream: Sender<StreamType>,
         user_manager_sender: Sender<ChannelUserManager>,
-    ) -> Connect {
+    ) -> Result<Connect, String> {
         let mut status_code = ConnectReturnCode::init();
+
         let bytes_rem_len = &bytes[1..bytes.len()];
-        let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
+        let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len)?;
 
         let init_variable_header = 1 + readed_index;
         let end_variable_header = readed_index + 10;
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
 
-        match check_variable_header_len(variable_header) {
-            Ok(_) => {}
-            Err(msg) => {
-                // TODO: cortar conexión
-                panic!(msg);
-            }
-        }
+        check_variable_header_len(variable_header)?;
 
         let keep_alive = get_keep_alive(variable_header);
 
@@ -45,17 +40,15 @@ impl Connect {
 
         let connect_flags = ConnectFlags::init(&variable_header[7]);
 
-        let (payload, new_status_code) = ConnectPayload::init(
+        let (payload, mut new_status_code) = ConnectPayload::init(
             &connect_flags,
             &bytes[end_variable_header + 1..init_variable_header + remaining_length],
             status_code,
-        )
-        .unwrap();
+        )?;
 
-        status_code = new_status_code;
         let username = payload.get_username();
         let password = payload.get_password();
-        status_code = status_code.check_authentication(username, password);
+        status_code = new_status_code.check_authentication(username, password);
 
         let session_flag = connect_flags.get_clean_session_flag();
         let flags = connect_flags;
@@ -69,32 +62,43 @@ impl Connect {
             status_code: status_code.apply_validations(),
             keep_alive,
         };
+
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
-            return connect;
+            Ok(connect)
         } else {
-            user_manager_sender
-                .send((
-                    AddUserManager,
-                    client_id,
-                    Some(sender_stream),
-                    Some(session_flag),
-                    None,
-                ))
-                .unwrap();
+            match user_manager_sender.send((
+                AddUserManager,
+                client_id,
+                Some(sender_stream.clone()),
+                Some(session_flag),
+                None,
+            )) {
+                Ok(_) => {}
+                Err(err) => {
+                    println!("err: {}", err);
+                }
+            };
+            Ok(connect)
         }
-        connect
     }
 
-    pub fn send_response(&self, stream: Sender<StreamType>) {
+    pub fn send_response(
+        &self,
+        stream: Sender<StreamType>,
+        sender_to_disconect: Sender<(String, String)>,
+    ) -> Result<(), String> {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let connack_response = [0x20, 0x02, session_present_bit, self.status_code].to_vec();
-        if let Err(msg_error) = stream.send((WriteStream, Some(connack_response), None)) {
-            println!("Error in sending response: {}", msg_error);
-        }
+        if let Err(_msg_error) = stream.send((WriteStream, Some(connack_response), None)) {}
 
         if self.status_code != 0x00 {
-            // cortamos conexión
+            sender_to_disconect
+                .send(("".to_string(), "".to_string()))
+                .unwrap();
+            Err("".to_string())
+        } else {
+            Ok(())
         }
     }
 

@@ -1,3 +1,4 @@
+use crate::usermanager::user_manager_types::ChannelUserManager;
 use std::sync::mpsc::Sender;
 
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
@@ -7,7 +8,7 @@ pub struct PublisherSuscriber {
     code: PublisherSubscriberCode,
     topic: String,
     message: String,
-    sender: Option<Sender<String>>,
+    sender_for_publish: Option<Sender<ChannelUserManager>>,
 }
 
 impl PublisherSuscriber {
@@ -15,14 +16,14 @@ impl PublisherSuscriber {
         topic: String,
         message: String,
         code: PublisherSubscriberCode,
-        sender: Option<Sender<String>>,
+        sender: Option<Sender<ChannelUserManager>>,
         client_id: String,
     ) -> PublisherSuscriber {
         PublisherSuscriber {
             topic,
             message,
             code,
-            sender,
+            sender_for_publish: sender,
             client_id,
         }
     }
@@ -43,7 +44,7 @@ impl PublisherSuscriber {
         self.message.to_owned()
     }
 
-    pub fn get_sender(&self) -> Option<Sender<String>> {
-        self.sender.clone()
+    pub fn get_sender(&self) -> Option<Sender<ChannelUserManager>> {
+        self.sender_for_publish.clone()
     }
 }
