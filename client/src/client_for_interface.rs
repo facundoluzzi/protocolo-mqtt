@@ -5,6 +5,7 @@ use std::{
 };
 
 use crate::{
+    packet_builder::{build_bytes_for_connect, build_bytes_for_publish, build_bytes_for_suscribe},
     packet_manager::{PacketManager, ResponsePacket},
     trait_paquetes::Paquetes,
 };
@@ -118,22 +119,8 @@ impl Client {
         let client_cloned = self.clone();
         match client_cloned.stream {
             Some(mut stream) => {
-                let mut flags: u8 = 0x00;
-                let mut bytes = vec![
-                    0x10, //Packet ID
-                    //0x00, Remaining Length
-                    0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // Variable Header
-                    0x04, // Protocol
-                    0x00, //Flags
-                    0x00, 0x0B, //Keep Alive
-                ];
-                add_client_id_bytes(id_client, &mut bytes);
-                add_username_bytes(user, &mut flags, &mut bytes);
-                add_password_bytes(password, &mut flags, &mut bytes);
-                bytes[8] = flags;
-                let length = bytes.len();
-                bytes.insert(1, (length - 1) as u8);
-                stream.write_all(&bytes).unwrap();
+                let connect_bytes = build_bytes_for_connect(user, password, id_client);
+                stream.write_all(&connect_bytes).unwrap();
             }
             None => panic!("No pude enviar"),
         }
@@ -142,17 +129,8 @@ impl Client {
     pub fn send_suscribe(&self, topic: &String, is_qos_0: bool, stream: Option<TcpStream>) {
         match stream {
             Some(mut stream) => {
-                let mut bytes = vec![
-                    //0x82 packet type
-                    //0x08, remaining length
-                    0x00, 0x0A, // variable header, en particular packet identifier
-                ];
-                self.add_suscribe_packet_type(is_qos_0, &mut bytes);
-                self.add_topic_bytes(topic, &mut bytes);
-                bytes.push(0x01);
-                let length = bytes.len();
-                bytes.insert(1, (length - 1) as u8);
-                stream.write_all(&bytes).unwrap();
+                let suscribe_bytes = build_bytes_for_suscribe(topic, is_qos_0);
+                stream.write_all(&suscribe_bytes).unwrap();
             }
             None => panic!("No pude enviar"),
         }
@@ -187,34 +165,10 @@ impl Client {
     ) {
         match stream {
             Some(mut stream) => {
-                let mut bytes = vec![
-                    //0x32 Paquete publish QoS 1
-                    //0x09,  Remaining Length
-                ];
-                self.add_publish_packet_type(is_qos_0, &mut bytes);
-                self.add_topic_bytes(&topic, &mut bytes);
-                self.add_message_bytes(message, &mut bytes);
-                let length = bytes.len();
-                bytes.insert(1, (length - 1) as u8);
-                stream.write_all(&bytes).unwrap();
+                let publish_bytes = build_bytes_for_publish(topic, message, is_qos_0);
+                stream.write_all(&publish_bytes).unwrap();
             }
             None => panic!("No pude enviar"),
-        }
-    }
-
-    fn add_suscribe_packet_type(&self, is_qos_0: bool, bytes: &mut Vec<u8>) {
-        if is_qos_0 {
-            bytes.insert(0, 0x80)
-        } else {
-            bytes.insert(0, 0x82)
-        }
-    }
-
-    fn add_publish_packet_type(&self, is_qos_0: bool, bytes: &mut Vec<u8>) {
-        if is_qos_0 {
-            bytes.insert(0, 0x30)
-        } else {
-            bytes.insert(0, 0x32)
         }
     }
 
@@ -239,26 +193,6 @@ impl Client {
             0x04 => "Error: los datos enviados no son correctos".to_string(),
             0x05 => "Error: no esta autorizado".to_string(),
             _ => "Error desconocido".to_string(),
-        }
-    }
-
-    fn add_topic_bytes(&self, topic: &String, bytes: &mut Vec<u8>) {
-        if !topic.is_empty() {
-            let topic_length = topic.len();
-            let mut topic_in_bytes = topic.as_bytes().to_vec();
-            bytes.push(0x00);
-            bytes.push(topic_length as u8);
-            bytes.append(&mut topic_in_bytes);
-        }
-    }
-
-    fn add_message_bytes(&self, message: String, bytes: &mut Vec<u8>) {
-        if !message.is_empty() {
-            let message_length = message.len();
-            let mut message_in_bytes = message.as_bytes().to_vec();
-            bytes.push(0x00);
-            bytes.push(message_length as u8);
-            bytes.append(&mut message_in_bytes);
         }
     }
 
@@ -316,39 +250,5 @@ fn receive_responses_from_broker(mut stream: TcpStream, channel_producer: mpsc::
         Err(e) => {
             println!("Failed to receive data: {}", e);
         }
-    }
-}
-
-fn add_client_id_bytes(id_client: String, bytes: &mut Vec<u8>) {
-    if !id_client.is_empty() {
-        let id_length = id_client.len();
-        let mut id_client_in_bytes = id_client.as_bytes().to_vec();
-        bytes.push(0x00);
-        bytes.push(id_length as u8);
-        bytes.append(&mut id_client_in_bytes);
-    } else {
-        bytes.append(&mut vec![0x00, 0x02, 0x00, 0x00]);
-    }
-}
-
-fn add_password_bytes(password: String, flags: &mut u8, bytes: &mut Vec<u8>) {
-    if !password.is_empty() {
-        *flags |= 0b01000000;
-        let password_length = password.len();
-        let mut password_in_bytes = password.as_bytes().to_vec();
-        bytes.push(0x00);
-        bytes.push(password_length as u8);
-        bytes.append(&mut password_in_bytes);
-    }
-}
-
-fn add_username_bytes(user: String, flags: &mut u8, bytes: &mut Vec<u8>) {
-    if !user.is_empty() {
-        *flags |= 0b10000000;
-        let user_length = user.len();
-        let mut user_in_bytes = user.as_bytes().to_vec();
-        bytes.push(0x00);
-        bytes.push(user_length as u8);
-        bytes.append(&mut user_in_bytes);
     }
 }
