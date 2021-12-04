@@ -3,4 +3,6 @@ pub mod connack;
 pub mod default;
 pub mod flags;
 pub mod packet_manager;
+pub mod puback;
+pub mod suback;
 pub mod trait_paquetes;
