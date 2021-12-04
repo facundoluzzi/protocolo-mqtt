@@ -145,7 +145,7 @@ fn should_publish_message_with_qos_1() {
             panic!();
         }
     }
-    
+
     let subscribe_bytes = [
         0x82, // packet type
         0x08, // remaining length
