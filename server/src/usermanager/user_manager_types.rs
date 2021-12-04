@@ -7,5 +7,5 @@ pub type ChannelUserManager = (
     String,
     Option<Sender<StreamType>>,
     Option<bool>,
-    Option<Sender<Sender<String>>>,
+    Option<String>,
 );

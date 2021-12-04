@@ -45,7 +45,7 @@ impl Publish {
 
         // TODO: cerrar la conexión
 
-        let payload = &bytes[init_variable_header + length + 2..bytes.len()];
+        let payload = &bytes[init_variable_header + length..bytes.len()];
 
         Publish {
             _dup: dup_flag,
@@ -86,13 +86,17 @@ impl Publish {
         }
     }
 
-    pub fn send_message(&self, sender: &Sender<PublisherSuscriber>, client_id: String) -> Self {
+    pub fn send_message(
+        &self,
+        sender_topic_manager: &Sender<PublisherSuscriber>,
+        client_id: String,
+    ) -> Self {
         let topic = self.topic.to_owned();
         let payload = self.payload.to_owned();
         let publisher_subscriber =
             PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
 
-        if let Err(sender_err) = sender.send(publisher_subscriber) {
+        if let Err(sender_err) = sender_topic_manager.send(publisher_subscriber) {
             println!("Error sending to publisher_subscriber: {}", sender_err);
         }
 

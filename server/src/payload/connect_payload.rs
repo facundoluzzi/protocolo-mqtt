@@ -38,9 +38,8 @@ impl ConnectPayload {
         }
 
         if connect_flags.get_username_flag() {
-            if let Ok((username_copy, index)) =
-                parser(&remaining_bytes[pointer..remaining_bytes.len()])
-            {
+            let username_to_validate = &remaining_bytes[pointer..remaining_bytes.len()];
+            if let Ok((username_copy, index)) = parser(username_to_validate) {
                 return_code = return_code.check_malformed_username(username_copy.to_string());
                 username = Some(username_copy);
                 pointer += index;
@@ -48,14 +47,16 @@ impl ConnectPayload {
                 if !connect_flags.get_password_flag() {
                     return_code = return_code.check_malformed_password("".to_string());
                     password = None;
-                } else if let Ok((password_copy, index)) =
-                    parser(&remaining_bytes[pointer..remaining_bytes.len()])
-                {
-                    return_code = return_code.check_malformed_password(password_copy.to_string());
-                    password = Some(password_copy);
-                    pointer += index;
                 } else {
-                    return Err("Error parsing password".to_string());
+                    let password_to_validate = &remaining_bytes[pointer..remaining_bytes.len()];
+                    if let Ok((password_copy, index)) = parser(password_to_validate) {
+                        return_code =
+                            return_code.check_malformed_password(password_copy.to_string());
+                        password = Some(password_copy);
+                        pointer += index;
+                    } else {
+                        return Err("Error parsing password".to_string());
+                    }
                 }
             } else {
                 return Err("Error parsing username".to_string());

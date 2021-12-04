@@ -7,3 +7,4 @@ pub mod test_stream;
 pub mod test_topics;
 pub mod test_usermanager;
 pub mod test_variable_header;
+pub mod test_wildcard;

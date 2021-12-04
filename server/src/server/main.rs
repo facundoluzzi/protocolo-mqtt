@@ -15,7 +15,7 @@ use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
 
-fn handle_new_client(
+pub fn handle_new_client(
     mut logger: Logger,
     sender_stream: Sender<StreamType>,
     sender_topic_manager: Sender<PublisherSuscriber>,
@@ -29,10 +29,12 @@ fn handle_new_client(
     let cloned_sender_user_manager = sender_user_manager.clone();
     let cloned_sender_stream = sender_stream.clone();
 
+    let mut prueba_logger = logger.clone();
+
     let _t = thread::spawn(move || {
         for receive_message in receiver_to_close_connection {
-            let (client_id, _msg) = receive_message;
-
+            prueba_logger.info("has gotten a event for connection closing".to_string());
+            let (client_id, _) = receive_message;
             let event_user_manager_disconection = cloned_sender_user_manager.send((
                 DisconectUserManager,
                 client_id.to_owned(),
@@ -41,13 +43,18 @@ fn handle_new_client(
                 None,
             ));
 
+            prueba_logger.info("has disconected the user manager".to_string());
+
             if let Err(err_sender_um) = event_user_manager_disconection {
+                prueba_logger.info("has failed the user manager disconnection".to_string());
                 println!("Unexpected err: {}", err_sender_um);
             } else {
-                let event = cloned_sender_stream.send((CloseConnectionStream, None, None));
-                if let Err(err_sender_stream) = event {
-                    println!("Unexpected err: {}", err_sender_stream);
-                }
+                prueba_logger.info("has sent a event to stream handler".to_string());
+                cloned_sender_stream
+                    .send((CloseConnectionStream, None, None))
+                    .unwrap();
+
+                prueba_logger.info("has closed the connection correclty".to_string());
             }
         }
     });
@@ -57,28 +64,37 @@ fn handle_new_client(
         sender_to_close_connection,
         sender_stream.clone(),
         sender_topic_manager,
+        logger.clone(),
     );
 
     let (sender, receiver): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
+
     loop {
         let message_sent = sender_stream
             .clone()
             .send((ReadStream, None, Some(sender.clone())));
 
+        // let mut error = false;
+
         if let Err(msg) = message_sent {
             logger.info(format!("Error receiving a message: {}", msg.to_string()));
         } else {
-            match receiver.recv() {
-                Ok(packet) => {
-                    let packet_u8: &[u8] = &packet;
-                    packet_factory.process_message(packet_u8);
-                }
-                Err(err) => {
+            if let Ok(packet) = receiver.recv() {
+                logger.info(format!("packet received: {:?}", packet));
+                let packet_u8: &[u8] = &packet;
+                if let Err(err) = packet_factory.process_message(packet_u8) {
                     logger.info(format!(
                         "Error processing the packet received: {}",
                         err.to_string()
                     ));
+                    break;
                 }
+            } else if let Err(err) = receiver.recv() {
+                logger.info(format!(
+                    "Error reading the packet received: {}",
+                    err.to_string()
+                ));
+                break;
             }
         }
     }

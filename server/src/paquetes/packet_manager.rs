@@ -1,6 +1,8 @@
+use super::publisher_suscriber::PublisherSuscriber;
 use crate::keepalive::keep_alive::KeepAlive;
 use crate::keepalive::null_keep_alive::KeepAliveNull;
 use crate::keepalive::trait_keep_alive::TraitKeepAlive;
+use crate::logs::logger::Logger;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
 use crate::paquetes::publish::Publish;
@@ -8,8 +10,8 @@ use crate::paquetes::subscribe::Subscribe;
 use crate::stream::stream_handler::StreamType;
 use crate::usermanager::user_manager_types::ChannelUserManager;
 use std::sync::mpsc::Sender;
-
-use super::publisher_suscriber::PublisherSuscriber;
+use std::thread;
+use std::time;
 
 pub struct PacketManager {
     client_id: String,
@@ -18,6 +20,7 @@ pub struct PacketManager {
     sender_user_manager: Sender<ChannelUserManager>,
     sender_to_disconect: Sender<(String, String)>,
     sender_topic_manager: Sender<PublisherSuscriber>,
+    logger: Logger,
 }
 
 impl PacketManager {
@@ -26,6 +29,7 @@ impl PacketManager {
         sender_to_disconect: Sender<(String, String)>,
         sender_stream: Sender<StreamType>,
         sender_topic_manager: Sender<PublisherSuscriber>,
+        logger: Logger,
     ) -> Self {
         PacketManager {
             client_id: "".to_string(),
@@ -34,6 +38,7 @@ impl PacketManager {
             keep_alive: KeepAliveNull::init(0, sender_to_disconect.clone()),
             sender_to_disconect,
             sender_topic_manager,
+            logger,
         }
     }
 
@@ -45,6 +50,10 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
+    fn get_client_id(&self) -> String {
+        self.client_id.to_string()
+    }
+
     pub fn start_keep_alive(&mut self) {
         self.keep_alive
             .start_keep_alive(self.client_id.to_string(), "prueba".to_string());
@@ -54,52 +63,109 @@ impl PacketManager {
         self.keep_alive = keep_alive;
     }
 
-    pub fn process_connect_message(&mut self, bytes: &[u8]) {
+    pub fn process_connect_message(&mut self, bytes: &[u8]) -> Result<(), String> {
+        self.logger.info("proccessing connect packet".to_string());
+
         let connect = Connect::init(
             bytes,
             self.sender_stream.clone(),
             self.sender_user_manager.clone(),
         );
-        self.set_client_id(connect.get_client_id());
 
-        let keep_alive = match connect.get_keep_alive() {
-            Some(some_keep_alive) => {
-                KeepAlive::init(some_keep_alive, self.sender_to_disconect.clone())
+        match connect {
+            Ok(connect_result) => {
+                self.set_client_id(connect_result.get_client_id());
+
+                let keep_alive = match connect_result.get_keep_alive() {
+                    Some(some_keep_alive) => {
+                        KeepAlive::init(some_keep_alive, self.sender_to_disconect.clone())
+                    }
+                    None => KeepAliveNull::init(0, self.sender_to_disconect.clone()),
+                };
+
+                self.set_keep_alive(keep_alive);
+                connect_result
+                    .send_response(self.sender_stream.clone(), self.sender_to_disconect.clone())?;
+                Ok(())
             }
-            None => KeepAliveNull::init(0, self.sender_to_disconect.clone()),
-        };
-
-        self.set_keep_alive(keep_alive);
-        connect.send_response(self.sender_stream.clone());
+            Err(err_msg) => {
+                self.logger.info(format!(
+                    "Unexpected error processing connect packet: {}",
+                    err_msg
+                ));
+                match self
+                    .sender_to_disconect
+                    .send(("".to_string(), err_msg.to_string()))
+                {
+                    Ok(_) => Err("".to_string()),
+                    Err(_) => Err(err_msg.to_string()),
+                }
+            }
+        }
     }
 
     pub fn process_publish_message(&mut self, bytes: &[u8]) {
+        self.logger.info("proccessing publish packet".to_string());
+
         Publish::init(bytes)
-            .send_message(&self.sender_topic_manager, self.client_id.to_owned())
+            .send_message(&self.sender_topic_manager, self.get_client_id())
             .send_response(self.sender_stream.clone());
+        // thread::sleep(time::Duration::from_secs(1000));
     }
 
-    pub fn process_subscribe_message(&mut self, bytes: &[u8]) {
-        Subscribe::init(bytes)
-            .subscribe_topic(
-                self.sender_topic_manager.clone(),
-                self.sender_user_manager.clone(),
-                self.client_id.to_owned(),
-            )
-            .send_response(self.sender_stream.clone())
+    pub fn process_subscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
+        self.logger.info("proccessing subscribe packet".to_string());
+
+        let subscribe = Subscribe::init(bytes);
+        match subscribe {
+            Ok(mut created_subscribe) => {
+                let subscribe_topic_response = created_subscribe.subscribe_topic(
+                    self.sender_topic_manager.clone(),
+                    self.sender_user_manager.clone(),
+                    self.get_client_id(),
+                );
+
+                return match subscribe_topic_response {
+                    Ok(subscribed_topic) => {
+                        subscribed_topic.send_response(self.sender_stream.clone());
+                        Ok(())
+                    }
+                    Err(_) => Err("".to_string()),
+                };
+            }
+            Err(err) => {
+                let message = format!("Unexpected error processing connect packet: {}", err);
+                self.logger.info(message.to_string());
+                let sender_result = self
+                    .sender_to_disconect
+                    .send((self.get_client_id(), message.to_string()));
+                return match sender_result {
+                    Ok(_) => Err("".to_string()),
+                    Err(_) => Err(message.to_string()),
+                };
+            }
+        }
     }
 
     // TODO: validar que un paquete que no es connect, siempre tenga que estar ya conectado (haber hecho un connect packet previamente)
-    pub fn process_message(&mut self, bytes: &[u8]) {
+    pub fn process_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         let first_byte = bytes.get(0);
+
         match first_byte {
-            Some(first_byte_ok) => match PacketManager::get_control_packet_type(*first_byte_ok) {
-                1 => self.process_connect_message(bytes),
-                3 => self.process_publish_message(bytes),
-                8 => self.process_subscribe_message(bytes),
-                _ => Default::init(bytes).send_response(self.sender_stream.clone()),
-            },
+            Some(first_byte_ok) => {
+                let packet_type = PacketManager::get_control_packet_type(*first_byte_ok);
+
+                self.logger.info(format!("Packet type: {}", packet_type));
+
+                match packet_type {
+                    1 => self.process_connect_message(bytes)?,
+                    3 => self.process_publish_message(bytes),
+                    8 => self.process_subscribe_message(bytes)?,
+                    _ => Default::init(bytes).send_response(self.sender_stream.clone()),
+                }
+            }
             None => Default::init(bytes).send_response(self.sender_stream.clone()),
         };
+        Ok(())
     }
 }

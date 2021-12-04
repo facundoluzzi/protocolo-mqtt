@@ -11,3 +11,4 @@ pub mod stream;
 pub mod topics;
 pub mod usermanager;
 pub mod variable_header;
+pub mod wildcard;

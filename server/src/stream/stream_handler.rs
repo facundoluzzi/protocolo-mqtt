@@ -9,9 +9,7 @@ use std::thread;
 use std::io::Read;
 use std::io::Write;
 
-pub struct Stream {
-    stream: TcpStream,
-}
+pub struct Stream {}
 
 pub enum StreamAction {
     WriteStream,
@@ -26,9 +24,8 @@ impl Stream {
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
 
-        let mut stream = Stream {
-            stream: stream_received,
-        };
+        let stream_to_read = stream_received.try_clone().unwrap();
+        let stream_to_write = stream_received.try_clone().unwrap();
 
         thread::spawn(move || {
             for message_received in receiver_stream {
@@ -36,20 +33,27 @@ impl Stream {
                 match action {
                     StreamAction::WriteStream => {
                         if let Some(message) = message_received.1 {
-                            stream.write(message);
+                            Stream::write(stream_to_write.try_clone().unwrap(), message);
                         } else {
                             panic!("Unexpected error: send a Some(message) here");
                         }
                     }
                     StreamAction::ReadStream => {
                         if let Some(sender) = message_received.2 {
-                            stream.read(sender);
+                            let x = stream_to_read.try_clone().unwrap();
+                            thread::spawn(move || {
+                                Stream::read(x.try_clone().unwrap(), sender);
+                            });
                         } else {
                             panic!("Unexpected error: send a Some(Sender<String>) here");
                         }
                     }
                     StreamAction::CloseConnectionStream => {
-                        if let Err(err_msg) = stream.stream.shutdown(Shutdown::Both) {
+                        if let Err(err_msg) = stream_to_read.shutdown(Shutdown::Both) {
+                            println!("Unexpected error closing the stream: {}", err_msg);
+                        }
+
+                        if let Err(err_msg) = stream_to_write.shutdown(Shutdown::Both) {
                             println!("Unexpected error closing the stream: {}", err_msg);
                         }
                     }
@@ -60,14 +64,14 @@ impl Stream {
         sender_stream
     }
 
-    fn write(&mut self, message: Vec<u8>) {
+    fn write(mut stream: TcpStream, message: Vec<u8>) {
         let c: &[u8] = &message; // c: &[u8]
-        if let Err(msg_error) = self.stream.write(c) {
+        if let Err(msg_error) = stream.write(c) {
             println!("Error in sending response: {}", msg_error);
         }
     }
 
-    fn read(&mut self, sender: Sender<Vec<u8>>) {
+    fn read(mut stream: TcpStream, sender: Sender<Vec<u8>>) {
         let mut data = [0_u8; 5];
         let mut total_data: Vec<u8> = Vec::new();
 
@@ -75,7 +79,7 @@ impl Stream {
         let mut packet_length = 0;
         let mut readed_bytes = 0;
 
-        while match self.stream.read(&mut data) {
+        while match stream.read(&mut data) {
             Ok(size) => {
                 if is_first_byte && size != 0 {
                     let (_readed_bytes, _packet_length) =

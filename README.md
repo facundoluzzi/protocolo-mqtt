@@ -2,6 +2,12 @@
 
 ## TODO
 
+### CONNET
+
+1. si llega un connect por segunda vez, se debe cortar la conexión
+
+### GENERAL
+
 1. cerrar el listener luego de cada setup
 2. decidir si enviar un mensaje de error previo a cortar la conexión
 
