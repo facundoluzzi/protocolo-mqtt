@@ -62,7 +62,6 @@ impl PublisherWriter {
                 Err(_err) => {}
             }
         } else {
-            println!("NO HAY SOCKET");
             self.queue.push(receive);
         }
     }
