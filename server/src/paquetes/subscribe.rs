@@ -73,8 +73,9 @@ impl Subscribe {
 
             match sender_topic_manager.send(publisher_subscriber) {
                 Ok(_) => {}
-                Err(err) => {
-                    println!("err: {}", err);
+                Err(_) => {
+                    self.return_codes.push(0x80);
+                    continue;
                 }
             }
 

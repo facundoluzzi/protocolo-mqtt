@@ -3,7 +3,7 @@ use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::topics::topic::Topic;
 use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::wildcard::verify_wildcard;
-use crate::wildcard::wildcard::Wildcard;
+use crate::wildcard::wildcard_handler::Wildcard;
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
@@ -86,16 +86,15 @@ impl TopicManager {
         client_id: String,
         sender_subscriber: Sender<ChannelUserManager>,
     ) {
-        if let Some(topic_sender) = self.topics.get(&topic_name.to_owned()) {
+        if let Some(topic_sender) = self.topics.get(&topic_name) {
             topic_sender
-                .send((AddTopic, client_id.to_owned(), Some(sender_subscriber)))
+                .send((AddTopic, client_id, Some(sender_subscriber)))
                 .unwrap();
         } else {
-            let sender_topic = Topic::new(topic_name.to_owned());
-            self.topics
-                .insert(topic_name.to_owned(), sender_topic.clone());
+            let sender_topic = Topic::init(topic_name.to_owned());
+            self.topics.insert(topic_name, sender_topic.clone());
             sender_topic
-                .send((AddTopic, client_id.to_owned(), Some(sender_subscriber)))
+                .send((AddTopic, client_id, Some(sender_subscriber)))
                 .unwrap();
         }
     }

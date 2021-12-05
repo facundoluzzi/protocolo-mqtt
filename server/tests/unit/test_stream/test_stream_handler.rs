@@ -13,7 +13,7 @@ mod tests {
     #[test]
     fn should_write_and_read() {
         fn mocked_server(sender: Sender<Vec<u8>>) {
-            match TcpListener::bind("0.0.0.0:1884") {
+            match TcpListener::bind("0.0.0.0:1895") {
                 Ok(listener) => {
                     thread::spawn(move || {
                         for stream in listener.incoming() {
@@ -33,7 +33,7 @@ mod tests {
 
         mocked_server(sender);
 
-        let mut stream = TcpStream::connect("localhost:1884").unwrap();
+        let mut stream = TcpStream::connect("localhost:1895").unwrap();
 
         let bytes: &[u8] = &[
             0x32, 0x0D, 0x00, 0x06, 0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F, 0x00, 0x10, 0x00, 0x01,
@@ -56,7 +56,7 @@ mod tests {
     #[test]
     fn should_fail_after_close_connection() {
         fn mocked_server(sender: Sender<Vec<u8>>) {
-            match TcpListener::bind("0.0.0.0:1885") {
+            match TcpListener::bind("0.0.0.0:1896") {
                 Ok(listener) => {
                     thread::spawn(move || {
                         for stream in listener.incoming() {
@@ -81,7 +81,7 @@ mod tests {
 
         mocked_server(sender);
 
-        let mut stream = TcpStream::connect("localhost:1885").unwrap();
+        let mut stream = TcpStream::connect("localhost:1896").unwrap();
 
         thread::sleep(time::Duration::from_millis(100));
 

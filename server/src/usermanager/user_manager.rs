@@ -60,13 +60,10 @@ impl UserManager {
                     PublishMessageUserManager => {
                         let client_id = receive.1;
                         let message = receive.4.unwrap();
-                        match user_manager.get_sender(client_id) {
-                            Some(sender_for_publish) => {
-                                sender_for_publish
-                                    .send((PublishMessagePublisherSubscriber, Some(message), None))
-                                    .unwrap();
-                            }
-                            None => {}
+                        if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
+                            sender_for_publish
+                                .send((PublishMessagePublisherSubscriber, Some(message), None))
+                                .unwrap();
                         }
                     }
                 }
@@ -77,7 +74,7 @@ impl UserManager {
     }
 
     fn add(&mut self, client_id: String, stream: Sender<StreamType>, clean_session: bool) {
-        let publisher_writer = PublisherWriter::init(stream.clone());
+        let publisher_writer = PublisherWriter::init(stream);
         self.users
             .insert(client_id, (publisher_writer, clean_session));
     }

@@ -10,8 +10,6 @@ use crate::paquetes::subscribe::Subscribe;
 use crate::stream::stream_handler::StreamType;
 use crate::usermanager::user_manager_types::ChannelUserManager;
 use std::sync::mpsc::Sender;
-use std::thread;
-use std::time;
 
 pub struct PacketManager {
     client_id: String,
@@ -98,7 +96,7 @@ impl PacketManager {
                     .send(("".to_string(), err_msg.to_string()))
                 {
                     Ok(_) => Err("".to_string()),
-                    Err(_) => Err(err_msg.to_string()),
+                    Err(_) => Err(err_msg),
                 }
             }
         }
@@ -125,13 +123,13 @@ impl PacketManager {
                     self.get_client_id(),
                 );
 
-                return match subscribe_topic_response {
+                match subscribe_topic_response {
                     Ok(subscribed_topic) => {
                         subscribed_topic.send_response(self.sender_stream.clone());
                         Ok(())
                     }
                     Err(_) => Err("".to_string()),
-                };
+                }
             }
             Err(err) => {
                 let message = format!("Unexpected error processing connect packet: {}", err);
@@ -139,10 +137,10 @@ impl PacketManager {
                 let sender_result = self
                     .sender_to_disconect
                     .send((self.get_client_id(), message.to_string()));
-                return match sender_result {
+                match sender_result {
                     Ok(_) => Err("".to_string()),
-                    Err(_) => Err(message.to_string()),
-                };
+                    Err(_) => Err(message),
+                }
             }
         }
     }

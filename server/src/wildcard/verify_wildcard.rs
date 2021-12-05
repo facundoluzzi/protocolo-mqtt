@@ -1,4 +1,4 @@
-use super::wildcard::Wildcard;
+use super::wildcard_handler::Wildcard;
 
 pub fn get_wilcard(topic: String) -> Option<Wildcard> {
     let vec_words: Vec<String> = topic.split('/').map(|s| s.to_string()).collect();
@@ -7,7 +7,7 @@ pub fn get_wilcard(topic: String) -> Option<Wildcard> {
     let mut contains_astherisc = vec_words.contains(&astherisc);
     if !contains_astherisc {
         for word in vec_words.clone() {
-            if word.chars().last().unwrap() == '*' {
+            if word.ends_with('*') {
                 contains_astherisc = true;
             }
         }
@@ -15,12 +15,12 @@ pub fn get_wilcard(topic: String) -> Option<Wildcard> {
     let contains_greater_than = *vec_words.last().unwrap() == greater_than;
     if contains_greater_than {
         let mut vec_copy = vec_words.clone();
-        vec_copy.retain(|x| *x == ">".to_owned());
+        vec_copy.retain(|x| x == &">".to_owned());
         if vec_copy.len() > 1 {
             return None;
         }
     }
-    if contains_astherisc == false && contains_greater_than == false {
+    if !contains_astherisc && !contains_greater_than {
         None
     } else {
         Some(Wildcard::init(vec_words))

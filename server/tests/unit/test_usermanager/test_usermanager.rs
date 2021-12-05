@@ -3,8 +3,6 @@ use std::sync::mpsc::Sender;
 #[cfg(test)]
 mod tests {
     use server::stream::stream_handler::StreamType;
-    use server::topics::publisher_writer::ChannelPublisherWriter;
-    use server::topics::publisher_writer::PublisherSubscriberAction;
     use server::usermanager::user_manager::UserManager;
     use server::usermanager::user_manager_action::UserManagerAction::AddUserManager;
     use server::usermanager::user_manager_action::UserManagerAction::DeleteUserManager;

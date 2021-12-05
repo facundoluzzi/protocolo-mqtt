@@ -47,7 +47,7 @@ impl PublisherWriter {
                 };
             }
         });
-        sender.clone()
+        sender
     }
 
     // pub fn get_sender(&self) -> Sender<ChannelPublisherWriter> {
