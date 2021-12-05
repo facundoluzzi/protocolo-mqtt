@@ -47,8 +47,8 @@ mod tests {
                 assert_eq!(bytes, msg);
             }
             Err(err) => {
-                println!("err: {}", err);
-                panic!(err);
+                println!("{}", err);
+                panic!();
             }
         }
     }

@@ -74,8 +74,6 @@ pub fn handle_new_client(
             .clone()
             .send((ReadStream, None, Some(sender.clone())));
 
-        // let mut error = false;
-
         if let Err(msg) = message_sent {
             logger.info(format!("Error receiving a message: {}", msg));
         } else if let Ok(packet) = receiver.recv() {
