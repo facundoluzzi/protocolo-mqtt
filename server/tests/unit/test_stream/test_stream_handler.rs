@@ -48,7 +48,7 @@ mod tests {
             }
             Err(err) => {
                 println!("err: {}", err);
-                panic!(err);
+                panic!();
             }
         }
     }
