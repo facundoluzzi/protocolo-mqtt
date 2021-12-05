@@ -1,89 +1,87 @@
-// #[cfg(test)]
-// mod tests {
-//     use std::sync::mpsc;
-//     use std::sync::mpsc::Receiver;
-//     use std::sync::mpsc::Sender;
-//     use std::sync::Arc;
-//     use std::sync::Mutex;
-//     use std::thread;
+#[cfg(test)]
+mod tests {
+    use server::topics::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
+    use server::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
+    use server::usermanager::user_manager_types::ChannelUserManager;
+    use std::sync::mpsc;
+    use std::sync::mpsc::Receiver;
+    use std::sync::mpsc::Sender;
+    use std::sync::Arc;
+    use std::sync::Mutex;
+    use std::thread;
 
-//     use server::topics::topic::Topic;
+    use server::topics::topic::Topic;
 
-//     #[test]
-//     // fn should_add_topic_and_publish_message() {
-//     //     let mut topic = Topic::new("ALTEGO".to_owned());
-//     //     assert!(topic.equals("ALTEGO".to_owned()));
+    #[test]
+    fn should_add_topic_and_publish_message() {
+        let mut topic = Topic::init("ALTEGO".to_owned());
 
-//     //     let (sender_one, receiver_one): (Sender<String>, Receiver<String>) = mpsc::channel();
-//     //     let (sender_two, receiver_two): (Sender<String>, Receiver<String>) = mpsc::channel();
+        let (sender_one, receiver_one): (Sender<ChannelUserManager>, Receiver<ChannelUserManager>) =
+            mpsc::channel();
+        let (sender_two, receiver_two): (Sender<ChannelUserManager>, Receiver<ChannelUserManager>) =
+            mpsc::channel();
 
-//     //     topic.add(sender_one, "Facundo".to_owned());
-//     //     topic.add(sender_two, "Nacho".to_owned());
+        topic
+            .send((AddTopic, "Facundo".to_owned(), Some(sender_one)))
+            .unwrap();
+        topic
+            .send((AddTopic, "Nacho".to_owned(), Some(sender_two)))
+            .unwrap();
 
-//     //     let messages: Vec<String> = Vec::new();
-//     //     let data = Arc::new(Mutex::new(messages));
-//     //     let data_for_thread = data.clone();
-//     //     let data_for_second_thread = data.clone();
+        topic
+            .send((PublishMessage, "hola".to_string(), None))
+            .unwrap();
 
-//     //     let thread_one = thread::spawn(move || {
-//     //         let received_data = receiver_one.recv();
-//     //         let mut data = data_for_thread.lock().unwrap();
-//     //         data.push(received_data.unwrap());
-//     //     });
+        let (_, client_id, _, _, msg) = receiver_one.recv().unwrap();
+        assert_eq!(client_id, "Facundo".to_owned());
+        if let Some(msg) = msg {
+            assert_eq!(msg, "hola".to_owned());
+        } else {
+            panic!()
+        }
 
-//     //     let thread_two = thread::spawn(move || {
-//     //         let received_data = receiver_two.recv();
-//     //         let mut data = data_for_second_thread.lock().unwrap();
-//     //         data.push(received_data.unwrap());
-//     //     });
+        let (_, client_id, _, _, msg) = receiver_two.recv().unwrap();
+        assert_eq!(client_id, "Nacho".to_owned());
+        if let Some(msg) = msg {
+            assert_eq!(msg, "hola".to_owned());
+        } else {
+            panic!()
+        }
+    }
+    #[test]
+    fn create_topic_add_two_subscribers_remove_one_and_publish_message() {
+        let mut topic = Topic::init("ALTEGO".to_owned());
 
-//     //     topic.publish_msg("hola".to_string());
-//     //     thread_one.join().unwrap();
-//     //     thread_two.join().unwrap();
+        let (sender_one, receiver_one): (Sender<ChannelUserManager>, Receiver<ChannelUserManager>) =
+            mpsc::channel();
+        let (sender_two, receiver_two): (Sender<ChannelUserManager>, Receiver<ChannelUserManager>) =
+            mpsc::channel();
 
-//     //     let data = data.lock().unwrap();
-//     //     assert_eq!(*data.get(0).unwrap(), "hola".to_string());
-//     //     assert_eq!(*data.get(1).unwrap(), "hola".to_string());
-//     // }
+        topic
+            .send((AddTopic, "Facundo".to_owned(), Some(sender_one)))
+            .unwrap();
+        topic
+            .send((AddTopic, "Nacho".to_owned(), Some(sender_two)))
+            .unwrap();
 
-//     // #[test]
-//     // fn create_topic_add_two_subscribers_remove_one_and_publish_message() {
-//     //     let mut topic = Topic::new("ALTEGO".to_owned());
-//     //     assert!(topic.equals("ALTEGO".to_owned()));
+        topic
+            .send((RemoveTopic, "Facundo".to_owned(), None))
+            .unwrap();
 
-//     //     let (sender_one, receiver_one): (Sender<String>, Receiver<String>) = mpsc::channel();
-//     //     let (sender_two, receiver_two): (Sender<String>, Receiver<String>) = mpsc::channel();
+        topic
+            .send((PublishMessage, "hola".to_string(), None))
+            .unwrap();
 
-//     //     let messages: Vec<String> = Vec::new();
-//     //     let data = Arc::new(Mutex::new(messages));
-//     //     let data_for_thread = data.clone();
+        for _recv in receiver_one.recv() {
+            panic!("Should be fail");
+        }
 
-//     //     topic.add(sender_one, "Facundo".to_owned());
-//     //     topic.add(sender_two, "Nacho".to_owned());
-
-//     //     topic.remove("Facundo".to_owned());
-
-//     //     let t = thread::spawn(move || {
-//     //         for _recv in receiver_one.recv() {
-//     //             panic!("Should be fail");
-//     //         }
-
-//     //         let received_data = receiver_two.recv();
-//     //         let mut data = data_for_thread.lock().unwrap();
-//     //         if let Err(received_data_fail) = received_data {
-//     //             println!("err: {}", received_data_fail);
-//     //         }
-//     //         if let Ok(received_data_success) = received_data {
-//     //             data.push(received_data_success);
-//     //         }
-//     //     });
-
-//     //     topic.publish_msg("Bienvenidos a Altego".to_owned());
-//     //     t.join().unwrap();
-//     //     let locked_data = data.lock().unwrap();
-//     //     assert_eq!(
-//     //         *locked_data.get(0).unwrap(),
-//     //         "Bienvenidos a Altego".to_owned()
-//     //     );
-//     // }
-// }
+        let (_, client_id, _, _, msg) = receiver_two.recv().unwrap();
+        assert_eq!(client_id, "Nacho".to_owned());
+        if let Some(msg) = msg {
+            assert_eq!(msg, "hola".to_owned());
+        } else {
+            panic!()
+        }
+    }
+}
