@@ -70,7 +70,7 @@ impl Connect {
             match user_manager_sender.send((
                 AddUserManager,
                 client_id,
-                Some(sender_stream.clone()),
+                Some(sender_stream),
                 Some(session_flag),
                 None,
             )) {

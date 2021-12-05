@@ -13,7 +13,7 @@ pub struct Topic {
 }
 
 impl Topic {
-    pub fn new(name: String) -> Sender<SenderTopicType> {
+    pub fn init(name: String) -> Sender<SenderTopicType> {
         let (topic_sender, topic_receiver): (Sender<SenderTopicType>, Receiver<SenderTopicType>) =
             mpsc::channel();
         let mut topic = Topic {

@@ -1,5 +1,5 @@
 mod tests {
-    use server::wildcard::wildcard::Wildcard;
+    use server::wildcard::wildcard_handler::Wildcard;
 
     #[test]
     pub fn testing_simple_astherisc_on_the_end() {

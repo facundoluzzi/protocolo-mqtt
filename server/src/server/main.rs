@@ -77,25 +77,17 @@ pub fn handle_new_client(
         // let mut error = false;
 
         if let Err(msg) = message_sent {
-            logger.info(format!("Error receiving a message: {}", msg.to_string()));
-        } else {
-            if let Ok(packet) = receiver.recv() {
-                logger.info(format!("packet received: {:?}", packet));
-                let packet_u8: &[u8] = &packet;
-                if let Err(err) = packet_factory.process_message(packet_u8) {
-                    logger.info(format!(
-                        "Error processing the packet received: {}",
-                        err.to_string()
-                    ));
-                    break;
-                }
-            } else if let Err(err) = receiver.recv() {
-                logger.info(format!(
-                    "Error reading the packet received: {}",
-                    err.to_string()
-                ));
+            logger.info(format!("Error receiving a message: {}", msg));
+        } else if let Ok(packet) = receiver.recv() {
+            logger.info(format!("packet received: {:?}", packet));
+            let packet_u8: &[u8] = &packet;
+            if let Err(err) = packet_factory.process_message(packet_u8) {
+                logger.info(format!("Error processing the packet received: {}", err));
                 break;
             }
+        } else if let Err(err) = receiver.recv() {
+            logger.info(format!("Error reading the packet received: {}", err));
+            break;
         }
     }
 }

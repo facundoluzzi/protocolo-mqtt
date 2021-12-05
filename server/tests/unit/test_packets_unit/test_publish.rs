@@ -70,6 +70,9 @@ mod tests {
         let topic = publisher_subscriber_sent.get_topic();
 
         assert_eq!(topic, "ALTEGO".to_owned());
-        assert_eq!(publisher_subscriber_sent.get_message(), "ALTEG".to_string());
+        assert_eq!(
+            publisher_subscriber_sent.get_message(),
+            "\u{0}\u{5}ALTEG".to_string()
+        );
     }
 }
