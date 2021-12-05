@@ -9,7 +9,7 @@ use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
-use crate::topics::topic_actions::TopicAction::{AddTopic, PublishMessage};
+use crate::topics::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
 use crate::topics::topic_types::SenderTopicType;
 
 pub struct TopicManager {
@@ -68,9 +68,25 @@ impl TopicManager {
                             );
                         }
                     }
-                };
-            }
-        });
+                    PublisherSubscriberCode::Unsubscriber =>{
+                        let topic_name = publish_suscriber.get_topic();
+                        let client_id = publish_suscriber.get_client_id();
+                        topic_manager.unsubscribe(
+                            topic_name.to_owned(),
+                            client_id.to_owned(),
+                        );
+                    }
+                    PublisherSubscriberCode::UnsubscriberAll =>{
+                        let client_id = publish_suscriber.get_client_id();
+                        topic_manager.unsubscribe_all(
+                            client_id.to_owned(),
+                        );
+                    }
+                    
+                }
+            };
+        }
+        );
         sender_to_return
     }
 
@@ -96,6 +112,16 @@ impl TopicManager {
             sender_topic
                 .send((AddTopic, client_id, Some(sender_subscriber)))
                 .unwrap();
+        }
+    }
+    fn unsubscribe(&mut self, topic_name: String, client_id: String) {
+        if let Some(topic_sender) = self.topics.get(&topic_name.to_owned()) {
+            topic_sender.send((RemoveTopic, client_id.to_owned(),None)).unwrap();
+        }
+    }
+    fn unsubscribe_all(&mut self, client_id: String) {
+        for topic_sender in self.topics.values(){
+            topic_sender.send((RemoveTopic, client_id.to_owned(),None)).unwrap();
         }
     }
 
