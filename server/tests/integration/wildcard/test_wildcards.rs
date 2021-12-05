@@ -1,5 +1,5 @@
 mod tests {
-    use crate::integration::test_packets::setup::ServerTest;
+    use crate::integration::setup::ServerTest;
     use std::{
         io::{Read, Write},
         net::TcpStream,

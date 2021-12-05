@@ -62,9 +62,10 @@ impl Connect {
         };
 
         match get_keep_alive(variable_header) {
-            Some(some_keep_alive) => {
-                handler_keep_alive::init(some_keep_alive as u64, sender_stream.clone())?
-            }
+            Some(some_keep_alive) => handler_keep_alive::init(
+                ((some_keep_alive as f64) * 1.5) as u64,
+                sender_stream.clone(),
+            )?,
             None => handler_null_keep_alive::init(sender_stream.clone())?,
         }
 
