@@ -180,7 +180,8 @@ fn connect_should_fail_send_username_without_password_05() {
         }
         Err(err) => {
             println!("{}", err);
-            panic!();        }
+            panic!();
+        }
     }
 
     server.shutdown().unwrap();
@@ -222,7 +223,8 @@ fn connect_should_fail_not_authorized_06() {
         }
         Err(err) => {
             println!("{}", err);
-            panic!();        }
+            panic!();
+        }
     }
 
     server.shutdown().unwrap();
