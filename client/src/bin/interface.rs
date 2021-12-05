@@ -72,18 +72,21 @@ fn build_objects_for_suscribe(
     gtk::RadioButton,
     gtk::RadioButton,
     gtk::Label,
+    gtk::Label,
 ) {
     let input_topic_suscribe: gtk::Entry = builder.object("input_topic_suscribe").unwrap();
     let suscribe_button: gtk::Button = builder.object("suscribe_button").unwrap();
     let qos_suscriber_0: gtk::RadioButton = builder.object("qos_suscriber_0").unwrap();
     let qos_suscriber_1: gtk::RadioButton = builder.object("qos_suscriber_1").unwrap();
     let result_label_1: gtk::Label = builder.object("result_label1").unwrap();
+    let messages_received: gtk::Label = builder.object("messages_received").unwrap();
     (
         input_topic_suscribe,
         suscribe_button,
         qos_suscriber_0,
         qos_suscriber_1,
         result_label_1,
+        messages_received,
     )
 }
 
@@ -101,8 +104,14 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClien
         build_objects_for_connect(&builder);
     let (message_input, topic_input, publish_button, qos_publish_1, qos_publish_0, result_label_1) =
         build_objects_for_publish(&builder);
-    let (input_topic_suscribe, suscribe_button, qos_suscriber_0, qos_suscriber_1, result_label_2) =
-        build_objects_for_suscribe(&builder);
+    let (
+        input_topic_suscribe,
+        suscribe_button,
+        qos_suscriber_0,
+        qos_suscriber_1,
+        result_label_2,
+        messages_received,
+    ) = build_objects_for_suscribe(&builder);
     let (tx, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
     let tx_for_connection = tx.clone();
     let tx_for_suscribe = tx.clone();
