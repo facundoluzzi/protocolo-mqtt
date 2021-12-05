@@ -39,7 +39,7 @@ mod tests {
             ))
             .unwrap();
 
-        let (_, vec, _) = receiver_stream.recv().unwrap();
+        let (_, vec, _, _) = receiver_stream.recv().unwrap();
 
         assert_eq!(
             vec.unwrap(),
@@ -172,7 +172,7 @@ mod tests {
             ))
             .unwrap();
 
-        let (_, vec, _) = receiver_stream_two.recv().unwrap();
+        let (_, vec, _, _) = receiver_stream_two.recv().unwrap();
 
         assert_eq!(
             vec.unwrap(),

@@ -39,7 +39,7 @@ impl ServerTest {
                                     let logger_clone = logger.clone();
                                     let sender_tm_cloned = sender_topic_manager.clone();
                                     let sender_um_cloned = cloned_sender_user_manager.clone();
-                                    let sender_stream = Stream::init(stream);
+                                    let sender_stream = Stream::init(stream, logger.clone());
 
                                     spawn(move || {
                                         handle_new_client(

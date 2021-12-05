@@ -1,4 +1,4 @@
-use crate::integration::test_packets::setup::ServerTest;
+use crate::integration::setup::ServerTest;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
@@ -78,7 +78,8 @@ fn connect_should_fail_unacceptable_protocol_version_03() {
                     assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x01]);
                 }
                 Err(err) => {
-                    panic!(err);
+                    println!("{}", err);
+                    panic!();
                 }
             }
 
@@ -90,12 +91,14 @@ fn connect_should_fail_unacceptable_protocol_version_03() {
                     server.shutdown().unwrap();
                 }
                 Err(err) => {
-                    panic!(err);
+                    println!("{}", err);
+                    panic!();
                 }
             }
         }
         Err(err) => {
-            panic!(err);
+            println!("{}", err);
+            panic!();
         }
     }
 }
@@ -134,7 +137,8 @@ fn connect_should_fail_username_is_empty_04() {
             assert_eq!(data[0..size], []);
         }
         Err(err) => {
-            panic!(err);
+            println!("{}", err);
+            panic!();
         }
     }
 
@@ -175,7 +179,8 @@ fn connect_should_fail_send_username_without_password_05() {
             assert_eq!(data[0..size], []);
         }
         Err(err) => {
-            panic!(err);
+            println!("{}", err);
+            panic!();
         }
     }
 
@@ -217,7 +222,8 @@ fn connect_should_fail_not_authorized_06() {
             assert_eq!(data[0..size], []);
         }
         Err(err) => {
-            panic!(err);
+            println!("{}", err);
+            panic!();
         }
     }
 

@@ -104,18 +104,20 @@ impl Subscribe {
         let remaining_length = 0x03;
         let packet_identifier_msb = self.packet_identifier[0];
         let packet_identifier_lsb = self.packet_identifier[1];
-        let mut bytes_response = Vec::new();
-
-        bytes_response.push(packet_type);
-        bytes_response.push(remaining_length);
-        bytes_response.push(packet_identifier_msb);
-        bytes_response.push(packet_identifier_lsb);
+        let mut bytes_response = vec![
+            packet_type,
+            remaining_length,
+            packet_identifier_msb,
+            packet_identifier_lsb,
+        ];
 
         for return_code in &self.return_codes {
             bytes_response.push(*return_code);
         }
 
-        if let Err(msg_error) = stream.send((WriteStream, Some(bytes_response.to_vec()), None)) {
+        if let Err(msg_error) =
+            stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
+        {
             println!("Error in sending response: {}", msg_error);
         }
     }

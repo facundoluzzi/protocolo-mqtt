@@ -75,7 +75,7 @@ impl Publish {
                     self.packet_identifier[1],
                 ];
                 if let Err(msg_error) =
-                    stream.send((WriteStream, Some(puback_response.to_vec()), None))
+                    stream.send((WriteStream, Some(puback_response.to_vec()), None, None))
                 {
                     println!("Error in sending response: {}", msg_error);
                 }

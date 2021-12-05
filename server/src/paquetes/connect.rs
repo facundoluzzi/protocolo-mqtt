@@ -1,6 +1,8 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
+use crate::keep_alive::handler_keep_alive;
+use crate::keep_alive::handler_null_keep_alive;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
@@ -14,7 +16,6 @@ pub struct Connect {
     flags: ConnectFlags,
     payload: ConnectPayload,
     status_code: u8,
-    keep_alive: Option<u8>,
 }
 
 impl Connect {
@@ -33,8 +34,6 @@ impl Connect {
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
 
         check_variable_header_len(variable_header)?;
-
-        let keep_alive = get_keep_alive(variable_header);
 
         status_code = status_code.check_protocol_level(variable_header[6]);
 
@@ -60,8 +59,14 @@ impl Connect {
             flags,
             payload,
             status_code: status_code.apply_validations(),
-            keep_alive,
         };
+
+        match get_keep_alive(variable_header) {
+            Some(some_keep_alive) => {
+                handler_keep_alive::init(some_keep_alive as u64, sender_stream.clone())?
+            }
+            None => handler_null_keep_alive::init(sender_stream.clone())?,
+        }
 
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
@@ -90,7 +95,7 @@ impl Connect {
     ) -> Result<(), String> {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let connack_response = [0x20, 0x02, session_present_bit, self.status_code].to_vec();
-        if let Err(_msg_error) = stream.send((WriteStream, Some(connack_response), None)) {}
+        if let Err(_msg_error) = stream.send((WriteStream, Some(connack_response), None, None)) {}
 
         if self.status_code != 0x00 {
             sender_to_disconect
@@ -104,9 +109,5 @@ impl Connect {
 
     pub fn get_client_id(&self) -> String {
         self.payload.get_client_id()
-    }
-
-    pub fn get_keep_alive(&self) -> Option<u8> {
-        self.keep_alive
     }
 }

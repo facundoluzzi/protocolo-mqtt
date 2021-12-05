@@ -1,7 +1,4 @@
 use super::publisher_suscriber::PublisherSuscriber;
-use crate::keepalive::keep_alive::KeepAlive;
-use crate::keepalive::null_keep_alive::KeepAliveNull;
-use crate::keepalive::trait_keep_alive::TraitKeepAlive;
 use crate::logs::logger::Logger;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
@@ -13,7 +10,6 @@ use std::sync::mpsc::Sender;
 
 pub struct PacketManager {
     client_id: String,
-    keep_alive: Box<dyn TraitKeepAlive>,
     sender_stream: Sender<StreamType>,
     sender_user_manager: Sender<ChannelUserManager>,
     sender_to_disconect: Sender<(String, String)>,
@@ -33,7 +29,6 @@ impl PacketManager {
             client_id: "".to_string(),
             sender_stream,
             sender_user_manager,
-            keep_alive: KeepAliveNull::init(0, sender_to_disconect.clone()),
             sender_to_disconect,
             sender_topic_manager,
             logger,
@@ -52,15 +47,6 @@ impl PacketManager {
         self.client_id.to_string()
     }
 
-    pub fn start_keep_alive(&mut self) {
-        self.keep_alive
-            .start_keep_alive(self.client_id.to_string(), "prueba".to_string());
-    }
-
-    pub fn set_keep_alive(&mut self, keep_alive: Box<dyn TraitKeepAlive>) {
-        self.keep_alive = keep_alive;
-    }
-
     pub fn process_connect_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         self.logger.info("proccessing connect packet".to_string());
 
@@ -74,14 +60,6 @@ impl PacketManager {
             Ok(connect_result) => {
                 self.set_client_id(connect_result.get_client_id());
 
-                let keep_alive = match connect_result.get_keep_alive() {
-                    Some(some_keep_alive) => {
-                        KeepAlive::init(some_keep_alive, self.sender_to_disconect.clone())
-                    }
-                    None => KeepAliveNull::init(0, self.sender_to_disconect.clone()),
-                };
-
-                self.set_keep_alive(keep_alive);
                 connect_result
                     .send_response(self.sender_stream.clone(), self.sender_to_disconect.clone())?;
                 Ok(())

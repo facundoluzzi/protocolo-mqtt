@@ -57,7 +57,7 @@ impl PublisherWriter {
     fn publish_message(&mut self, receive: String) {
         if let Some(socket) = &self.socket {
             let new_vec: Vec<u8> = receive.as_bytes().to_vec();
-            match socket.send((WriteStream, Some(new_vec), None)) {
+            match socket.send((WriteStream, Some(new_vec), None, None)) {
                 Ok(_) => {}
                 Err(_err) => {}
             }

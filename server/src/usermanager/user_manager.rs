@@ -80,11 +80,7 @@ impl UserManager {
     }
 
     fn find_user(&self, client_id: String) -> Option<Sender<ChannelPublisherWriter>> {
-        if let Some(user) = self.users.get(&client_id) {
-            Some(user.0.clone())
-        } else {
-            None
-        }
+        self.users.get(&client_id).map(|user| user.0.clone())
     }
 
     fn delete_user(&mut self, client_id: String) {
