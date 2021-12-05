@@ -99,7 +99,7 @@ impl Subscribe {
         Ok(subscribe)
     }
 
-    pub fn send_response(&self, stream: Sender<StreamType>) {
+    pub fn send_response(&self, sender_stream: Sender<StreamType>) {
         let packet_type = 0x90;
         let remaining_length = 0x03;
         let packet_identifier_msb = self.packet_identifier[0];
@@ -116,7 +116,7 @@ impl Subscribe {
         }
 
         if let Err(msg_error) =
-            stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
+            sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
         {
             println!("Error in sending response: {}", msg_error);
         }

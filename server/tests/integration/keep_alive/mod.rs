@@ -1,1 +1,1 @@
-pub mod test_connect_subcribe;
+pub mod test_connect_subscribe;

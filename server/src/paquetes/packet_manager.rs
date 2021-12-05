@@ -2,6 +2,7 @@ use super::publisher_suscriber::PublisherSuscriber;
 use crate::logs::logger::Logger;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
+use crate::paquetes::pingreq;
 use crate::paquetes::publish::Publish;
 use crate::paquetes::subscribe::Subscribe;
 use crate::stream::stream_handler::StreamType;
@@ -47,7 +48,7 @@ impl PacketManager {
         self.client_id.to_string()
     }
 
-    pub fn process_connect_message(&mut self, bytes: &[u8]) -> Result<(), String> {
+    fn process_connect_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         self.logger.info("proccessing connect packet".to_string());
 
         let connect = Connect::init(
@@ -80,7 +81,7 @@ impl PacketManager {
         }
     }
 
-    pub fn process_publish_message(&mut self, bytes: &[u8]) {
+    fn process_publish_message(&mut self, bytes: &[u8]) {
         self.logger.info("proccessing publish packet".to_string());
 
         Publish::init(bytes)
@@ -89,7 +90,7 @@ impl PacketManager {
         // thread::sleep(time::Duration::from_secs(1000));
     }
 
-    pub fn process_subscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
+    fn process_subscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         self.logger.info("proccessing subscribe packet".to_string());
 
         let subscribe = Subscribe::init(bytes);
@@ -123,6 +124,10 @@ impl PacketManager {
         }
     }
 
+    fn process_pingreq_message(&self) {
+        pingreq::send_response(self.sender_stream.clone());
+    }
+
     // TODO: validar que un paquete que no es connect, siempre tenga que estar ya conectado (haber hecho un connect packet previamente)
     pub fn process_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         let first_byte = bytes.get(0);
@@ -137,6 +142,7 @@ impl PacketManager {
                     1 => self.process_connect_message(bytes)?,
                     3 => self.process_publish_message(bytes),
                     8 => self.process_subscribe_message(bytes)?,
+                    12 => self.process_pingreq_message(),
                     _ => Default::init(bytes).send_response(self.sender_stream.clone()),
                 }
             }
