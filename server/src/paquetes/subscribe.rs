@@ -115,7 +115,9 @@ impl Subscribe {
             bytes_response.push(*return_code);
         }
 
-        if let Err(msg_error) = stream.send((WriteStream, Some(bytes_response.to_vec()), None)) {
+        if let Err(msg_error) =
+            stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
+        {
             println!("Error in sending response: {}", msg_error);
         }
     }

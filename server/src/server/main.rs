@@ -51,7 +51,7 @@ pub fn handle_new_client(
             } else {
                 prueba_logger.info("has sent a event to stream handler".to_string());
                 cloned_sender_stream
-                    .send((CloseConnectionStream, None, None))
+                    .send((CloseConnectionStream, None, None, None))
                     .unwrap();
 
                 prueba_logger.info("has closed the connection correclty".to_string());
@@ -70,9 +70,10 @@ pub fn handle_new_client(
     let (sender, receiver): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
 
     loop {
-        let message_sent = sender_stream
-            .clone()
-            .send((ReadStream, None, Some(sender.clone())));
+        let message_sent =
+            sender_stream
+                .clone()
+                .send((ReadStream, None, Some(sender.clone()), None));
 
         if let Err(msg) = message_sent {
             logger.info(format!("Error receiving a message: {}", msg));
@@ -104,7 +105,7 @@ pub fn run_server(
                 let logger_clone = logger.clone();
                 let sender_tm_cloned = sender_topic_manager.clone();
                 let sender_um_cloned = sender_user_manager.clone();
-                let sender_stream = Stream::init(stream);
+                let sender_stream = Stream::init(stream, logger.clone());
 
                 thread::spawn(move || {
                     handle_new_client(

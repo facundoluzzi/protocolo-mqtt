@@ -15,7 +15,7 @@ impl Default {
 
     pub fn send_response(&self, stream: Sender<StreamType>) {
         if let Err(msg_error) =
-            stream.send((WriteStream, Some(b"default message\n".to_vec()), None))
+            stream.send((WriteStream, Some(b"default message\n".to_vec()), None, None))
         {
             println!("Error in sending response: {}", msg_error);
         }
