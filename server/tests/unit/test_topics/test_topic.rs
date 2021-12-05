@@ -6,7 +6,6 @@ mod tests {
     use std::sync::mpsc::Receiver;
     use std::sync::mpsc::Sender;
 
-
     use server::topics::topic::Topic;
 
     #[test]
