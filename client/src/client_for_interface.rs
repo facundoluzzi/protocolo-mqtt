@@ -1,13 +1,13 @@
 use std::{
     io::{Read, Write},
     net::TcpStream,
+    str::from_utf8,
     thread,
 };
 
 use crate::{
     packet_builder::{build_bytes_for_connect, build_bytes_for_publish, build_bytes_for_suscribe},
     packet_manager::{PacketManager, ResponsePacket},
-    trait_paquetes::Paquetes,
 };
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
@@ -54,6 +54,7 @@ pub type SenderClient = (
     Option<String>,
     Option<bool>,
     Sender<String>,
+    Option<Sender<String>>,
 );
 
 impl Client {
@@ -77,6 +78,7 @@ impl Client {
                         Some(id_client),
                         None,
                         sender_response,
+                        None,
                     ) => {
                         let response =
                             client.connect_to_server(host, port, user, password, id_client);
@@ -91,6 +93,7 @@ impl Client {
                         None,
                         Some(is_qos_0),
                         sender_response,
+                        None,
                     ) => {
                         client.publish_into_topic(message, topic, is_qos_0);
                     }
@@ -103,8 +106,10 @@ impl Client {
                         None,
                         Some(is_qos_0),
                         sender_response,
+                        Some(sender_for_messages),
                     ) => {
-                        let response = client.subscribe_to_topic(topic, is_qos_0);
+                        let response =
+                            client.subscribe_to_topic(topic, is_qos_0, sender_for_messages);
                         sender_response.send(response).unwrap();
                     }
                     _ => panic!("Algo mal"),
@@ -126,21 +131,49 @@ impl Client {
         }
     }
 
-    pub fn send_suscribe(&self, topic: &String, is_qos_0: bool, stream: Option<TcpStream>) {
+    pub fn send_suscribe(
+        &self,
+        topic: &String,
+        is_qos_0: bool,
+        stream: Option<TcpStream>,
+        sender_for_messages: Sender<String>,
+    ) {
         match stream {
             Some(mut stream) => {
                 let suscribe_bytes = build_bytes_for_suscribe(topic, is_qos_0);
                 stream.write_all(&suscribe_bytes).unwrap();
+                thread::spawn(move || {
+                    loop {
+                        let mut data = vec![0_u8; 100];
+                        match stream.read(&mut data) {
+                            Ok(size) => {
+                                let mensaje_publicado = &data[0..size];
+                                let mensaje_publicado = from_utf8(mensaje_publicado).unwrap();
+                                sender_for_messages
+                                    .send(mensaje_publicado.to_string())
+                                    .unwrap();
+                            }
+                            Err(err) => {
+                                // no se, algo
+                            }
+                        };
+                    }
+                });
             }
             None => panic!("No pude enviar"),
         }
     }
 
-    pub fn subscribe_to_topic(&self, topic: String, is_qos_0: bool) -> String {
+    pub fn subscribe_to_topic(
+        &self,
+        topic: String,
+        is_qos_0: bool,
+        sender_for_messages: Sender<String>,
+    ) -> String {
         let client_clone = self.clone();
         let client_clone_2 = self.clone();
         let (tx, rx) = mpsc::channel::<u8>();
-        self.send_suscribe(&topic, is_qos_0, client_clone.stream);
+        self.send_suscribe(&topic, is_qos_0, client_clone.stream, sender_for_messages);
         thread::spawn(move || {
             receive_responses_from_broker(client_clone_2.stream.unwrap(), tx);
         });
@@ -182,7 +215,6 @@ impl Client {
                 receive_responses_from_broker(client_clone_2.stream.unwrap(), tx);
             });
             let suscribe_code_received = rx.recv().unwrap();
-            println!("{:?}", suscribe_code_received);
         }
     }
 

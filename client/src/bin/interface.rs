@@ -7,6 +7,7 @@ use gtk::prelude::*;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
+use std::thread;
 
 fn build_objects_for_connect(
     builder: &gtk::Builder,
@@ -112,10 +113,20 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClien
         result_label_2,
         messages_received,
     ) = build_objects_for_suscribe(&builder);
+
     let (tx, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
     let tx_for_connection = tx.clone();
     let tx_for_suscribe = tx.clone();
 
+    let (sender_for_messages, receiver_for_messages): (Sender<String>, Receiver<String>) = mpsc::channel();
+            
+    thread::spawn(move || {
+        for message in receiver_for_messages {
+            messages_received.set_text(&message);
+        }
+    });
+
+    
     connect_button.connect_clicked(move |_| {
         let port = input_port.text().to_string();
         let ip = ip_input.text().to_string();
@@ -135,6 +146,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClien
                 Some(id_client),
                 None,
                 send_x,
+                None,
             ))
             .unwrap();
 
@@ -157,6 +169,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClien
                 None,
                 Some(is_qos_0),
                 send_x,
+                None,
             ))
             .unwrap();
     });
@@ -165,6 +178,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClien
         let topic = input_topic_suscribe.text().to_string();
         let (send_x, rec_x): (Sender<String>, Receiver<String>) = mpsc::channel();
         let is_qos_0 = qos_suscriber_0.is_active();
+        let sender_for_messages_cloned = sender_for_messages.clone();
         sender_suscribe
             .send((
                 ClientAction::Subscribe,
@@ -175,9 +189,10 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClien
                 None,
                 Some(is_qos_0),
                 send_x,
+                Some(sender_for_messages_cloned),
             ))
             .unwrap();
-
+        
         let result = rec_x.recv().unwrap();
         tx_for_suscribe.send(result).unwrap();
     });
