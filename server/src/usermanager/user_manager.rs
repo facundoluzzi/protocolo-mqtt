@@ -112,6 +112,7 @@ impl UserManager {
                     PublisherSubscriberCode::UnsubscriberAll,
                     None,
                     client_id.to_owned(),
+                    None,
                 );
                 self.sender_topic_manager
                     .send(publisher_subscriber)

@@ -93,7 +93,7 @@ impl Publish {
         let topic = self.topic.to_owned();
         let payload = self.payload.to_owned();
         let publisher_subscriber =
-            PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
+            PublisherSuscriber::new(topic, payload, Publisher, None, client_id, None);
 
         if let Err(sender_err) = sender_topic_manager.send(publisher_subscriber) {
             println!("Error sending to publisher_subscriber: {}", sender_err);

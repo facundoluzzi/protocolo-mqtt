@@ -53,11 +53,11 @@ impl Unsubscribe {
                     }
                 };
             acumulator += length;
-
+            
             let type_s = PublisherSubscriberCode::Unsubscriber;
             let message = "None".to_owned();
             let publisher_subscriber =
-                PublisherSuscriber::new(topic, message, type_s, None, client_id.to_string());
+                PublisherSuscriber::new(topic, message, type_s, None, client_id.to_string(), None);
 
             if let Err(sender_err) = sender.send(publisher_subscriber) {
                 println!("Error sending to publisher_subscriber: {}", sender_err);

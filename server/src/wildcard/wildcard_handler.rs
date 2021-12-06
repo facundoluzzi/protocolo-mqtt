@@ -2,6 +2,12 @@ pub struct Wildcard {
     vec_words: Vec<String>,
 }
 
+impl Clone for Wildcard {
+    fn clone(&self) -> Self {
+        Self { vec_words: self.vec_words.clone() }
+    }
+}
+
 impl Wildcard {
     pub fn init(words: Vec<String>) -> Wildcard {
         Wildcard { vec_words: words }

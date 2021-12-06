@@ -1005,4 +1005,61 @@ mod tests {
         }
         server.shutdown().unwrap();
     }
+
+    #[test]
+    fn testing_subscribe_and_publish_with_wildcard_greater_than_at_the_middle_should_failed() {
+        let server = ServerTest::start("0.0.0.0:1893".to_string());
+
+        let mut stream_to_subscribe_with_wildcard =
+            TcpStream::connect("0.0.0.0:1893".to_string()).unwrap();
+
+        let subscriber_with_wildcard_connect_bytes = [
+            0x10, // Packet Type
+            0x0E, // Remaining Length
+            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x04, // Protocol Name - SIEMPRE en 04 o falla
+            0x00, // Flags
+            0x00, 0x0B, // keep alive
+            0x00, 0x02, 0x00, 0x01, // Client Identifier
+        ];
+
+        stream_to_subscribe_with_wildcard
+            .write(&subscriber_with_wildcard_connect_bytes)
+            .unwrap();
+
+        let mut data = vec![0; 100];
+        match stream_to_subscribe_with_wildcard.read(&mut data) {
+            Ok(size) => {
+                assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
+            }
+            _ => {
+                panic!();
+            }
+        }
+
+        let subscribe_bytes_with_wildcard = [
+            0x80, // Packet Type
+            0x12, // Remaining Length
+            0x00, 0x0A, // Variable Header, en particular packet identifier
+            0x00, 0x0D, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
+            0x2F, 0x3E, // >
+            0x2F, 0x62, 0x6F, 0x63, 0x61, // Topic :: futbol/boca/>
+            0x00,
+        ];
+
+        // data = vec![0; 100];
+        // stream_to_subscribe_with_wildcard
+        //     .write(&subscribe_bytes_with_wildcard)
+        //     .unwrap();
+        // match stream_to_subscribe_with_wildcard.read(&mut data) {
+        //     Ok(size) => {
+        //         assert_eq!(data[0..size], [0x80, 0x03, 0x00, 0x0A, 0x00]);
+        //     }
+        //     _ => {
+        //         panic!();
+        //     }
+        // }
+
+        server.shutdown().unwrap();
+    }
 }
