@@ -57,7 +57,7 @@ impl Unsubscribe {
             let type_s = PublisherSubscriberCode::Unsubscriber;
             let message = "None".to_owned();
             let publisher_subscriber =
-                PublisherSuscriber::new(topic, message, type_s, None, client_id.to_string());
+                PublisherSuscriber::new(topic, message, type_s, None, client_id.to_string(), None);
 
             if let Err(sender_err) = sender.send(publisher_subscriber) {
                 println!("Error sending to publisher_subscriber: {}", sender_err);
@@ -76,12 +76,14 @@ impl Unsubscribe {
     pub fn send_response(&self, sender_stream: Sender<StreamType>) {
         let packet_type = 0xB0u8;
         let packet_identifier = self.packet_identifier.clone();
-        let bytes_response = vec![
-            packet_type,
-            0x02u8,
-            packet_identifier[0],
-            packet_identifier[1],
-        ];
+        let mut bytes_response = Vec::new();
+        let remaining_length = packet_identifier.len() + 2;
+
+        bytes_response.push(packet_type);
+        bytes_response.push(remaining_length as u8);
+        bytes_response.push(0x00);
+        bytes_response.push(packet_identifier.len() as u8);
+        bytes_response = [bytes_response, packet_identifier].concat();
 
         if let Err(msg_error) =
             sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))

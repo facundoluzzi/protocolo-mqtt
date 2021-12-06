@@ -2,7 +2,6 @@ use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::topics::topic::Topic;
 use crate::usermanager::user_manager_types::ChannelUserManager;
-use crate::wildcard::verify_wildcard;
 use crate::wildcard::wildcard_handler::Wildcard;
 use std::collections::HashMap;
 use std::sync::mpsc;
@@ -41,24 +40,25 @@ impl TopicManager {
             topics,
         };
         thread::spawn(move || {
-            for publish_suscriber in publisher_subscriber_receiver {
-                match publish_suscriber.get_packet_type() {
+            for publish_subscriber in publisher_subscriber_receiver {
+                match publish_subscriber.get_packet_type() {
                     PublisherSubscriberCode::Publisher => {
                         topic_manager.publish_msg(
-                            publish_suscriber.get_topic(),
-                            publish_suscriber.get_message(),
+                            publish_subscriber.get_topic(),
+                            publish_subscriber.get_message(),
                         );
                     }
                     PublisherSubscriberCode::Subscriber => {
-                        let subscriber = publish_suscriber.get_sender().unwrap();
-                        let topic_name = publish_suscriber.get_topic();
-                        let client_id = publish_suscriber.get_client_id();
+                        let subscriber = publish_subscriber.get_sender().unwrap();
+                        let topic_name = publish_subscriber.get_topic();
+                        let client_id = publish_subscriber.get_client_id();
+                        let wildcard = publish_subscriber.get_wildcard();
 
-                        if let Some(wilcard) = verify_wildcard::get_wilcard(topic_name.to_owned()) {
+                        if let Some(wilcard) = wildcard {
                             topic_manager.subscribe_with_wilcard(
                                 wilcard,
                                 subscriber.clone(),
-                                publish_suscriber.get_client_id(),
+                                publish_subscriber.get_client_id(),
                             );
                         } else {
                             topic_manager.subscribe(
@@ -69,12 +69,12 @@ impl TopicManager {
                         }
                     }
                     PublisherSubscriberCode::Unsubscriber => {
-                        let topic_name = publish_suscriber.get_topic();
-                        let client_id = publish_suscriber.get_client_id();
+                        let topic_name = publish_subscriber.get_topic();
+                        let client_id = publish_subscriber.get_client_id();
                         topic_manager.unsubscribe(topic_name.to_owned(), client_id.to_owned());
                     }
                     PublisherSubscriberCode::UnsubscriberAll => {
-                        let client_id = publish_suscriber.get_client_id();
+                        let client_id = publish_subscriber.get_client_id();
                         topic_manager.unsubscribe_all(client_id.to_owned());
                     }
                 }
@@ -108,8 +108,10 @@ impl TopicManager {
         }
     }
     fn unsubscribe(&mut self, topic_name: String, client_id: String) {
-        if let Some(topic_sender) = self.topics.get(&topic_name) {
-            topic_sender.send((RemoveTopic, client_id, None)).unwrap();
+        if let Some(topic_sender) = self.topics.get(&topic_name.to_owned()) {
+            topic_sender
+                .send((RemoveTopic, client_id.to_owned(), None))
+                .unwrap();
         }
     }
     fn unsubscribe_all(&mut self, client_id: String) {

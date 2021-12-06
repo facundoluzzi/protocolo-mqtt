@@ -25,7 +25,7 @@ fn main() {
     ));
 
     let sender_topic_manager = TopicManager::init();
-    let sender_user_manager = UserManager::init();
+    let sender_user_manager = UserManager::init(sender_topic_manager.clone());
 
     run_server(&listener, logger, sender_topic_manager, sender_user_manager);
     drop(listener);

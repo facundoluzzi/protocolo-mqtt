@@ -40,7 +40,6 @@ impl Publish {
         let (topic, packet_identifier, length) =
             get_variable_header(&bytes[init_variable_header..bytes.len()]).unwrap();
 
-        //https://docs.solace.com/Basics/Wildcard-Charaters-Topic-Subs.htm?Highlight=wildcard
         let _valid_topic = publish_variable_header::verify_publish_wilcard(topic.to_owned());
 
         // TODO: cerrar la conexión
@@ -94,7 +93,7 @@ impl Publish {
         let topic = self.topic.to_owned();
         let payload = self.payload.to_owned();
         let publisher_subscriber =
-            PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
+            PublisherSuscriber::new(topic, payload, Publisher, None, client_id, None);
 
         if let Err(sender_err) = sender_topic_manager.send(publisher_subscriber) {
             println!("Error sending to publisher_subscriber: {}", sender_err);
