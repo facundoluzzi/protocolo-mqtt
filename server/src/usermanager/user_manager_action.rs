@@ -1,7 +1,6 @@
 #[derive(PartialEq, Debug)]
 pub enum UserManagerAction {
     AddUserManager,
-    DeleteUserManager,
-    DisconectUserManager,
+    DisconnectUserManager,
     PublishMessageUserManager,
 }

@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use server::helper::publisher_subscriber_code::PublisherSubscriberCode;
     use server::paquetes::publish::Publish;
-    use server::paquetes::publisher_suscriber::PublisherSuscriber;
+    use server::topics::topic_types::TypeTopicManager;
+    use server::topics::topic_types::TypeTopicManager::Publisher;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
     use std::sync::Arc;
@@ -34,11 +34,11 @@ mod tests {
         ];
 
         let (sender_one, receiver_one): (
-            std::sync::mpsc::Sender<PublisherSuscriber>,
-            Receiver<PublisherSuscriber>,
+            std::sync::mpsc::Sender<TypeTopicManager>,
+            Receiver<TypeTopicManager>,
         ) = mpsc::channel();
 
-        let messages: Vec<PublisherSuscriber> = Vec::new();
+        let messages: Vec<TypeTopicManager> = Vec::new();
         let data = Arc::new(Mutex::new(messages));
         let data_for_thread = data.clone();
 
@@ -55,24 +55,18 @@ mod tests {
 
         t.join().unwrap();
         let locked_data = data.lock().unwrap();
-        let publisher_subscriber_sent = locked_data.get(0).unwrap();
+        let type_topic_manager = locked_data.get(0).unwrap();
 
-        assert_eq!(
-            publisher_subscriber_sent.get_packet_type(),
-            PublisherSubscriberCode::Publisher
-        );
-
-        assert_eq!(
-            publisher_subscriber_sent.get_client_id(),
-            "client_id".to_string()
-        );
-
-        let topic = publisher_subscriber_sent.get_topic();
-
-        assert_eq!(topic, "ALTEGO".to_owned());
-        assert_eq!(
-            publisher_subscriber_sent.get_publish_packet(),
-            Some(bytes.to_vec())
-        );
+        match type_topic_manager {
+            Publisher(publisher) => {
+                assert_eq!(publisher.get_client_id(), "client_id".to_string());
+                let topic = publisher.get_topic();
+                assert_eq!(topic, "ALTEGO".to_owned());
+                assert_eq!(publisher.get_publish_packet(), bytes.to_vec());
+            }
+            _ => {
+                panic!("unexpected error");
+            }
+        }
     }
 }

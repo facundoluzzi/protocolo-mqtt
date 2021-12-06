@@ -11,6 +11,8 @@ use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::variable_header::connect_variable_header::{check_variable_header_len, get_keep_alive};
 use std::sync::mpsc::Sender;
 
+use super::disconnect::Disconnect;
+
 pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
@@ -91,17 +93,17 @@ impl Connect {
 
     pub fn send_response(
         &self,
-        stream: Sender<StreamType>,
-        sender_to_disconect: Sender<(String, String)>,
+        sender_stream: Sender<StreamType>,
+        sender_user_manager: Sender<ChannelUserManager>,
     ) -> Result<(), String> {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let connack_response = [0x20, 0x02, session_present_bit, self.status_code].to_vec();
-        if let Err(_msg_error) = stream.send((WriteStream, Some(connack_response), None, None)) {}
+        if let Err(_msg_error) =
+            sender_stream.send((WriteStream, Some(connack_response), None, None))
+        {}
 
         if self.status_code != 0x00 {
-            sender_to_disconect
-                .send(("".to_string(), "".to_string()))
-                .unwrap();
+            Disconnect::disconnect_user(self.get_client_id(), sender_user_manager, sender_stream);
             Err("".to_string())
         } else {
             Ok(())

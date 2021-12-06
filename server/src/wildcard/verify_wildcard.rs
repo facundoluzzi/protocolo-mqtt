@@ -1,6 +1,9 @@
-use super::wildcard_handler::Wildcard;
+use super::{wildcard_handler::Wildcard, wildcard_result::WildcardResult};
+use crate::wildcard::wildcard_result::WildcardResult::{
+    HasNoWildcard, HasWildcard, InvalidWildcard,
+};
 
-pub fn get_wilcard(topic: String) -> Option<Wildcard> {
+pub fn get_wilcard(topic: String) -> WildcardResult {
     let vec_words: Vec<String> = topic.split('/').map(|s| s.to_string()).collect();
     let astherisc = "*".to_owned();
     let greater_than = ">".to_owned();
@@ -13,16 +16,16 @@ pub fn get_wilcard(topic: String) -> Option<Wildcard> {
         }
     }
     let contains_greater_than = *vec_words.last().unwrap() == greater_than;
-    if contains_greater_than {
-        let mut vec_copy = vec_words.clone();
-        vec_copy.retain(|x| x == &">".to_owned());
-        if vec_copy.len() > 1 {
-            return None;
-        }
+    let mut vec_copy = vec_words.clone();
+    vec_copy.pop();
+    vec_copy.retain(|x| x == &">".to_owned());
+    if vec_copy.len() != 0 {
+        return InvalidWildcard;
     }
+
     if !contains_astherisc && !contains_greater_than {
-        None
+        HasNoWildcard
     } else {
-        Some(Wildcard::init(vec_words))
+        HasWildcard(Wildcard::init(vec_words))
     }
 }

@@ -1,15 +1,19 @@
-use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
+use crate::topics::subscriber::Subscriber;
+use crate::topics::topic_types::TypeTopicManager;
 use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
+use crate::wildcard::verify_wildcard;
+use crate::wildcard::wildcard_result::WildcardResult::{
+    HasNoWildcard, HasWildcard, InvalidWildcard,
+};
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
 
-use super::publisher_suscriber::PublisherSuscriber;
 pub struct Subscribe {
     remaining_length: usize,
     packet_identifier: [u8; 2],
@@ -45,7 +49,7 @@ impl Subscribe {
 
     pub fn subscribe_topic(
         &mut self,
-        sender_topic_manager: Sender<PublisherSuscriber>,
+        sender_topic_manager: Sender<TypeTopicManager>,
         sender_user_manager: Sender<ChannelUserManager>,
         client_id: String,
     ) -> Result<Self, String> {
@@ -61,24 +65,36 @@ impl Subscribe {
                     }
                 };
 
-            let type_s = PublisherSubscriberCode::Subscriber;
-            let publisher_subscriber = PublisherSuscriber::new(
-                type_s,
+            let wildcard = match verify_wildcard::get_wilcard(topic.to_owned()) {
+                HasWildcard(wildcard) => Some(wildcard),
+                HasNoWildcard => None,
+                InvalidWildcard => {
+                    acumulator += length + 1;
+                    self.return_codes.push(0x80);
+                    println!("a");
+                    continue;
+                }
+            };
+
+            let qos = self.payload[length + acumulator];
+
+            let subscriber = Subscriber::init(
                 client_id.to_string(),
                 topic,
-                Some(sender_user_manager.clone()),
-                None,
+                sender_user_manager.clone(),
+                wildcard,
+                qos
             );
 
-            match sender_topic_manager.send(publisher_subscriber) {
+            match sender_topic_manager.send(TypeTopicManager::Subscriber(subscriber)) {
                 Ok(_) => {}
                 Err(_) => {
+                    acumulator += length + 1;
                     self.return_codes.push(0x80);
                     continue;
                 }
             }
 
-            let qos = self.payload[length + acumulator];
             acumulator += length + 1;
 
             match qos {

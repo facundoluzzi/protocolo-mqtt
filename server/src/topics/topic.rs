@@ -9,7 +9,7 @@ use crate::topics::topic_types::SenderTopicType;
 
 pub struct Topic {
     name: String,
-    subscribers: HashMap<String, Sender<ChannelUserManager>>,
+    subscribers: HashMap<String, (Sender<ChannelUserManager>, u8)>,
 }
 
 impl Topic {
@@ -70,7 +70,7 @@ impl Topic {
     }
 
     fn add(&mut self, client_id: String, sender: Sender<ChannelUserManager>) {
-        self.subscribers.insert(client_id, sender);
+        self.subscribers.insert(client_id, (sender, 0));
     }
 
     fn remove(&mut self, subscriber: String) {
@@ -78,7 +78,7 @@ impl Topic {
     }
 
     fn publish_msg(&self, packet: Vec<u8>) {
-        for (client_id, subscriber) in &self.subscribers {
+        for (client_id, (subscriber, _qos)) in &self.subscribers {
             let tuple_for_publish = (
                 PublishMessageUserManager,
                 client_id.to_string(),
