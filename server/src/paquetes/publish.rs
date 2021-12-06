@@ -91,7 +91,13 @@ impl Publish {
     ) -> Self {
         let topic = self.topic.to_owned();
 
-        let publisher_prueba = Publisher::init(client_id, topic, self.all_bytes.clone(), self.qos, self.retain == 1);
+        let publisher_prueba = Publisher::init(
+            client_id,
+            topic,
+            self.all_bytes.clone(),
+            self.qos,
+            self.retain == 1,
+        );
 
         if let Err(sender_err) =
             sender_topic_manager.send(TypeTopicManager::Publisher(publisher_prueba))

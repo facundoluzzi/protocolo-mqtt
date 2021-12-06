@@ -30,7 +30,7 @@ impl Topic {
                     AddTopic => {
                         let info = message.1;
                         let sender_received = message.3;
-                        let qos = message.4; 
+                        let qos = message.4;
 
                         let sender = if let Some(sender) = sender_received {
                             sender
@@ -61,15 +61,22 @@ impl Topic {
                         let qos = message.4;
 
                         if let Some(retained_message) = message.5 {
-                            if info.len() == 0 && retained_message{
+                            if info.len() == 0 && retained_message {
                                 topic.retained_message = None;
-                            }else {
-                                if retained_message && qos == 0{
-                                    topic.retained_message = Some((PublishMessage, None, Some(info.clone()), None, qos.clone(), Some(true)));
+                            } else {
+                                if retained_message && qos == 0 {
+                                    topic.retained_message = Some((
+                                        PublishMessage,
+                                        None,
+                                        Some(info.clone()),
+                                        None,
+                                        qos.clone(),
+                                        Some(true),
+                                    ));
                                 }
                             }
-                        }               
-                              
+                        }
+
                         topic.publish_msg(info, qos);
                     }
                 }
@@ -87,7 +94,12 @@ impl Topic {
         self.subscribers.remove(&subscriber);
     }
 
-    fn publish_retained_message(&self, client_id: String, sender: Sender<ChannelUserManager>, qos_subscribe: u8) {
+    fn publish_retained_message(
+        &self,
+        client_id: String,
+        sender: Sender<ChannelUserManager>,
+        qos_subscribe: u8,
+    ) {
         if let Some(message) = &self.retained_message {
             let mut new_packet = message.2.clone().expect("Publish with None message");
             let qos_publish = message.4;

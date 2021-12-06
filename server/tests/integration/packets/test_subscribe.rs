@@ -1,4 +1,3 @@
-
 mod tests {
     use crate::integration::setup::ServerTest;
 
@@ -8,7 +7,6 @@ mod tests {
     use std::thread;
     use std::time::Duration;
 
-        
     #[test]
     fn should_create_subscribe_packet_succesfully_qos_0_01() {
         let server = ServerTest::start("0.0.0.0:1889".to_string());
@@ -214,13 +212,13 @@ mod tests {
         server.shutdown().unwrap();
     }
 
-
     #[test]
     fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
         let server = ServerTest::start("0.0.0.0:1953".to_string());
 
         let mut stream_to_create_topic = TcpStream::connect("0.0.0.0:1953".to_string()).unwrap();
-        let mut stream_to_verify_retained_messages = TcpStream::connect("0.0.0.0:1953".to_string()).unwrap();
+        let mut stream_to_verify_retained_messages =
+            TcpStream::connect("0.0.0.0:1953".to_string()).unwrap();
         let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1953".to_string()).unwrap();
 
         let subscribe_to_create_topic = [
@@ -327,7 +325,9 @@ mod tests {
             0x00, 0x11, // Packet Identifier
             0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47, // Payload 'ALTEG'
         ];
-        stream_to_publish_message.write(&bytes_to_publish_message_alteg).unwrap();
+        stream_to_publish_message
+            .write(&bytes_to_publish_message_alteg)
+            .unwrap();
 
         data = vec![0; 100];
         stream_to_verify_retained_messages
@@ -356,15 +356,18 @@ mod tests {
         server.shutdown().unwrap();
     }
 
-
     #[test]
-    fn testing_retained_message_one_publish_with_retain_and_another_without_retain_must_receive_the_first() {
+    fn testing_retained_message_one_publish_with_retain_and_another_without_retain_must_receive_the_first(
+    ) {
         let server = ServerTest::start("0.0.0.0:1954".to_string());
 
         let mut stream_to_create_topic = TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
-        let mut stream_to_verify_retained_messages = TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
-        let mut stream_to_publish_message_alteg = TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
-        let mut stream_to_publish_message_river = TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
+        let mut stream_to_verify_retained_messages =
+            TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
+        let mut stream_to_publish_message_alteg =
+            TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
+        let mut stream_to_publish_message_river =
+            TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
 
         let subscribe_to_create_topic = [
             0x10, // Packet Type
@@ -458,11 +461,11 @@ mod tests {
             _ => {
                 panic!();
             }
-        }        
+        }
 
         let subscribe_bytes_crear_cantidad_de_goles = [
             0x80, // Packet Type
-            0x20, // Remaining Length 
+            0x20, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
             0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64,
@@ -493,7 +496,9 @@ mod tests {
             0x00, 0x11, // Packet Identifier
             0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47, // Payload 'ALTEG'
         ];
-        stream_to_publish_message_alteg.write(&bytes_to_publish_message_alteg).unwrap();
+        stream_to_publish_message_alteg
+            .write(&bytes_to_publish_message_alteg)
+            .unwrap();
 
         let bytes_to_publish_message_river = [
             0x32, // Paquete publish
@@ -505,7 +510,9 @@ mod tests {
             0x00, 0x05, 0x72, 0x69, 0x76, 0x65, 0x72, // Payload 'River'
         ];
 
-        stream_to_publish_message_river.write(&bytes_to_publish_message_river).unwrap();
+        stream_to_publish_message_river
+            .write(&bytes_to_publish_message_river)
+            .unwrap();
         data = vec![0; 100];
         match stream_to_publish_message_river.read(&mut data) {
             Ok(size) => {
@@ -515,7 +522,7 @@ mod tests {
                 panic!();
             }
         }
-        
+
         data = vec![0; 100];
         stream_to_verify_retained_messages
             .write(&subscribe_bytes_crear_cantidad_de_goles)
@@ -548,9 +555,12 @@ mod tests {
         let server = ServerTest::start("0.0.0.0:5004".to_string());
 
         let mut stream_to_create_topic = TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
-        let mut stream_to_verify_retained_messages = TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
-        let mut stream_to_publish_message_alteg = TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
-        let mut stream_to_publish_message_river = TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
+        let mut stream_to_verify_retained_messages =
+            TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
+        let mut stream_to_publish_message_alteg =
+            TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
+        let mut stream_to_publish_message_river =
+            TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
 
         let subscribe_to_create_topic = [
             0x10, // Packet Type
@@ -644,11 +654,11 @@ mod tests {
             _ => {
                 panic!();
             }
-        }        
+        }
 
         let subscribe_bytes_crear_cantidad_de_goles = [
             0x80, // Packet Type
-            0x20, // Remaining Length 
+            0x20, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
             0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64,
@@ -679,7 +689,9 @@ mod tests {
             0x00, 0x11, // Packet Identifier
             0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47, // Payload 'ALTEG'
         ];
-        stream_to_publish_message_alteg.write(&bytes_to_publish_message_alteg).unwrap();
+        stream_to_publish_message_alteg
+            .write(&bytes_to_publish_message_alteg)
+            .unwrap();
         thread::sleep(Duration::from_millis(10));
 
         let bytes_to_publish_message_river = [
@@ -692,9 +704,11 @@ mod tests {
             0x00, 0x05, 0x72, 0x69, 0x76, 0x65, 0x72, // Payload 'River'
         ];
 
-        stream_to_publish_message_river.write(&bytes_to_publish_message_river).unwrap();
+        stream_to_publish_message_river
+            .write(&bytes_to_publish_message_river)
+            .unwrap();
         thread::sleep(Duration::from_millis(10));
-        
+
         data = vec![0; 100];
         stream_to_verify_retained_messages
             .write(&subscribe_bytes_crear_cantidad_de_goles)
@@ -716,8 +730,9 @@ mod tests {
                     0x31, // Paquete publish
                     0x26, // Remaining Length
                     0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
-                    0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64,
-                    0x64, 0x65, 0x67, 0x6F, 0x6C, 0x65, 0x73, // Topic: Futbol/Boca/CantidadDeGoles
+                    0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61,
+                    0x64, 0x64, 0x65, 0x67, 0x6F, 0x6C, 0x65,
+                    0x73, // Topic: Futbol/Boca/CantidadDeGoles
                     0x00, 0x11, // Packet Identifier
                     0x00, 0x05, 0x72, 0x69, 0x76, 0x65, 0x72, // Payload 'River'
                 ];

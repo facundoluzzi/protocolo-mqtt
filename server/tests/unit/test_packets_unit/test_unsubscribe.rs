@@ -1,3 +1,4 @@
+use server::paquetes::unsubscribe::Unsubscribe;
 use server::topics::topic_types::TypeTopicManager;
 use server::topics::topic_types::TypeTopicManager::Unsubscriber;
 use std::sync::mpsc;
@@ -6,7 +7,6 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
-use server::paquetes::unsubscribe::Unsubscribe;
 
 #[test]
 fn should_create_unsubscribe_packet() {

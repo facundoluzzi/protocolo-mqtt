@@ -1,24 +1,30 @@
-use crate::topics::topic_types::SenderTopicType;
 use crate::topics::topic_actions::TopicAction::PublishMessage;
-use std::sync::mpsc::Sender;
+use crate::topics::topic_types::SenderTopicType;
 use std::collections::HashMap;
+use std::sync::mpsc::Sender;
 
 pub struct Publisher {
     client_id: String,
     topic: String,
     publish: Vec<u8>,
     qos: u8,
-    retained_message: bool
+    retained_message: bool,
 }
 
 impl Publisher {
-    pub fn init(client_id: String, topic: String, publish: Vec<u8>, qos: u8, retained_message: bool) -> Publisher {
+    pub fn init(
+        client_id: String,
+        topic: String,
+        publish: Vec<u8>,
+        qos: u8,
+        retained_message: bool,
+    ) -> Publisher {
         Publisher {
             client_id,
             topic,
             publish,
             qos,
-            retained_message
+            retained_message,
         }
     }
 
@@ -28,7 +34,14 @@ impl Publisher {
 
         if let Some(topic_sender) = &topics.get(&topic_name) {
             topic_sender
-                .send((PublishMessage, None, Some(publish_packet), None, self.qos, Some(self.retained_message)))
+                .send((
+                    PublishMessage,
+                    None,
+                    Some(publish_packet),
+                    None,
+                    self.qos,
+                    Some(self.retained_message),
+                ))
                 .unwrap();
         }
     }
