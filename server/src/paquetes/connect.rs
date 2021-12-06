@@ -1,6 +1,8 @@
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
+use crate::keep_alive::handler_keep_alive;
+use crate::keep_alive::handler_null_keep_alive;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
@@ -9,12 +11,13 @@ use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::variable_header::connect_variable_header::{check_variable_header_len, get_keep_alive};
 use std::sync::mpsc::Sender;
 
+use super::disconnect::Disconnect;
+
 pub struct Connect {
     _remaining_length: usize,
     flags: ConnectFlags,
     payload: ConnectPayload,
     status_code: u8,
-    keep_alive: Option<u8>,
 }
 
 impl Connect {
@@ -33,8 +36,6 @@ impl Connect {
         let variable_header = &bytes[init_variable_header..end_variable_header + 1];
 
         check_variable_header_len(variable_header)?;
-
-        let keep_alive = get_keep_alive(variable_header);
 
         status_code = status_code.check_protocol_level(variable_header[6]);
 
@@ -60,8 +61,15 @@ impl Connect {
             flags,
             payload,
             status_code: status_code.apply_validations(),
-            keep_alive,
         };
+
+        match get_keep_alive(variable_header) {
+            Some(some_keep_alive) => handler_keep_alive::init(
+                ((some_keep_alive as f64) * 1.5) as u64,
+                sender_stream.clone(),
+            )?,
+            None => handler_null_keep_alive::init(sender_stream.clone())?,
+        }
 
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
@@ -70,7 +78,7 @@ impl Connect {
             match user_manager_sender.send((
                 AddUserManager,
                 client_id,
-                Some(sender_stream.clone()),
+                Some(sender_stream),
                 Some(session_flag),
                 None,
             )) {
@@ -85,17 +93,17 @@ impl Connect {
 
     pub fn send_response(
         &self,
-        stream: Sender<StreamType>,
-        sender_to_disconect: Sender<(String, String)>,
+        sender_stream: Sender<StreamType>,
+        sender_user_manager: Sender<ChannelUserManager>,
     ) -> Result<(), String> {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let connack_response = [0x20, 0x02, session_present_bit, self.status_code].to_vec();
-        if let Err(_msg_error) = stream.send((WriteStream, Some(connack_response), None)) {}
+        if let Err(_msg_error) =
+            sender_stream.send((WriteStream, Some(connack_response), None, None))
+        {}
 
         if self.status_code != 0x00 {
-            sender_to_disconect
-                .send(("".to_string(), "".to_string()))
-                .unwrap();
+            Disconnect::disconnect_user(self.get_client_id(), sender_user_manager, sender_stream);
             Err("".to_string())
         } else {
             Ok(())
@@ -104,9 +112,5 @@ impl Connect {
 
     pub fn get_client_id(&self) -> String {
         self.payload.get_client_id()
-    }
-
-    pub fn get_keep_alive(&self) -> Option<u8> {
-        self.keep_alive
     }
 }

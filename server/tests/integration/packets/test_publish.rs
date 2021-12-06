@@ -1,4 +1,4 @@
-use crate::integration::test_packets::setup::ServerTest;
+use crate::integration::setup::ServerTest;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;

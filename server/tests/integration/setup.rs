@@ -16,7 +16,8 @@ pub struct ServerTest {
 
 impl ServerTest {
     pub fn start(port: String) -> Self {
-        let sender_user_manager = UserManager::init();
+        let sender_topic_manager = TopicManager::init();
+        let sender_user_manager = UserManager::init(sender_topic_manager.clone());
 
         let cloned_sender_user_manager = sender_user_manager.clone();
 
@@ -26,7 +27,6 @@ impl ServerTest {
                     spawn(move || {
                         let mut logger = Logger::new("setup-tests.txt".to_string())
                             .expect("Logger could not be created");
-                        let sender_topic_manager = TopicManager::init();
 
                         for stream in listener.incoming() {
                             match stream {
@@ -39,7 +39,7 @@ impl ServerTest {
                                     let logger_clone = logger.clone();
                                     let sender_tm_cloned = sender_topic_manager.clone();
                                     let sender_um_cloned = cloned_sender_user_manager.clone();
-                                    let sender_stream = Stream::init(stream);
+                                    let sender_stream = Stream::init(stream, logger.clone());
 
                                     spawn(move || {
                                         handle_new_client(

@@ -1,4 +1,6 @@
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::{
+    usermanager::user_manager_types::ChannelUserManager, wildcard::wildcard_handler::Wildcard,
+};
 use std::sync::mpsc::Sender;
 
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
@@ -9,6 +11,7 @@ pub struct PublisherSuscriber {
     topic: String,
     message: String,
     sender_for_publish: Option<Sender<ChannelUserManager>>,
+    wildcard: Option<Wildcard>,
 }
 
 impl PublisherSuscriber {
@@ -18,6 +21,7 @@ impl PublisherSuscriber {
         code: PublisherSubscriberCode,
         sender: Option<Sender<ChannelUserManager>>,
         client_id: String,
+        wildcard: Option<Wildcard>,
     ) -> PublisherSuscriber {
         PublisherSuscriber {
             topic,
@@ -25,6 +29,7 @@ impl PublisherSuscriber {
             code,
             sender_for_publish: sender,
             client_id,
+            wildcard,
         }
     }
 
@@ -38,6 +43,10 @@ impl PublisherSuscriber {
 
     pub fn get_topic(&self) -> String {
         self.topic.to_owned()
+    }
+
+    pub fn get_wildcard(&self) -> Option<Wildcard> {
+        self.wildcard.clone()
     }
 
     pub fn get_message(&self) -> String {

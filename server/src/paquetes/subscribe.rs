@@ -5,6 +5,10 @@ use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
 use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
+use crate::wildcard::verify_wildcard;
+use crate::wildcard::wildcard_result::WildcardResult::{
+    HasNoWildcard, HasWildcard, InvalidWildcard,
+};
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
@@ -63,18 +67,32 @@ impl Subscribe {
 
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
+            let wildcard = match verify_wildcard::get_wilcard(topic.to_owned()) {
+                HasWildcard(wildcard) => Some(wildcard),
+                HasNoWildcard => None,
+                InvalidWildcard => {
+                    acumulator += length + 1;
+                    self.return_codes.push(0x80);
+                    println!("a");
+                    continue;
+                }
+            };
+
             let publisher_subscriber = PublisherSuscriber::new(
                 topic,
                 message,
                 type_s,
                 Some(sender_user_manager.clone()),
                 client_id.to_string(),
+                wildcard,
             );
 
             match sender_topic_manager.send(publisher_subscriber) {
                 Ok(_) => {}
-                Err(err) => {
-                    println!("err: {}", err);
+                Err(_) => {
+                    acumulator += length + 1;
+                    self.return_codes.push(0x80);
+                    continue;
                 }
             }
 
@@ -98,23 +116,25 @@ impl Subscribe {
         Ok(subscribe)
     }
 
-    pub fn send_response(&self, stream: Sender<StreamType>) {
+    pub fn send_response(&self, sender_stream: Sender<StreamType>) {
         let packet_type = 0x90;
         let remaining_length = 0x03;
         let packet_identifier_msb = self.packet_identifier[0];
         let packet_identifier_lsb = self.packet_identifier[1];
-        let mut bytes_response = Vec::new();
-
-        bytes_response.push(packet_type);
-        bytes_response.push(remaining_length);
-        bytes_response.push(packet_identifier_msb);
-        bytes_response.push(packet_identifier_lsb);
+        let mut bytes_response = vec![
+            packet_type,
+            remaining_length,
+            packet_identifier_msb,
+            packet_identifier_lsb,
+        ];
 
         for return_code in &self.return_codes {
             bytes_response.push(*return_code);
         }
 
-        if let Err(msg_error) = stream.send((WriteStream, Some(bytes_response.to_vec()), None)) {
+        if let Err(msg_error) =
+            sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
+        {
             println!("Error in sending response: {}", msg_error);
         }
     }

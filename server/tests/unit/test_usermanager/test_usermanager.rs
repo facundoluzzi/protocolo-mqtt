@@ -3,23 +3,21 @@ use std::sync::mpsc::Sender;
 #[cfg(test)]
 mod tests {
     use server::stream::stream_handler::StreamType;
+    use server::topics::topic_manager::TopicManager;
     use server::usermanager::user_manager::UserManager;
     use server::usermanager::user_manager_action::UserManagerAction::AddUserManager;
-    use server::usermanager::user_manager_action::UserManagerAction::DeleteUserManager;
-    use server::usermanager::user_manager_action::UserManagerAction::DisconectUserManager;
-    use server::usermanager::user_manager_action::UserManagerAction::GetSenderUserManager;
+    use server::usermanager::user_manager_action::UserManagerAction::DisconnectUserManager;
+    use server::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
 
     use super::*;
 
     #[test]
-    fn should_add_a_user_and_getSender() {
-        let sender = UserManager::init();
-        let (sender_extraction, receiver_extraction): (
-            Sender<Sender<String>>,
-            Receiver<Sender<String>>,
-        ) = mpsc::channel();
+    fn should_add_a_user_and_publish_message() {
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
+
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
         sender
@@ -31,29 +29,33 @@ mod tests {
                 None,
             ))
             .unwrap();
+
         sender
             .send((
-                GetSenderUserManager,
+                PublishMessageUserManager,
                 "Nacho".to_owned(),
                 None,
                 None,
-                Some(sender_extraction),
+                Some("mensaje enviado".to_string()),
             ))
             .unwrap();
-        match receiver_extraction.recv() {
-            Ok(_) => assert_eq!(1, 1),
-            Err(_) => assert_eq!(0, 1),
-        }
+
+        let (_, vec, _, _) = receiver_stream.recv().unwrap();
+
+        assert_eq!(
+            vec.unwrap(),
+            [109, 101, 110, 115, 97, 106, 101, 32, 101, 110, 118, 105, 97, 100, 111].to_vec()
+        );
     }
+
     #[test]
-    fn should_add_a_user_and_remove_cant_get_sender() {
-        let sender = UserManager::init();
-        let (sender_extraction, receiver_extraction): (
-            Sender<Sender<String>>,
-            Receiver<Sender<String>>,
-        ) = mpsc::channel();
+    fn should_add_a_user_and_remove_cant_publish_message() {
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
+
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
+
         sender
             .send((
                 AddUserManager,
@@ -63,32 +65,39 @@ mod tests {
                 None,
             ))
             .unwrap();
+
         sender
-            .send((DeleteUserManager, "Nacho".to_owned(), None, None, None))
+            .send((DisconnectUserManager, "Nacho".to_owned(), None, None, None))
             .unwrap();
+
         sender
             .send((
-                GetSenderUserManager,
+                PublishMessageUserManager,
                 "Nacho".to_owned(),
                 None,
                 None,
-                Some(sender_extraction),
+                Some("mensaje enviado".to_string()),
             ))
             .unwrap();
-        match receiver_extraction.recv() {
-            Err(_) => assert_eq!(1, 1),
-            Ok(_) => assert_eq!(0, 1),
+
+        match receiver_stream.recv() {
+            Err(err) => {
+                assert_eq!(err.to_string(), "receiving on a closed channel".to_string());
+            }
+            Ok(_) => {
+                panic!();
+            }
         }
     }
+
     #[test]
-    fn should_add_a_user_and_disconnect_get_sender_give_none() {
-        let sender = UserManager::init();
-        let (sender_extraction, receiver_extraction): (
-            Sender<Sender<String>>,
-            Receiver<Sender<String>>,
-        ) = mpsc::channel();
+    fn should_add_a_user_and_disconnect_publish_message_send_nothing() {
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
+
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
+
         sender
             .send((
                 AddUserManager,
@@ -98,104 +107,80 @@ mod tests {
                 None,
             ))
             .unwrap();
+
+        sender
+            .send((DisconnectUserManager, "Nacho".to_owned(), None, None, None))
+            .unwrap();
+
         sender
             .send((
-                GetSenderUserManager,
+                PublishMessageUserManager,
                 "Nacho".to_owned(),
                 None,
                 None,
-                Some(sender_extraction.clone()),
+                Some("mensaje enviado".to_string()),
             ))
             .unwrap();
-        match receiver_extraction.recv() {
-            Ok(_) => assert_eq!(1, 1),
-            Err(_) => assert_eq!(0, 1),
-        }
-        sender
-            .send((DisconectUserManager, "Nacho".to_owned(), None, None, None))
-            .unwrap();
-        sender
-            .send((
-                GetSenderUserManager,
-                "Nacho".to_owned(),
-                None,
-                None,
-                Some(sender_extraction),
-            ))
-            .unwrap();
-        match receiver_extraction.recv() {
-            Ok(_) => assert_eq!(0, 1),
-            Err(_) => assert_eq!(1, 1),
+
+        match receiver_stream.recv() {
+            Err(err) => {
+                assert_eq!(err.to_string(), "receiving on a closed channel".to_string());
+            }
+            Ok(_) => {
+                panic!();
+            }
         }
     }
+
     #[test]
-    fn should_add_a_user_and_disconnect_and_reconnect_give_some_sender() {
-        let sender = UserManager::init();
-        let (sender_extraction, receiver_extraction): (
-            Sender<Sender<String>>,
-            Receiver<Sender<String>>,
-        ) = mpsc::channel();
-        let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
+    fn should_add_a_user_and_disconnect_and_reconnect_publish_message() {
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
+
+        let (sender_stream, _): (Sender<StreamType>, Receiver<StreamType>) = mpsc::channel();
+
+        sender
+            .send((
+                AddUserManager,
+                "Nacho".to_owned(),
+                Some(sender_stream.clone()),
+                Some(false),
+                None,
+            ))
+            .unwrap();
+
+        sender
+            .send((DisconnectUserManager, "Nacho".to_owned(), None, None, None))
+            .unwrap();
+
+        sender
+            .send((
+                PublishMessageUserManager,
+                "Nacho".to_owned(),
+                None,
+                None,
+                Some("mensaje enviado".to_string()),
+            ))
+            .unwrap();
+
+        let (sender_stream_two, receiver_stream_two): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
+
         sender
             .send((
                 AddUserManager,
                 "Nacho".to_owned(),
-                Some(sender_stream),
+                Some(sender_stream_two.clone()),
                 Some(false),
                 None,
             ))
             .unwrap();
-        sender
-            .send((
-                GetSenderUserManager,
-                "Nacho".to_owned(),
-                None,
-                None,
-                Some(sender_extraction.clone()),
-            ))
-            .unwrap();
-        match receiver_extraction.recv() {
-            Ok(_) => assert_eq!(1, 1),
-            Err(_) => assert_eq!(0, 1),
-        }
-        sender
-            .send((DisconectUserManager, "Nacho".to_owned(), None, None, None))
-            .unwrap();
-        sender
-            .send((
-                GetSenderUserManager,
-                "Nacho".to_owned(),
-                None,
-                None,
-                Some(sender_extraction),
-            ))
-            .unwrap();
-        match receiver_extraction.recv() {
-            Ok(_) => assert_eq!(0, 1),
-            Err(_) => assert_eq!(1, 1),
-        }
-        sender
-            .send((
-                AddUserManager,
-                "Nacho".to_owned(),
-                Some(sender_stream),
-                Some(false),
-                None,
-            ))
-            .unwrap();
-        sender
-            .send((
-                GetSenderUserManager,
-                "Nacho".to_owned(),
-                None,
-                None,
-                Some(sender_extraction.clone()),
-            ))
-            .unwrap();
-        match receiver_extraction.recv() {
-            Ok(_) => assert_eq!(1, 1),
-            Err(_) => assert_eq!(0, 1),
-        }
+
+        let (_, vec, _, _) = receiver_stream_two.recv().unwrap();
+
+        assert_eq!(
+            vec.unwrap(),
+            [109, 101, 110, 115, 97, 106, 101, 32, 101, 110, 118, 105, 97, 100, 111].to_vec()
+        );
     }
 }

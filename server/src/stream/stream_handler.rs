@@ -1,10 +1,12 @@
 use crate::helper::remaining_length::save_remaining_length;
+use crate::logs::logger::Logger;
 use std::net::Shutdown;
 use std::net::TcpStream;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::thread;
+use std::time::Duration;
 
 use std::io::Read;
 use std::io::Write;
@@ -15,12 +17,18 @@ pub enum StreamAction {
     WriteStream,
     ReadStream,
     CloseConnectionStream,
+    SetKeepAliveStream,
 }
 
-pub type StreamType = (StreamAction, Option<Vec<u8>>, Option<Sender<Vec<u8>>>);
+pub type StreamType = (
+    StreamAction,
+    Option<Vec<u8>>,
+    Option<Sender<Vec<u8>>>,
+    Option<Duration>,
+);
 
 impl Stream {
-    pub fn init(stream_received: TcpStream) -> Sender<StreamType> {
+    pub fn init(stream_received: TcpStream, mut logger: Logger) -> Sender<StreamType> {
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
 
@@ -33,29 +41,43 @@ impl Stream {
                 match action {
                     StreamAction::WriteStream => {
                         if let Some(message) = message_received.1 {
-                            Stream::write(stream_to_write.try_clone().unwrap(), message);
+                            let cloned_logger = logger.clone();
+                            Stream::write(
+                                stream_to_write.try_clone().unwrap(),
+                                message,
+                                cloned_logger,
+                            );
                         } else {
                             panic!("Unexpected error: send a Some(message) here");
                         }
                     }
                     StreamAction::ReadStream => {
+                        logger.info("empezó a leer".to_string());
                         if let Some(sender) = message_received.2 {
-                            let x = stream_to_read.try_clone().unwrap();
+                            let stread = stream_to_read.try_clone().unwrap();
+                            let stwrite = stream_to_write.try_clone().unwrap();
+                            let cloned_logger = logger.clone();
                             thread::spawn(move || {
-                                Stream::read(x.try_clone().unwrap(), sender);
+                                Stream::read(stread, stwrite, sender, cloned_logger);
                             });
+                            logger.info("termino de leer".to_string());
                         } else {
                             panic!("Unexpected error: send a Some(Sender<String>) here");
                         }
                     }
                     StreamAction::CloseConnectionStream => {
                         if let Err(err_msg) = stream_to_read.shutdown(Shutdown::Both) {
-                            println!("Unexpected error closing the stream: {}", err_msg);
+                            logger
+                                .info(format!("Unexpected error closing the stream: {}", err_msg));
                         }
 
                         if let Err(err_msg) = stream_to_write.shutdown(Shutdown::Both) {
-                            println!("Unexpected error closing the stream: {}", err_msg);
+                            logger
+                                .info(format!("Unexpected error closing the stream: {}", err_msg));
                         }
+                    }
+                    StreamAction::SetKeepAliveStream => {
+                        stream_to_read.set_read_timeout(message_received.3).unwrap();
                     }
                 }
             }
@@ -64,14 +86,19 @@ impl Stream {
         sender_stream
     }
 
-    fn write(mut stream: TcpStream, message: Vec<u8>) {
+    fn write(mut stream: TcpStream, message: Vec<u8>, mut logger: Logger) {
         let c: &[u8] = &message; // c: &[u8]
         if let Err(msg_error) = stream.write(c) {
-            println!("Error in sending response: {}", msg_error);
+            logger.info(format!("Error in sending response: {}", msg_error));
         }
     }
 
-    fn read(mut stream: TcpStream, sender: Sender<Vec<u8>>) {
+    fn read(
+        mut stream: TcpStream,
+        stream_to_write: TcpStream,
+        sender: Sender<Vec<u8>>,
+        mut logger: Logger,
+    ) {
         let mut data = [0_u8; 5];
         let mut total_data: Vec<u8> = Vec::new();
 
@@ -99,22 +126,27 @@ impl Stream {
                     sender.send(bytes_to_process.to_vec()).unwrap();
 
                     total_data = Vec::new();
+
                     false
                 } else {
                     true
                 }
             }
-            Err(err) => {
-                let err_msg = err.to_string().as_bytes().to_vec();
-                sender.send(err_msg).unwrap();
-                println!("Falle: {}", err);
-                true
+            Err(_err) => {
+                if let Err(err_msg) = stream.shutdown(Shutdown::Both) {
+                    logger.info(format!("Unexpected error closing the stream: {}", err_msg));
+                }
+
+                if let Err(err_msg) = stream_to_write.shutdown(Shutdown::Both) {
+                    logger.info(format!("Unexpected error closing the stream: {}", err_msg));
+                }
+
                 // logger.error(format!(
                 //     "An error occurred, terminating connection with {}",
                 //     stream.peer_addr().unwrap()
                 // ));
-                // stream.shutdown(Shutdown::Both).unwrap();
-                // true
+
+                true
             }
         } {}
     }
