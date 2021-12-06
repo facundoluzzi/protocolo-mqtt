@@ -22,20 +22,19 @@ impl Unsubscribe {
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
         let init_variable_header = 1 + readed_index;
         let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()]);
-        let (packet_identifier_rec, length )= variable_header;
-        
+        let (packet_identifier_rec, length) = variable_header;
+
         let payload = &bytes[init_variable_header + length..bytes.len()];
         let packet_identifier = packet_identifier_rec[0..2]
             .try_into()
             .expect("slice with incorrect length");
-        let unsubscribe= Unsubscribe {
+        let unsubscribe = Unsubscribe {
             remaining_length,
             packet_identifier: packet_identifier,
             payload: (*payload).to_vec(),
         };
         Ok(unsubscribe)
-    }       
-    
+    }
 
     pub fn unsubscribe_topic(
         &mut self,
@@ -53,22 +52,16 @@ impl Unsubscribe {
                         continue;
                     }
                 };
-            acumulator += length ;
+            acumulator += length;
 
             let type_s = PublisherSubscriberCode::Unsubscriber;
             let message = "None".to_owned();
-            let publisher_subscriber = PublisherSuscriber::new(
-                topic,
-                message,
-                type_s,
-                None,
-                client_id.to_string(),
-            );
+            let publisher_subscriber =
+                PublisherSuscriber::new(topic, message, type_s, None, client_id.to_string());
 
             if let Err(sender_err) = sender.send(publisher_subscriber) {
                 println!("Error sending to publisher_subscriber: {}", sender_err);
             }
-
         }
 
         Unsubscribe {
@@ -82,14 +75,13 @@ impl Unsubscribe {
         let packet_type = 0xA0u8;
         let packet_identifier = self.packet_identifier.clone();
         let mut bytes_response = Vec::new();
-        let remaining_length = packet_identifier.len()+2;
+        let remaining_length = packet_identifier.len() + 2;
 
         bytes_response.push(packet_type);
         bytes_response.push(remaining_length as u8);
         bytes_response.push(0x00);
         bytes_response.push(packet_identifier.len() as u8);
         bytes_response = [bytes_response, packet_identifier].concat();
-
 
         if let Err(msg_error) =
             sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))

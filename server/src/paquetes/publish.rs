@@ -40,7 +40,6 @@ impl Publish {
         let (topic, packet_identifier, length) =
             get_variable_header(&bytes[init_variable_header..bytes.len()]).unwrap();
 
-        //https://docs.solace.com/Basics/Wildcard-Charaters-Topic-Subs.htm?Highlight=wildcard
         let _valid_topic = publish_variable_header::verify_publish_wilcard(topic.to_owned());
 
         // TODO: cerrar la conexión

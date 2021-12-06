@@ -3,10 +3,10 @@ use std::sync::mpsc::Sender;
 #[cfg(test)]
 mod tests {
     use server::stream::stream_handler::StreamType;
+    use server::topics::topic_manager::TopicManager;
     use server::usermanager::user_manager::UserManager;
     use server::usermanager::user_manager_action::UserManagerAction::AddUserManager;
-    use server::usermanager::user_manager_action::UserManagerAction::DeleteUserManager;
-    use server::usermanager::user_manager_action::UserManagerAction::DisconectUserManager;
+    use server::usermanager::user_manager_action::UserManagerAction::DisconnectUserManager;
     use server::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
@@ -15,7 +15,8 @@ mod tests {
 
     #[test]
     fn should_add_a_user_and_publish_message() {
-        let sender = UserManager::init();
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
 
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
@@ -49,7 +50,8 @@ mod tests {
 
     #[test]
     fn should_add_a_user_and_remove_cant_publish_message() {
-        let sender = UserManager::init();
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
 
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
@@ -65,7 +67,7 @@ mod tests {
             .unwrap();
 
         sender
-            .send((DeleteUserManager, "Nacho".to_owned(), None, None, None))
+            .send((DisconnectUserManager, "Nacho".to_owned(), None, None, None))
             .unwrap();
 
         sender
@@ -90,7 +92,8 @@ mod tests {
 
     #[test]
     fn should_add_a_user_and_disconnect_publish_message_send_nothing() {
-        let sender = UserManager::init();
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
 
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
@@ -106,7 +109,7 @@ mod tests {
             .unwrap();
 
         sender
-            .send((DisconectUserManager, "Nacho".to_owned(), None, None, None))
+            .send((DisconnectUserManager, "Nacho".to_owned(), None, None, None))
             .unwrap();
 
         sender
@@ -131,7 +134,8 @@ mod tests {
 
     #[test]
     fn should_add_a_user_and_disconnect_and_reconnect_publish_message() {
-        let sender = UserManager::init();
+        let sender_topic_manager = TopicManager::init();
+        let sender = UserManager::init(sender_topic_manager);
 
         let (sender_stream, _): (Sender<StreamType>, Receiver<StreamType>) = mpsc::channel();
 
@@ -146,7 +150,7 @@ mod tests {
             .unwrap();
 
         sender
-            .send((DisconectUserManager, "Nacho".to_owned(), None, None, None))
+            .send((DisconnectUserManager, "Nacho".to_owned(), None, None, None))
             .unwrap();
 
         sender
