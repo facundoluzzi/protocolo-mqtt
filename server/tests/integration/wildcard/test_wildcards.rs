@@ -4,18 +4,19 @@ mod tests {
         io::{Read, Write},
         net::TcpStream,
     };
-
+    use std::thread;
+    use std::time::Duration;
     #[test]
     fn testing_subscribe_and_publish_with_wildcard_astherisc_after_the_bar() {
-        let server = ServerTest::start("0.0.0.0:1900".to_string());
+        let server = ServerTest::start("0.0.0.0:1918".to_string());
 
         let mut stream_to_create_topic_goles =
-            TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
         let mut stream_to_create_topic_partidos =
-            TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
         let mut stream_to_subscribe_with_wildcard =
-            TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
-        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
+        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
 
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
@@ -394,6 +395,7 @@ mod tests {
         stream_to_subscribe_with_wildcard
             .write(&subscribe_bytes_with_wildcard)
             .unwrap();
+        thread::sleep(Duration::from_millis(5));
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
                 assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);

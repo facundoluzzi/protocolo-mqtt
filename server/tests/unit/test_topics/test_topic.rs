@@ -18,10 +18,10 @@ mod tests {
             mpsc::channel();
 
         topic
-            .send((AddTopic, Some("Facundo".to_owned()), None, Some(sender_one), 0))
+            .send((AddTopic, Some("Facundo".to_owned()), None, Some(sender_one), 0, None))
             .unwrap();
         topic
-            .send((AddTopic, Some("Nacho".to_owned()), None, Some(sender_two), 0))
+            .send((AddTopic, Some("Nacho".to_owned()), None, Some(sender_two), 0, None))
             .unwrap();
 
         topic
@@ -30,7 +30,8 @@ mod tests {
                 None,
                 Some([0x00, 0x01, 0x02].to_vec()),
                 None,
-                0
+                0,
+                Some(false)
             ))
             .unwrap();
 
@@ -60,14 +61,14 @@ mod tests {
             mpsc::channel();
 
         topic
-            .send((AddTopic, Some("Facundo".to_owned()), None, Some(sender_one), 0))
+            .send((AddTopic, Some("Facundo".to_owned()), None, Some(sender_one), 0, None))
             .unwrap();
         topic
-            .send((AddTopic, Some("Nacho".to_owned()), None, Some(sender_two), 0))
+            .send((AddTopic, Some("Nacho".to_owned()), None, Some(sender_two), 0, None))
             .unwrap();
 
         topic
-            .send((RemoveTopic, Some("Facundo".to_owned()), None, None, 0))
+            .send((RemoveTopic, Some("Facundo".to_owned()), None, None, 0, None))
             .unwrap();
 
         topic
@@ -76,7 +77,8 @@ mod tests {
                 None,
                 Some([0x00, 0x01, 0x02].to_vec()),
                 None,
-                0
+                0,
+                Some(false)
             ))
             .unwrap();
 

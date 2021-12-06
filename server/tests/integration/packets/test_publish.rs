@@ -2,6 +2,7 @@ use crate::integration::setup::ServerTest;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
+use std::{thread, time};
 
 #[test]
 fn should_publish_message_with_qos_0_01() {
@@ -278,6 +279,8 @@ fn should_publish_message_with_qos_1_twice() {
         0x00, 0x03, 0x61, 0x2F, 0x61, // payload
     ];
     publisher_stream.write(&publish_bytes).unwrap();
+
+    thread::sleep(time::Duration::from_millis(100));
 
     data = vec![0; 100];
     match publisher_stream.read(&mut data) {

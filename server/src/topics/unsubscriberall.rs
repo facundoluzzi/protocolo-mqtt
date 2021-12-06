@@ -15,7 +15,7 @@ impl UnsubscriberAll {
     pub fn unsubscribe_all(&mut self, topics: HashMap<String, Sender<SenderTopicType>>) {
         for topic_sender in topics.values() {
             topic_sender
-                .send((RemoveTopic, Some(self.client_id.clone()), None, None, 0))
+                .send((RemoveTopic, Some(self.client_id.clone()), None, None, 0, None))
                 .unwrap();
         }
     }

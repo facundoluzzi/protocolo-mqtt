@@ -49,14 +49,14 @@ impl Subscriber {
         match topics.get(&self.topic) {
             Some(topic_sender) => {
                 topic_sender
-                .send((AddTopic, Some(self.client_id.to_string()), None, Some(self.sender_user_manager.clone()), self.qos))
+                .send((AddTopic, Some(self.client_id.to_string()), None, Some(self.sender_user_manager.clone()), self.qos, None))
                 .unwrap();
             },
             None => {
                 let sender_topic = Topic::init(self.topic.to_owned());
                 topics.insert(self.topic.to_owned(), sender_topic.clone());
                 sender_topic
-                    .send((AddTopic, Some(self.client_id.to_string()), None, Some(self.sender_user_manager.clone()), self.qos))
+                    .send((AddTopic, Some(self.client_id.to_string()), None, Some(self.sender_user_manager.clone()), self.qos, None))
                     .unwrap();
             }
         }
@@ -73,7 +73,8 @@ impl Subscriber {
                         Some(self.client_id.to_owned()),
                         None,
                         Some(self.sender_user_manager.clone()),
-                        self.qos
+                        self.qos,
+                        None
                     ))
                     .unwrap();
             }
