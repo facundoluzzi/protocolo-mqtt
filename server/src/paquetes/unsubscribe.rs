@@ -39,9 +39,9 @@ impl Unsubscribe {
 
     pub fn unsubscribe_topic(
         &mut self,
-        sender: &Sender<PublisherSuscriber>,
+        sender: Sender<PublisherSuscriber>,
         client_id: String,
-    ) -> Self {
+    ) -> Result<Self, String> {
         let mut acumulator: usize = 0;
 
         while self.payload.len() > acumulator {
@@ -71,24 +71,24 @@ impl Unsubscribe {
 
         }
 
-        Unsubscribe {
+        let unsubscribe = Unsubscribe {
             remaining_length: self.remaining_length,
             packet_identifier: self.packet_identifier.clone(),
             payload: self.payload.clone(),
-        }
+        };
+
+        Ok(unsubscribe)
     }
 
     pub fn send_response(&self, sender_stream: Sender<StreamType>) {
-        let packet_type = 0xA0u8;
+        let packet_type = 0xB0u8;
         let packet_identifier = self.packet_identifier.clone();
-        let mut bytes_response = Vec::new();
-        let remaining_length = packet_identifier.len()+2;
-
-        bytes_response.push(packet_type);
-        bytes_response.push(remaining_length as u8);
-        bytes_response.push(0x00);
-        bytes_response.push(packet_identifier.len() as u8);
-        bytes_response = [bytes_response, packet_identifier].concat();
+        let bytes_response = vec![
+            packet_type,
+            0x02u8,
+            packet_identifier[0],
+            packet_identifier[1],
+        ];
 
 
         if let Err(msg_error) =
