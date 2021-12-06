@@ -1,6 +1,3 @@
-use server::paquetes::publisher_suscriber::PublisherSuscriber;
-use server::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
-use server::usermanager::user_manager_types::ChannelUserManager;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -8,23 +5,20 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
+use server::paquetes::publisher_suscriber::PublisherSuscriber;
 use server::helper::publisher_subscriber_code::PublisherSubscriberCode;
-use server::paquetes::subscribe::Subscribe;
-use server::paquetes::subscribe::Unsubscribe;
+use server::paquetes::unsubscribe::Unsubscribe;
 
 #[test]
 fn should_create_unsubscribe_packet() {
-    let subscribe_bytes = [
-        0x80, // packet type
-        0x09, // remaining length
+    let unsubscribe_bytes = [
+        0xA0, // packet type
+        0x07, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x03, 0x61, 0x2F, 0x62, 0x01, // payload MQTT como mensaje + qos
+        0x00, 0x03, 0x61, 0x2F, 0x62, // payload MQTT como mensaje + qos
     ];
 
     let (sender_one, receiver_one): (Sender<PublisherSuscriber>, Receiver<PublisherSuscriber>) =
-        mpsc::channel();
-
-    let (sender_two, receiver_two): (Sender<ChannelUserManager>, Receiver<ChannelUserManager>) =
         mpsc::channel();
 
     let messages: Vec<PublisherSuscriber> = Vec::new();
@@ -38,11 +32,12 @@ fn should_create_unsubscribe_packet() {
         }
     });
 
-    let _subscribe = Subscribe::init(&subscribe_bytes).unwrap().subscribe_topic(
+    let mut unsubscribe = Unsubscribe::init(&unsubscribe_bytes).unwrap();
+
+    unsubscribe.unsubscribe_topic(
         sender_one,
-        sender_two,
         "clientId".to_string(),
-    );
+    ).unwrap();
 
     t.join().unwrap();
 
@@ -51,7 +46,7 @@ fn should_create_unsubscribe_packet() {
 
     assert_eq!(
         publisher_subscriber_sent.get_packet_type(),
-        PublisherSubscriberCode::Subscriber
+        PublisherSubscriberCode::Unsubscriber
     );
 
     assert_eq!(
@@ -64,19 +59,5 @@ fn should_create_unsubscribe_packet() {
     assert_eq!(topic, "a/b".to_owned());
     assert_eq!(publisher_subscriber_sent.get_message(), "None".to_string());
 
-    publisher_subscriber_sent
-        .get_sender()
-        .unwrap()
-        .send((
-            PublishMessageUserManager,
-            "client_id".to_string(),
-            None,
-            None,
-            Some("message".to_string()),
-        ))
-        .unwrap();
-
-    let receiver_response = receiver_two.recv().unwrap();
-    assert_eq!(receiver_response.1, "client_id".to_string());
-    assert_eq!(receiver_response.4, Some("message".to_string()));
+    assert_eq!(publisher_subscriber_sent.get_sender().is_none(), true);
 }
