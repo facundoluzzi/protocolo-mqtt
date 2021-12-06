@@ -7,14 +7,16 @@ pub struct Publisher {
     client_id: String,
     topic: String,
     publish: Vec<u8>,
+    qos: u8
 }
 
 impl Publisher {
-    pub fn init(client_id: String, topic: String, publish: Vec<u8>) -> Publisher {
+    pub fn init(client_id: String, topic: String, publish: Vec<u8>, qos: u8) -> Publisher {
         Publisher {
             client_id,
             topic,
             publish,
+            qos
         }
     }
 
@@ -24,7 +26,7 @@ impl Publisher {
 
         if let Some(topic_sender) = &topics.get(&topic_name) {
             topic_sender
-                .send((PublishMessage, None, Some(publish_packet), None))
+                .send((PublishMessage, None, Some(publish_packet), None, self.qos))
                 .unwrap();
         }
     }

@@ -121,7 +121,14 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], publish_bytes);
+            let expected_packet = [
+                0x30,
+                0x0D,
+                0x00, 0x04, 0x4D, 0x15, 0x45, 0x45,
+                0x00, 0x0A,
+                0x00, 0x03, 0x61, 0x2F, 0x61
+            ];
+            assert_eq!(data[0..size], expected_packet);
         }
         _ => {
             panic!();

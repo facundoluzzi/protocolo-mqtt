@@ -34,15 +34,22 @@ impl TopicManager {
             publisher_subscriber_sender,
             topics,
         };
+
         thread::spawn(move || {
             for publish_subscriber in publisher_subscriber_receiver {
                 match publish_subscriber {
-                    TypeTopicManager::Publisher(publisher) => publisher.publish(topic_manager.topics.clone()),
+                    TypeTopicManager::Publisher(publisher) => {
+                        publisher.publish(topic_manager.topics.clone());
+                    },
                     TypeTopicManager::Subscriber(mut subscriber) => {
                         topic_manager.topics = subscriber.subscribe(topic_manager.topics.clone());
+                    },
+                    TypeTopicManager::Unsubscriber(mut unsubscriber) => {
+                        unsubscriber.unsubscribe(topic_manager.topics.clone())
+                    },
+                    TypeTopicManager::UnsubscriberAll(mut unsubscriber_all) => {
+                        unsubscriber_all.unsubscribe_all(topic_manager.topics.clone())
                     }
-                    TypeTopicManager::Unsubscriber(mut unsubscriber) => unsubscriber.unsubscribe(topic_manager.topics.clone()),
-                    TypeTopicManager::UnsubscriberAll(mut unsubscriber_all) => unsubscriber_all.unsubscribe_all(topic_manager.topics.clone())
                 }
             }
         });

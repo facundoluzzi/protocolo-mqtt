@@ -16,7 +16,7 @@ impl Unsubscriber {
     pub fn unsubscribe(&mut self, topics: HashMap<String, Sender<SenderTopicType>>) {
         if let Some(topic_sender) = topics.get(&self.topic.to_owned()) {
             topic_sender
-                .send((RemoveTopic, Some(self.client_id.to_owned()), None, None))
+                .send((RemoveTopic, Some(self.client_id.to_owned()), None, None, 0))
                 .unwrap();
         }
     }

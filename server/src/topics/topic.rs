@@ -28,6 +28,7 @@ impl Topic {
                     AddTopic => {
                         let info = message.1;
                         let sender_received = message.3;
+                        let qos = message.4; 
 
                         let sender = if let Some(sender) = sender_received {
                             sender
@@ -41,7 +42,7 @@ impl Topic {
                             panic!("unexpected error");
                         };
 
-                        topic.add(topic_received, sender);
+                        topic.add(topic_received, sender, qos);
                     }
                     RemoveTopic => {
                         let info = message.1;
@@ -55,13 +56,14 @@ impl Topic {
                     }
                     PublishMessage => {
                         let info = message.2;
+                        let qos = message.4;
                         let message = if let Some(message) = info {
                             message
                         } else {
                             panic!("unexpected error");
                         };
 
-                        topic.publish_msg(message);
+                        topic.publish_msg(message, qos);
                     }
                 }
             }
@@ -69,22 +71,26 @@ impl Topic {
         topic_sender
     }
 
-    fn add(&mut self, client_id: String, sender: Sender<ChannelUserManager>) {
-        self.subscribers.insert(client_id, (sender, 0));
+    fn add(&mut self, client_id: String, sender: Sender<ChannelUserManager>, qos: u8) {
+        self.subscribers.insert(client_id, (sender, qos));
     }
 
     fn remove(&mut self, subscriber: String) {
         self.subscribers.remove(&subscriber);
     }
 
-    fn publish_msg(&self, packet: Vec<u8>) {
-        for (client_id, (subscriber, _qos)) in &self.subscribers {
+    fn publish_msg(&self, packet: Vec<u8>, qos: u8) {
+        for (client_id, (subscriber, qos_subscribe)) in &self.subscribers {
+            let mut new_packet = packet.clone();
+            if qos_subscribe + qos < 2 {
+                new_packet[0] = new_packet[0] & 0b11111101;
+            }
             let tuple_for_publish = (
                 PublishMessageUserManager,
                 client_id.to_string(),
                 None,
                 None,
-                Some(packet.clone()),
+                Some(new_packet.clone()),
             );
             if let Err(msg) = subscriber.send(tuple_for_publish) {
                 println!("Unexpected error: {}", msg);
