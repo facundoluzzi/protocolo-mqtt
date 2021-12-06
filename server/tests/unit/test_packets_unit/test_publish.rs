@@ -71,8 +71,8 @@ mod tests {
 
         assert_eq!(topic, "ALTEGO".to_owned());
         assert_eq!(
-            publisher_subscriber_sent.get_message(),
-            "\u{0}\u{5}ALTEG".to_string()
+            publisher_subscriber_sent.get_publish_packet(),
+            Some(bytes.to_vec())
         );
     }
 }

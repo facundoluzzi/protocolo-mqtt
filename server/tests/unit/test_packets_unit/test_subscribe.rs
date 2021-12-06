@@ -61,7 +61,7 @@ fn should_create_subscribe_packet() {
     let topic = publisher_subscriber_sent.get_topic();
 
     assert_eq!(topic, "a/b".to_owned());
-    assert_eq!(publisher_subscriber_sent.get_message(), "None".to_string());
+    assert_eq!(publisher_subscriber_sent.get_publish_packet(), None);
 
     publisher_subscriber_sent
         .get_sender()
@@ -71,13 +71,13 @@ fn should_create_subscribe_packet() {
             "client_id".to_string(),
             None,
             None,
-            Some("message".to_string()),
+            Some([0x00, 0x01, 0x02].to_vec()),
         ))
         .unwrap();
 
     let receiver_response = receiver_two.recv().unwrap();
     assert_eq!(receiver_response.1, "client_id".to_string());
-    assert_eq!(receiver_response.4, Some("message".to_string()));
+    assert_eq!(receiver_response.4, Some([0x00, 0x01, 0x02].to_vec()));
 }
 
 // #[test]

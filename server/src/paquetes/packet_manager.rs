@@ -87,7 +87,6 @@ impl PacketManager {
         Publish::init(bytes)
             .send_message(&self.sender_topic_manager, self.get_client_id())
             .send_response(self.sender_stream.clone());
-        // thread::sleep(time::Duration::from_secs(1000));
     }
 
     fn process_subscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {

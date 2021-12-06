@@ -7,21 +7,21 @@ pub struct PublisherSuscriber {
     client_id: String,
     code: PublisherSubscriberCode,
     topic: String,
-    message: String,
+    packet: Option<Vec<u8>>,
     sender_for_publish: Option<Sender<ChannelUserManager>>,
 }
 
 impl PublisherSuscriber {
     pub fn new(
-        topic: String,
-        message: String,
         code: PublisherSubscriberCode,
-        sender: Option<Sender<ChannelUserManager>>,
         client_id: String,
+        topic: String,
+        sender: Option<Sender<ChannelUserManager>>,
+        packet: Option<Vec<u8>>,
     ) -> PublisherSuscriber {
         PublisherSuscriber {
             topic,
-            message,
+            packet,
             code,
             sender_for_publish: sender,
             client_id,
@@ -40,11 +40,14 @@ impl PublisherSuscriber {
         self.topic.to_owned()
     }
 
-    pub fn get_message(&self) -> String {
-        self.message.to_owned()
-    }
-
     pub fn get_sender(&self) -> Option<Sender<ChannelUserManager>> {
         self.sender_for_publish.clone()
+    }
+
+    pub fn get_publish_packet(&self) -> Option<Vec<u8>> {
+        match &self.packet {
+            Some(bytes) => Some(bytes.clone()),
+            None => None,
+        }
     }
 }

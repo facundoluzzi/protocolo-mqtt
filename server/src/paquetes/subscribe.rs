@@ -62,13 +62,12 @@ impl Subscribe {
                 };
 
             let type_s = PublisherSubscriberCode::Subscriber;
-            let message = "None".to_owned();
             let publisher_subscriber = PublisherSuscriber::new(
-                topic,
-                message,
                 type_s,
-                Some(sender_user_manager.clone()),
                 client_id.to_string(),
+                topic,
+                Some(sender_user_manager.clone()),
+                None,
             );
 
             match sender_topic_manager.send(publisher_subscriber) {

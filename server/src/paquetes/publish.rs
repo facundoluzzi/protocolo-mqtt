@@ -17,6 +17,7 @@ pub struct Publish {
     topic: String,
     packet_identifier: [u8; 2],
     payload: String,
+    all_bytes: Vec<u8>,
 }
 
 impl Publish {
@@ -44,7 +45,6 @@ impl Publish {
         let _valid_topic = publish_variable_header::verify_publish_wilcard(topic.to_owned());
 
         // TODO: cerrar la conexión
-
         let payload = &bytes[init_variable_header + length..bytes.len()];
 
         Publish {
@@ -57,6 +57,7 @@ impl Publish {
                 .try_into()
                 .expect("slice with incorrect length"),
             payload: std::str::from_utf8(payload).unwrap().to_string(),
+            all_bytes: bytes.to_vec(),
         }
     }
 
@@ -92,9 +93,13 @@ impl Publish {
         client_id: String,
     ) -> Self {
         let topic = self.topic.to_owned();
-        let payload = self.payload.to_owned();
-        let publisher_subscriber =
-            PublisherSuscriber::new(topic, payload, Publisher, None, client_id);
+        let publisher_subscriber = PublisherSuscriber::new(
+            Publisher,
+            client_id,
+            topic,
+            None,
+            Some(self.all_bytes.clone()),
+        );
 
         if let Err(sender_err) = sender_topic_manager.send(publisher_subscriber) {
             println!("Error sending to publisher_subscriber: {}", sender_err);
@@ -108,6 +113,7 @@ impl Publish {
             topic: self.topic.clone(),
             packet_identifier: self.packet_identifier,
             payload: self.payload.clone(),
+            all_bytes: self.all_bytes.clone(),
         }
     }
 }

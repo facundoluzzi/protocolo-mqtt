@@ -44,10 +44,10 @@ impl TopicManager {
             for publish_suscriber in publisher_subscriber_receiver {
                 match publish_suscriber.get_packet_type() {
                     PublisherSubscriberCode::Publisher => {
-                        topic_manager.publish_msg(
-                            publish_suscriber.get_topic(),
-                            publish_suscriber.get_message(),
-                        );
+                        let publish_packet = publish_suscriber.get_publish_packet();
+                        let topic_name = publish_suscriber.get_topic();
+
+                        topic_manager.publish_msg(topic_name, publish_packet);
                     }
                     PublisherSubscriberCode::Subscriber => {
                         let subscriber = publish_suscriber.get_sender().unwrap();
@@ -74,9 +74,11 @@ impl TopicManager {
         sender_to_return
     }
 
-    fn publish_msg(&self, topic_name: String, message: String) {
+    fn publish_msg(&self, topic_name: String, message: Option<Vec<u8>>) {
         if let Some(topic_sender) = &self.topics.get(&topic_name) {
-            topic_sender.send((PublishMessage, message, None)).unwrap();
+            topic_sender
+                .send((PublishMessage, None, message, None))
+                .unwrap();
         }
     }
 
@@ -88,13 +90,13 @@ impl TopicManager {
     ) {
         if let Some(topic_sender) = self.topics.get(&topic_name) {
             topic_sender
-                .send((AddTopic, client_id, Some(sender_subscriber)))
+                .send((AddTopic, Some(client_id), None, Some(sender_subscriber)))
                 .unwrap();
         } else {
             let sender_topic = Topic::init(topic_name.to_owned());
             self.topics.insert(topic_name, sender_topic.clone());
             sender_topic
-                .send((AddTopic, client_id, Some(sender_subscriber)))
+                .send((AddTopic, Some(client_id), None, Some(sender_subscriber)))
                 .unwrap();
         }
     }
@@ -110,7 +112,8 @@ impl TopicManager {
                 topic_sender
                     .send((
                         AddTopic,
-                        client_id.to_owned(),
+                        Some(client_id.to_owned()),
+                        None,
                         Some(sender_subscribe.clone()),
                     ))
                     .unwrap();

@@ -24,21 +24,44 @@ impl Topic {
         thread::spawn(move || {
             for message in topic_receiver {
                 let action_type = message.0;
-                let info = message.1;
                 match action_type {
                     AddTopic => {
-                        let sender = if let Some(sender) = message.2 {
+                        let info = message.1;
+                        let sender_received = message.3;
+
+                        let sender = if let Some(sender) = sender_received {
                             sender
                         } else {
                             panic!("unexpected error");
                         };
-                        topic.add(info, sender);
+
+                        let topic_received = if let Some(topic_received) = info {
+                            topic_received
+                        } else {
+                            panic!("unexpected error");
+                        };
+
+                        topic.add(topic_received, sender);
                     }
                     RemoveTopic => {
-                        topic.remove(info);
+                        let info = message.1;
+                        let topic_received = if let Some(topic_received) = info {
+                            topic_received
+                        } else {
+                            panic!("unexpected error");
+                        };
+
+                        topic.remove(topic_received);
                     }
                     PublishMessage => {
-                        topic.publish_msg(info);
+                        let info = message.2;
+                        let message = if let Some(message) = info {
+                            message
+                        } else {
+                            panic!("unexpected error");
+                        };
+
+                        topic.publish_msg(message);
                     }
                 }
             }
@@ -54,16 +77,17 @@ impl Topic {
         self.subscribers.remove(&subscriber);
     }
 
-    fn publish_msg(&self, message: String) {
+    fn publish_msg(&self, packet: Vec<u8>) {
         for (client_id, subscriber) in &self.subscribers {
-            if let Err(_msg) = subscriber.send((
+            let tuple_for_publish = (
                 PublishMessageUserManager,
                 client_id.to_string(),
                 None,
                 None,
-                Some(message.to_string()),
-            )) {
-                println!("Error al publicar el mensaje")
+                Some(packet.clone()),
+            );
+            if let Err(msg) = subscriber.send(tuple_for_publish) {
+                println!("Unexpected error: {}", msg);
             };
         }
     }

@@ -194,7 +194,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47]);
+                assert_eq!(data[0..size], bytes_to_publish);
             }
             _ => {
                 panic!();
@@ -395,7 +395,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47]);
+                assert_eq!(data[0..size], bytes_to_publish);
             }
             _ => {
                 panic!();
@@ -596,7 +596,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47]);
+                assert_eq!(data[0..size], bytes_to_publish);
             }
             _ => {
                 panic!();
@@ -797,7 +797,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47]);
+                assert_eq!(data[0..size], bytes_to_publish);
             }
             _ => {
                 panic!();
@@ -997,7 +997,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47]);
+                assert_eq!(data[0..size], bytes_to_publish);
             }
             _ => {
                 panic!();
