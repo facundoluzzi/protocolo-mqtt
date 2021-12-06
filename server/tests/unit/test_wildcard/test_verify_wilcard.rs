@@ -1,6 +1,8 @@
 mod tests {
     use server::wildcard::verify_wildcard;
-    use server::wildcard::wildcard_result::WildcardResult::{HasWildcard, HasNoWildcard, InvalidWildcard};
+    use server::wildcard::wildcard_result::WildcardResult::{
+        HasNoWildcard, HasWildcard, InvalidWildcard,
+    };
 
     #[test]
     pub fn get_ok_on_verification_get_wilcard() {
@@ -79,6 +81,5 @@ mod tests {
             InvalidWildcard => assert_eq!(1, 1),
             _ => assert_eq!(0, 1),
         };
-
     }
 }

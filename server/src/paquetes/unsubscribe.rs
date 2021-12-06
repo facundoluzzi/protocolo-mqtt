@@ -30,7 +30,7 @@ impl Unsubscribe {
             .expect("slice with incorrect length");
         let unsubscribe = Unsubscribe {
             remaining_length,
-            packet_identifier: packet_identifier,
+            packet_identifier,
             payload: (*payload).to_vec(),
         };
         Ok(unsubscribe)
@@ -38,9 +38,9 @@ impl Unsubscribe {
 
     pub fn unsubscribe_topic(
         &mut self,
-        sender: &Sender<PublisherSuscriber>,
+        sender: Sender<PublisherSuscriber>,
         client_id: String,
-    ) -> Self {
+    ) -> Result<Self, String> {
         let mut acumulator: usize = 0;
 
         while self.payload.len() > acumulator {
@@ -53,7 +53,7 @@ impl Unsubscribe {
                     }
                 };
             acumulator += length;
-            
+
             let type_s = PublisherSubscriberCode::Unsubscriber;
             let message = "None".to_owned();
             let publisher_subscriber =
@@ -64,15 +64,17 @@ impl Unsubscribe {
             }
         }
 
-        Unsubscribe {
+        let unsubscribe = Unsubscribe {
             remaining_length: self.remaining_length,
             packet_identifier: self.packet_identifier.clone(),
             payload: self.payload.clone(),
-        }
+        };
+
+        Ok(unsubscribe)
     }
 
     pub fn send_response(&self, sender_stream: Sender<StreamType>) {
-        let packet_type = 0xA0u8;
+        let packet_type = 0xB0u8;
         let packet_identifier = self.packet_identifier.clone();
         let mut bytes_response = Vec::new();
         let remaining_length = packet_identifier.len() + 2;

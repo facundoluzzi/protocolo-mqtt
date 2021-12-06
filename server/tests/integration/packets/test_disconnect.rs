@@ -8,8 +8,7 @@ mod tests {
     #[test]
     pub fn disconnect_and_try_to_read_should_failed() {
         let server = ServerTest::start("0.0.0.0:1893".to_string());
-        let mut stream =
-            TcpStream::connect("0.0.0.0:1893".to_string()).unwrap();
+        let mut stream = TcpStream::connect("0.0.0.0:1893".to_string()).unwrap();
         let connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
@@ -19,9 +18,7 @@ mod tests {
             0x00, 0x0B, // keep alive
             0x00, 0x02, 0x62, 0x63, // Client Identifier
         ];
-        stream
-        .write(&connect_bytes)
-        .unwrap();
+        stream.write(&connect_bytes).unwrap();
 
         let mut data = vec![0; 100];
         match stream.read(&mut data) {
@@ -32,12 +29,8 @@ mod tests {
                 panic!();
             }
         }
-        let disconnect_bytes = [
-            0xE0, 0x00,
-        ];
-        stream
-        .write(&disconnect_bytes)
-        .unwrap();
+        let disconnect_bytes = [0xE0, 0x00];
+        stream.write(&disconnect_bytes).unwrap();
 
         let subscribe_bytes = [
             0x82, // packet type
@@ -45,9 +38,7 @@ mod tests {
             0x00, 0x0A, // variable header, en particular packet identifier
             0x00, 0x03, 0x61, 0x2F, 0x62, 0x00, // payload MQTT como mensaje + qos
         ];
-        stream
-        .write(&subscribe_bytes)
-        .unwrap();
+        stream.write(&subscribe_bytes).unwrap();
         let mut data2 = vec![0; 100];
         let size = stream.read(&mut data2).unwrap();
         assert_eq!(data2[0..size], []);

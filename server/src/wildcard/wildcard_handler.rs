@@ -4,7 +4,9 @@ pub struct Wildcard {
 
 impl Clone for Wildcard {
     fn clone(&self) -> Self {
-        Self { vec_words: self.vec_words.clone() }
+        Self {
+            vec_words: self.vec_words.clone(),
+        }
     }
 }
 

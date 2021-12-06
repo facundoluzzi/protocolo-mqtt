@@ -1,5 +1,7 @@
 use super::{wildcard_handler::Wildcard, wildcard_result::WildcardResult};
-use crate::wildcard::wildcard_result::WildcardResult::{HasWildcard, HasNoWildcard, InvalidWildcard};
+use crate::wildcard::wildcard_result::WildcardResult::{
+    HasNoWildcard, HasWildcard, InvalidWildcard,
+};
 
 pub fn get_wilcard(topic: String) -> WildcardResult {
     let vec_words: Vec<String> = topic.split('/').map(|s| s.to_string()).collect();
@@ -18,10 +20,13 @@ pub fn get_wilcard(topic: String) -> WildcardResult {
     vec_copy.pop();
     vec_copy.retain(|x| x == &">".to_owned());
     if vec_copy.len() != 0 {
-        return InvalidWildcard; 
+        println!("No tiene wildcard!123");
+
+        return InvalidWildcard;
     }
 
     if !contains_astherisc && !contains_greater_than {
+        println!("No tiene wildcard!");
         HasNoWildcard
     } else {
         HasWildcard(Wildcard::init(vec_words))

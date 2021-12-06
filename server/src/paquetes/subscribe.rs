@@ -6,7 +6,9 @@ use crate::stream::stream_handler::StreamType;
 use crate::usermanager::user_manager_types::ChannelUserManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 use crate::wildcard::verify_wildcard;
-use crate::wildcard::wildcard_result::WildcardResult::{HasWildcard, HasNoWildcard, InvalidWildcard};
+use crate::wildcard::wildcard_result::WildcardResult::{
+    HasNoWildcard, HasWildcard, InvalidWildcard,
+};
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
@@ -65,13 +67,13 @@ impl Subscribe {
 
             let type_s = PublisherSubscriberCode::Subscriber;
             let message = "None".to_owned();
-            let wildcard= 
-            match verify_wildcard::get_wilcard(topic.to_owned()) {
+            let wildcard = match verify_wildcard::get_wilcard(topic.to_owned()) {
                 HasWildcard(wildcard) => Some(wildcard),
                 HasNoWildcard => None,
                 InvalidWildcard => {
                     acumulator += length + 1;
                     self.return_codes.push(0x80);
+                    println!("a");
                     continue;
                 }
             };
@@ -82,7 +84,7 @@ impl Subscribe {
                 type_s,
                 Some(sender_user_manager.clone()),
                 client_id.to_string(),
-                wildcard
+                wildcard,
             );
 
             match sender_topic_manager.send(publisher_subscriber) {

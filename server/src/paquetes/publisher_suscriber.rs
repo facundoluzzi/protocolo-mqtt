@@ -1,4 +1,6 @@
-use crate::{usermanager::user_manager_types::ChannelUserManager, wildcard::wildcard_handler::Wildcard};
+use crate::{
+    usermanager::user_manager_types::ChannelUserManager, wildcard::wildcard_handler::Wildcard,
+};
 use std::sync::mpsc::Sender;
 
 use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
