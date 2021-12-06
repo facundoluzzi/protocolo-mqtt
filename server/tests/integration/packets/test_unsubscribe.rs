@@ -3,10 +3,6 @@ use crate::integration::setup::ServerTest;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
-use std::thread;
-use std::time::Duration;
-use std::sync::Arc;
-use std::sync::Mutex;
 
 #[test]
 fn should_unsubscribe_correctly() {
@@ -35,7 +31,7 @@ fn should_unsubscribe_correctly() {
         0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
     ];
     stream.write(&subscribe_bytes).unwrap();
-    
+
     stream.read(&mut data).unwrap();
 
     let unsubscribe_bytes = [

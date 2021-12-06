@@ -5,8 +5,8 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
-use server::paquetes::publisher_suscriber::PublisherSuscriber;
 use server::helper::publisher_subscriber_code::PublisherSubscriberCode;
+use server::paquetes::publisher_suscriber::PublisherSuscriber;
 use server::paquetes::unsubscribe::Unsubscribe;
 
 #[test]
@@ -34,10 +34,9 @@ fn should_create_unsubscribe_packet() {
 
     let mut unsubscribe = Unsubscribe::init(&unsubscribe_bytes).unwrap();
 
-    unsubscribe.unsubscribe_topic(
-        sender_one,
-        "clientId".to_string(),
-    ).unwrap();
+    unsubscribe
+        .unsubscribe_topic(sender_one, "clientId".to_string())
+        .unwrap();
 
     t.join().unwrap();
 

@@ -3,5 +3,5 @@ pub enum PublisherSubscriberCode {
     Publisher,
     Subscriber,
     Unsubscriber,
-    UnsubscriberAll
+    UnsubscriberAll,
 }

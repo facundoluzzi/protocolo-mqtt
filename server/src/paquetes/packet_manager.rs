@@ -132,10 +132,8 @@ impl PacketManager {
         let unsubscribe = Unsubscribe::init(bytes);
         match unsubscribe {
             Ok(mut created_unsubscribe) => {
-                let unsubscribe_topic_response = created_unsubscribe.unsubscribe_topic(
-                    self.sender_topic_manager.clone(),
-                    self.get_client_id(),
-                );
+                let unsubscribe_topic_response = created_unsubscribe
+                    .unsubscribe_topic(self.sender_topic_manager.clone(), self.get_client_id());
 
                 match unsubscribe_topic_response {
                     Ok(subscribed_topic) => {
@@ -177,7 +175,7 @@ impl PacketManager {
                     1 => self.process_connect_message(bytes)?,
                     3 => self.process_publish_message(bytes),
                     8 => self.process_subscribe_message(bytes)?,
-                    10=> self.process_unsubscribe_message(bytes)?,
+                    10 => self.process_unsubscribe_message(bytes)?,
                     12 => self.process_pingreq_message(),
                     _ => Default::init(bytes).send_response(self.sender_stream.clone()),
                 }
