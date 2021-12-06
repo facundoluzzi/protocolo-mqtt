@@ -1,4 +1,5 @@
-use server::paquetes::publisher_suscriber::PublisherSuscriber;
+use server::topics::topic_types::TypeTopicManager;
+use server::topics::topic_types::TypeTopicManager::Subscriber;
 use server::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
 use server::usermanager::user_manager_types::ChannelUserManager;
 use std::sync::mpsc;
@@ -8,7 +9,6 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
-use server::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use server::paquetes::subscribe::Subscribe;
 
 #[test]
@@ -20,13 +20,13 @@ fn should_create_subscribe_packet() {
         0x00, 0x03, 0x61, 0x2F, 0x62, 0x01, // payload MQTT como mensaje + qos
     ];
 
-    let (sender_one, receiver_one): (Sender<PublisherSuscriber>, Receiver<PublisherSuscriber>) =
+    let (sender_one, receiver_one): (Sender<TypeTopicManager>, Receiver<TypeTopicManager>) =
         mpsc::channel();
 
     let (sender_two, receiver_two): (Sender<ChannelUserManager>, Receiver<ChannelUserManager>) =
         mpsc::channel();
 
-    let messages: Vec<PublisherSuscriber> = Vec::new();
+    let messages: Vec<TypeTopicManager> = Vec::new();
     let data = Arc::new(Mutex::new(messages));
     let data_for_thread = data.clone();
 
@@ -46,38 +46,35 @@ fn should_create_subscribe_packet() {
     t.join().unwrap();
 
     let locked_data = data.lock().unwrap();
-    let publisher_subscriber_sent = locked_data.get(0).unwrap();
+    let type_topic_manager = locked_data.get(0).unwrap();
 
-    assert_eq!(
-        publisher_subscriber_sent.get_packet_type(),
-        PublisherSubscriberCode::Subscriber
-    );
+    match type_topic_manager {
+        Subscriber(subscriber) => {
+            assert_eq!(subscriber.get_client_id(), "clientId".to_string());
 
-    assert_eq!(
-        publisher_subscriber_sent.get_client_id(),
-        "clientId".to_string()
-    );
+            let topic = subscriber.get_topic();
 
-    let topic = publisher_subscriber_sent.get_topic();
+            assert_eq!(topic, "a/b".to_owned());
 
-    assert_eq!(topic, "a/b".to_owned());
-    assert_eq!(publisher_subscriber_sent.get_message(), "None".to_string());
+            subscriber
+                .get_sender_user_manager()
+                .send((
+                    PublishMessageUserManager,
+                    "client_id".to_string(),
+                    None,
+                    None,
+                    Some([0x00, 0x01, 0x02].to_vec()),
+                ))
+                .unwrap();
 
-    publisher_subscriber_sent
-        .get_sender()
-        .unwrap()
-        .send((
-            PublishMessageUserManager,
-            "client_id".to_string(),
-            None,
-            None,
-            Some("message".to_string()),
-        ))
-        .unwrap();
-
-    let receiver_response = receiver_two.recv().unwrap();
-    assert_eq!(receiver_response.1, "client_id".to_string());
-    assert_eq!(receiver_response.4, Some("message".to_string()));
+            let receiver_response = receiver_two.recv().unwrap();
+            assert_eq!(receiver_response.1, "client_id".to_string());
+            assert_eq!(receiver_response.4, Some([0x00, 0x01, 0x02].to_vec()));
+        }
+        _ => {
+            panic!("unexpected error");
+        }
+    }
 }
 
 // #[test]

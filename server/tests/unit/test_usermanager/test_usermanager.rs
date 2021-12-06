@@ -36,16 +36,13 @@ mod tests {
                 "Nacho".to_owned(),
                 None,
                 None,
-                Some("mensaje enviado".to_string()),
+                Some([0x00, 0x01, 0x02].to_vec()),
             ))
             .unwrap();
 
         let (_, vec, _, _) = receiver_stream.recv().unwrap();
 
-        assert_eq!(
-            vec.unwrap(),
-            [109, 101, 110, 115, 97, 106, 101, 32, 101, 110, 118, 105, 97, 100, 111].to_vec()
-        );
+        assert_eq!(vec, Some([0x00, 0x01, 0x02].to_vec()));
     }
 
     #[test]
@@ -76,7 +73,7 @@ mod tests {
                 "Nacho".to_owned(),
                 None,
                 None,
-                Some("mensaje enviado".to_string()),
+                Some([0x00, 0x01, 0x02].to_vec()),
             ))
             .unwrap();
 
@@ -118,7 +115,7 @@ mod tests {
                 "Nacho".to_owned(),
                 None,
                 None,
-                Some("mensaje enviado".to_string()),
+                Some([0x00, 0x01, 0x02].to_vec()),
             ))
             .unwrap();
 
@@ -159,7 +156,7 @@ mod tests {
                 "Nacho".to_owned(),
                 None,
                 None,
-                Some("mensaje enviado".to_string()),
+                Some([0x00, 0x01, 0x02].to_vec()),
             ))
             .unwrap();
 
@@ -178,9 +175,6 @@ mod tests {
 
         let (_, vec, _, _) = receiver_stream_two.recv().unwrap();
 
-        assert_eq!(
-            vec.unwrap(),
-            [109, 101, 110, 115, 97, 106, 101, 32, 101, 110, 118, 105, 97, 100, 111].to_vec()
-        );
+        assert_eq!(vec, Some([0x00, 0x01, 0x02].to_vec()));
     }
 }

@@ -1,12 +1,11 @@
+use server::topics::topic_types::TypeTopicManager;
+use server::topics::topic_types::TypeTopicManager::Unsubscriber;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
-
-use server::helper::publisher_subscriber_code::PublisherSubscriberCode;
-use server::paquetes::publisher_suscriber::PublisherSuscriber;
 use server::paquetes::unsubscribe::Unsubscribe;
 
 #[test]
@@ -18,10 +17,10 @@ fn should_create_unsubscribe_packet() {
         0x00, 0x03, 0x61, 0x2F, 0x62, // payload MQTT como mensaje + qos
     ];
 
-    let (sender_one, receiver_one): (Sender<PublisherSuscriber>, Receiver<PublisherSuscriber>) =
+    let (sender_one, receiver_one): (Sender<TypeTopicManager>, Receiver<TypeTopicManager>) =
         mpsc::channel();
 
-    let messages: Vec<PublisherSuscriber> = Vec::new();
+    let messages: Vec<TypeTopicManager> = Vec::new();
     let data = Arc::new(Mutex::new(messages));
     let data_for_thread = data.clone();
 
@@ -41,22 +40,16 @@ fn should_create_unsubscribe_packet() {
     t.join().unwrap();
 
     let locked_data = data.lock().unwrap();
-    let publisher_subscriber_sent = locked_data.get(0).unwrap();
+    let type_topic_manager = locked_data.get(0).unwrap();
 
-    assert_eq!(
-        publisher_subscriber_sent.get_packet_type(),
-        PublisherSubscriberCode::Unsubscriber
-    );
-
-    assert_eq!(
-        publisher_subscriber_sent.get_client_id(),
-        "clientId".to_string()
-    );
-
-    let topic = publisher_subscriber_sent.get_topic();
-
-    assert_eq!(topic, "a/b".to_owned());
-    assert_eq!(publisher_subscriber_sent.get_message(), "None".to_string());
-
-    assert_eq!(publisher_subscriber_sent.get_sender().is_none(), true);
+    match type_topic_manager {
+        Unsubscriber(unsubscriber) => {
+            assert_eq!(unsubscriber.get_client_id(), "clientId".to_string());
+            let topic = unsubscriber.get_topic();
+            assert_eq!(topic, "a/b".to_owned());
+        }
+        _ => {
+            panic!("unexpected error");
+        }
+    }
 }

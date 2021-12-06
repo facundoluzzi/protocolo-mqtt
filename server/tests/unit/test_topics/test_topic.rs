@@ -18,20 +18,26 @@ mod tests {
             mpsc::channel();
 
         topic
-            .send((AddTopic, "Facundo".to_owned(), Some(sender_one)))
+            .send((AddTopic, Some("Facundo".to_owned()), None, Some(sender_one), 0))
             .unwrap();
         topic
-            .send((AddTopic, "Nacho".to_owned(), Some(sender_two)))
+            .send((AddTopic, Some("Nacho".to_owned()), None, Some(sender_two), 0))
             .unwrap();
 
         topic
-            .send((PublishMessage, "hola".to_string(), None))
+            .send((
+                PublishMessage,
+                None,
+                Some([0x00, 0x01, 0x02].to_vec()),
+                None,
+                0
+            ))
             .unwrap();
 
         let (_, client_id, _, _, msg) = receiver_one.recv().unwrap();
         assert_eq!(client_id, "Facundo".to_owned());
         if let Some(msg) = msg {
-            assert_eq!(msg, "hola".to_owned());
+            assert_eq!(msg, [0x00, 0x01, 0x02].to_vec());
         } else {
             panic!()
         }
@@ -39,7 +45,7 @@ mod tests {
         let (_, client_id, _, _, msg) = receiver_two.recv().unwrap();
         assert_eq!(client_id, "Nacho".to_owned());
         if let Some(msg) = msg {
-            assert_eq!(msg, "hola".to_owned());
+            assert_eq!(msg, [0x00, 0x01, 0x02].to_vec());
         } else {
             panic!()
         }
@@ -54,18 +60,24 @@ mod tests {
             mpsc::channel();
 
         topic
-            .send((AddTopic, "Facundo".to_owned(), Some(sender_one)))
+            .send((AddTopic, Some("Facundo".to_owned()), None, Some(sender_one), 0))
             .unwrap();
         topic
-            .send((AddTopic, "Nacho".to_owned(), Some(sender_two)))
-            .unwrap();
-
-        topic
-            .send((RemoveTopic, "Facundo".to_owned(), None))
+            .send((AddTopic, Some("Nacho".to_owned()), None, Some(sender_two), 0))
             .unwrap();
 
         topic
-            .send((PublishMessage, "hola".to_string(), None))
+            .send((RemoveTopic, Some("Facundo".to_owned()), None, None, 0))
+            .unwrap();
+
+        topic
+            .send((
+                PublishMessage,
+                None,
+                Some([0x00, 0x01, 0x02].to_vec()),
+                None,
+                0
+            ))
             .unwrap();
 
         for _recv in receiver_one.recv() {
@@ -75,7 +87,7 @@ mod tests {
         let (_, client_id, _, _, msg) = receiver_two.recv().unwrap();
         assert_eq!(client_id, "Nacho".to_owned());
         if let Some(msg) = msg {
-            assert_eq!(msg, "hola".to_owned());
+            assert_eq!(msg, [0x00, 0x01, 0x02].to_vec());
         } else {
             panic!()
         }

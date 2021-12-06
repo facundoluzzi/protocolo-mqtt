@@ -1,14 +1,13 @@
-use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
+use crate::topics::topic_types::TypeTopicManager;
+use crate::topics::unsubscriber::Unsubscriber;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
-
-use super::publisher_suscriber::PublisherSuscriber;
 
 pub struct Unsubscribe {
     remaining_length: usize,
@@ -30,7 +29,7 @@ impl Unsubscribe {
             .expect("slice with incorrect length");
         let unsubscribe = Unsubscribe {
             remaining_length,
-            packet_identifier,
+            packet_identifier: packet_identifier,
             payload: (*payload).to_vec(),
         };
         Ok(unsubscribe)
@@ -38,7 +37,7 @@ impl Unsubscribe {
 
     pub fn unsubscribe_topic(
         &mut self,
-        sender: Sender<PublisherSuscriber>,
+        sender: Sender<TypeTopicManager>,
         client_id: String,
     ) -> Result<Self, String> {
         let mut acumulator: usize = 0;
@@ -54,12 +53,9 @@ impl Unsubscribe {
                 };
             acumulator += length;
 
-            let type_s = PublisherSubscriberCode::Unsubscriber;
-            let message = "None".to_owned();
-            let publisher_subscriber =
-                PublisherSuscriber::new(topic, message, type_s, None, client_id.to_string(), None);
+            let unsubscriber = Unsubscriber::init(client_id.to_string(), topic.to_string());
 
-            if let Err(sender_err) = sender.send(publisher_subscriber) {
+            if let Err(sender_err) = sender.send(TypeTopicManager::Unsubscriber(unsubscriber)) {
                 println!("Error sending to publisher_subscriber: {}", sender_err);
             }
         }
@@ -76,14 +72,12 @@ impl Unsubscribe {
     pub fn send_response(&self, sender_stream: Sender<StreamType>) {
         let packet_type = 0xB0u8;
         let packet_identifier = self.packet_identifier.clone();
-        let mut bytes_response = Vec::new();
-        let remaining_length = packet_identifier.len() + 2;
-
-        bytes_response.push(packet_type);
-        bytes_response.push(remaining_length as u8);
-        bytes_response.push(0x00);
-        bytes_response.push(packet_identifier.len() as u8);
-        bytes_response = [bytes_response, packet_identifier].concat();
+        let bytes_response = vec![
+            packet_type,
+            0x02u8,
+            packet_identifier[0],
+            packet_identifier[1],
+        ];
 
         if let Err(msg_error) =
             sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))

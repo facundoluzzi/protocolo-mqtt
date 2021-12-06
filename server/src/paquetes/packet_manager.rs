@@ -1,4 +1,3 @@
-use super::publisher_suscriber::PublisherSuscriber;
 use crate::logs::logger::Logger;
 use crate::paquetes::connect::Connect;
 use crate::paquetes::default::Default;
@@ -8,6 +7,7 @@ use crate::paquetes::publish::Publish;
 use crate::paquetes::subscribe::Subscribe;
 use crate::paquetes::unsubscribe::Unsubscribe;
 use crate::stream::stream_handler::StreamType;
+use crate::topics::topic_types::TypeTopicManager;
 use crate::usermanager::user_manager_types::ChannelUserManager;
 use std::sync::mpsc::Sender;
 
@@ -15,7 +15,7 @@ pub struct PacketManager {
     client_id: String,
     sender_stream: Sender<StreamType>,
     sender_user_manager: Sender<ChannelUserManager>,
-    sender_topic_manager: Sender<PublisherSuscriber>,
+    sender_topic_manager: Sender<TypeTopicManager>,
     logger: Logger,
 }
 
@@ -23,7 +23,7 @@ impl PacketManager {
     pub fn init(
         sender_user_manager: Sender<ChannelUserManager>,
         sender_stream: Sender<StreamType>,
-        sender_topic_manager: Sender<PublisherSuscriber>,
+        sender_topic_manager: Sender<TypeTopicManager>,
         logger: Logger,
     ) -> Self {
         PacketManager {
@@ -95,8 +95,6 @@ impl PacketManager {
     }
 
     fn process_subscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
-        println!("Procesando SUBSCRIBE...");
-
         self.logger.info("proccessing subscribe packet".to_string());
         let subscribe = Subscribe::init(bytes);
         match subscribe {
@@ -164,7 +162,6 @@ impl PacketManager {
 
     pub fn process_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         let first_byte = bytes.get(0);
-        println!("Procesando...");
         match first_byte {
             Some(first_byte_ok) => {
                 let packet_type = PacketManager::get_control_packet_type(*first_byte_ok);
