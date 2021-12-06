@@ -1,11 +1,11 @@
-use crate::helper::publisher_subscriber_code::PublisherSubscriberCode;
-use crate::paquetes::publisher_suscriber::PublisherSuscriber;
 use crate::stream::stream_handler::StreamType;
 use crate::topics::publisher_writer::ChannelPublisherWriter;
 use crate::topics::publisher_writer::PublisherSubscriberAction::DisconectPublisherSubscriber;
 use crate::topics::publisher_writer::PublisherSubscriberAction::PublishMessagePublisherSubscriber;
 use crate::topics::publisher_writer::PublisherSubscriberAction::ReconnectPublisherSubscriber;
 use crate::topics::publisher_writer::PublisherWriter;
+use crate::topics::topic_types::TypeTopicManager;
+use crate::topics::unsubscriberall::UnsubscriberAll;
 use crate::usermanager::user_manager_action::UserManagerAction::{
     AddUserManager, DisconnectUserManager, PublishMessageUserManager,
 };
@@ -18,11 +18,11 @@ use std::{collections::HashMap, sync::mpsc::Sender};
 
 pub struct UserManager {
     users: HashMap<String, (Sender<ChannelPublisherWriter>, bool)>,
-    sender_topic_manager: Sender<PublisherSuscriber>,
+    sender_topic_manager: Sender<TypeTopicManager>,
 }
 
 impl UserManager {
-    pub fn init(sender_topic_manager: Sender<PublisherSuscriber>) -> Sender<ChannelUserManager> {
+    pub fn init(sender_topic_manager: Sender<TypeTopicManager>) -> Sender<ChannelUserManager> {
         let (sender_user_manager, receiver_user_manager): (
             Sender<ChannelUserManager>,
             Receiver<ChannelUserManager>,
@@ -106,16 +106,11 @@ impl UserManager {
                 if self.users.remove(&client_id).is_none() {
                     println!("Unexpected error");
                 }
-                let publisher_subscriber = PublisherSuscriber::new(
-                    "".to_owned(),
-                    "".to_owned(),
-                    PublisherSubscriberCode::UnsubscriberAll,
-                    None,
-                    client_id.to_owned(),
-                    None,
-                );
+
+                let unsubscriber_all = UnsubscriberAll::init(client_id);
+
                 self.sender_topic_manager
-                    .send(publisher_subscriber)
+                    .send(TypeTopicManager::UnsubscriberAll(unsubscriber_all))
                     .unwrap();
             } else {
                 if let Some(channel) = channel_publisher_writer {

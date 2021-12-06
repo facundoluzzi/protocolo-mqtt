@@ -1,13 +1,12 @@
-use crate::helper::publisher_subscriber_code::PublisherSubscriberCode::Publisher;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
+use crate::topics::publisher::Publisher;
+use crate::topics::topic_types::TypeTopicManager;
 use crate::variable_header::publish_variable_header::{self, get_variable_header};
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
-
-use super::publisher_suscriber::PublisherSuscriber;
 
 pub struct Publish {
     _dup: u8,
@@ -17,6 +16,7 @@ pub struct Publish {
     topic: String,
     packet_identifier: [u8; 2],
     payload: String,
+    all_bytes: Vec<u8>,
 }
 
 impl Publish {
@@ -43,7 +43,6 @@ impl Publish {
         let _valid_topic = publish_variable_header::verify_publish_wilcard(topic.to_owned());
 
         // TODO: cerrar la conexión
-
         let payload = &bytes[init_variable_header + length..bytes.len()];
 
         Publish {
@@ -56,6 +55,7 @@ impl Publish {
                 .try_into()
                 .expect("slice with incorrect length"),
             payload: std::str::from_utf8(payload).unwrap().to_string(),
+            all_bytes: bytes.to_vec(),
         }
     }
 
@@ -87,15 +87,16 @@ impl Publish {
 
     pub fn send_message(
         &self,
-        sender_topic_manager: &Sender<PublisherSuscriber>,
+        sender_topic_manager: &Sender<TypeTopicManager>,
         client_id: String,
     ) -> Self {
         let topic = self.topic.to_owned();
-        let payload = self.payload.to_owned();
-        let publisher_subscriber =
-            PublisherSuscriber::new(topic, payload, Publisher, None, client_id, None);
 
-        if let Err(sender_err) = sender_topic_manager.send(publisher_subscriber) {
+        let publisher_prueba = Publisher::init(client_id, topic, self.all_bytes.clone(), self.qos);
+
+        if let Err(sender_err) =
+            sender_topic_manager.send(TypeTopicManager::Publisher(publisher_prueba))
+        {
             println!("Error sending to publisher_subscriber: {}", sender_err);
         }
 
@@ -107,6 +108,7 @@ impl Publish {
             topic: self.topic.clone(),
             packet_identifier: self.packet_identifier,
             payload: self.payload.clone(),
+            all_bytes: self.all_bytes.clone(),
         }
     }
 }

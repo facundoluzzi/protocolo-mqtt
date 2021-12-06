@@ -10,13 +10,13 @@ pub enum PublisherSubscriberAction {
 
 pub type ChannelPublisherWriter = (
     PublisherSubscriberAction,
-    Option<String>,
+    Option<Vec<u8>>,
     Option<Sender<StreamType>>,
 );
 
 pub struct PublisherWriter {
     socket: Option<Sender<StreamType>>,
-    queue: Vec<String>,
+    queue: Vec<Vec<u8>>,
 }
 
 impl PublisherWriter {
@@ -50,14 +50,9 @@ impl PublisherWriter {
         sender
     }
 
-    // pub fn get_sender(&self) -> Sender<ChannelPublisherWriter> {
-    //     self.sender.clone()
-    // }
-
-    fn publish_message(&mut self, receive: String) {
+    fn publish_message(&mut self, receive: Vec<u8>) {
         if let Some(socket) = &self.socket {
-            let new_vec: Vec<u8> = receive.as_bytes().to_vec();
-            match socket.send((WriteStream, Some(new_vec), None, None)) {
+            match socket.send((WriteStream, Some(receive), None, None)) {
                 Ok(_) => {}
                 Err(_err) => {}
             }
