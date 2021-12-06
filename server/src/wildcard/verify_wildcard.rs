@@ -20,13 +20,11 @@ pub fn get_wilcard(topic: String) -> WildcardResult {
     vec_copy.pop();
     vec_copy.retain(|x| x == &">".to_owned());
     if vec_copy.len() != 0 {
-        println!("No tiene wildcard!123");
 
         return InvalidWildcard;
     }
 
     if !contains_astherisc && !contains_greater_than {
-        println!("No tiene wildcard!");
         HasNoWildcard
     } else {
         HasWildcard(Wildcard::init(vec_words))

@@ -73,7 +73,6 @@ impl Subscribe {
                 InvalidWildcard => {
                     acumulator += length + 1;
                     self.return_codes.push(0x80);
-                    println!("a");
                     continue;
                 }
             };

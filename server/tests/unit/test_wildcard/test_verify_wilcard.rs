@@ -18,7 +18,7 @@ mod tests {
             HasWildcard(_wildcard) => assert_eq!(1, 1),
             _ => assert_eq!(0, 1),
         };
-
+    
         let topic_name: String = "Futbol/*/Boca/*".to_owned();
         match verify_wildcard::get_wilcard(topic_name) {
             HasWildcard(_wildcard) => assert_eq!(1, 1),
