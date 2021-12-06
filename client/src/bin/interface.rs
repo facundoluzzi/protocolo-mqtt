@@ -1,13 +1,14 @@
 extern crate gtk;
 use client::client_for_interface::Client;
-use client::client_for_interface::ClientAction;
-use client::client_for_interface::SenderClient;
+use client::sender_types::connect::Connect;
+use client::sender_types::publish::Publish;
+use client::sender_types::subscribe::Subscribe;
+
+use client::sender_types::sender_type::InterfaceSender;
+
 use gtk::glib;
 use gtk::prelude::*;
-use std::sync::mpsc;
-use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
-use std::thread;
 
 fn build_objects_for_connect(
     builder: &gtk::Builder,
@@ -91,7 +92,7 @@ fn build_objects_for_suscribe(
     )
 }
 
-fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClient>) {
+fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSender>) {
     let sender_connect = client_sender.clone();
     let sender_publish = client_sender.clone();
     let sender_suscribe = client_sender.clone();
@@ -118,83 +119,45 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<SenderClien
     let tx_for_connection = tx.clone();
     let tx_for_suscribe = tx.clone();
 
-    let (sender_for_messages, receiver_for_messages): (Sender<String>, Receiver<String>) = mpsc::channel();
-            
-    thread::spawn(move || {
-        for message in receiver_for_messages {
-            messages_received.set_text(&message);
-        }
-    });
-
-    
     connect_button.connect_clicked(move |_| {
         let port = input_port.text().to_string();
         let ip = ip_input.text().to_string();
-        let tx = tx.clone();
         let user = user_input.text().to_string();
         let password = password_input.text().to_string();
         let id_client = id_input.text().to_string();
 
-        let (send_x, rec_x): (Sender<String>, Receiver<String>) = mpsc::channel();
+        let connection = Connect::init(
+            ip,
+            port,
+            user,
+            password,
+            id_client,
+            tx_for_connection.clone(),
+        );
         sender_connect
-            .send((
-                ClientAction::Connect,
-                Some(ip),
-                Some(port),
-                Some(user),
-                Some(password),
-                Some(id_client),
-                None,
-                send_x,
-                None,
-            ))
+            .send(InterfaceSender::Connect(connection))
             .unwrap();
-
-        let result = rec_x.recv().unwrap();
-        tx_for_connection.send(result).unwrap();
     });
 
     publish_button.connect_clicked(move |_| {
         let message = message_input.text().to_string();
         let topic = topic_input.text().to_string();
         let is_qos_0 = qos_publish_0.is_active();
-        let (send_x, rec_x): (Sender<String>, Receiver<String>) = mpsc::channel();
+
+        let publish = Publish::init(message, topic, is_qos_0);
         sender_publish
-            .send((
-                ClientAction::Publish,
-                Some(message),
-                Some(topic),
-                None,
-                None,
-                None,
-                Some(is_qos_0),
-                send_x,
-                None,
-            ))
+            .send(InterfaceSender::Publish(publish))
             .unwrap();
     });
 
     suscribe_button.connect_clicked(move |_| {
         let topic = input_topic_suscribe.text().to_string();
-        let (send_x, rec_x): (Sender<String>, Receiver<String>) = mpsc::channel();
         let is_qos_0 = qos_suscriber_0.is_active();
-        let sender_for_messages_cloned = sender_for_messages.clone();
+
+        let subscribe = Subscribe::init(topic, is_qos_0);
         sender_suscribe
-            .send((
-                ClientAction::Subscribe,
-                Some(topic),
-                None,
-                None,
-                None,
-                None,
-                Some(is_qos_0),
-                send_x,
-                Some(sender_for_messages_cloned),
-            ))
+            .send(InterfaceSender::Subscribe(subscribe))
             .unwrap();
-        
-        let result = rec_x.recv().unwrap();
-        tx_for_suscribe.send(result).unwrap();
     });
 
     rc.attach(None, move |text| {

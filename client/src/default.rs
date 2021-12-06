@@ -1,10 +1,10 @@
-use crate::{packet_manager::ResponsePacket, trait_paquetes::Paquetes};
+use crate::packet_manager::ResponsePacket;
 
 pub struct Default {}
 
-impl Paquetes for Default {
-    fn init(_bytes: &[u8]) -> Box<dyn Paquetes> {
-        Box::new(Default {})
+impl Default {
+    pub fn init(_bytes: &[u8]) -> Default {
+        Default {}
     }
 
     fn get_type(&self) -> ResponsePacket {

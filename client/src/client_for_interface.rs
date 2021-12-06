@@ -1,14 +1,8 @@
-use std::{
-    io::{Read, Write},
-    net::TcpStream,
-    str::from_utf8,
-    thread,
-};
+use crate::sender_types::sender_type::InterfaceSender;
+use crate::stream::stream_handler::StreamAction::ReadStream;
+use crate::{packet_manager::PacketManager, stream::stream_handler::StreamType};
+use std::{net::TcpStream, thread};
 
-use crate::{
-    packet_builder::{build_bytes_for_connect, build_bytes_for_publish, build_bytes_for_suscribe},
-    packet_manager::{PacketManager, ResponsePacket},
-};
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -16,6 +10,7 @@ use std::sync::mpsc::Sender;
 pub struct Client {
     stream: Option<TcpStream>,
     sender: Option<Sender<(usize, Vec<String>)>>,
+    sender_stream: Option<Sender<StreamType>>,
 }
 
 impl Clone for Client {
@@ -25,16 +20,19 @@ impl Clone for Client {
                 return Client {
                     stream: Some(stream),
                     sender: self.sender.clone(),
+                    sender_stream: None,
                 };
             }
             return Client {
                 stream: None,
                 sender: None,
+                sender_stream: None,
             };
         }
         return Client {
             stream: None,
             sender: None,
+            sender_stream: None,
         };
     }
 }
@@ -58,229 +56,102 @@ pub type SenderClient = (
 );
 
 impl Client {
-    pub fn init() -> Sender<SenderClient> {
-        let (sender, receiver): (Sender<SenderClient>, Receiver<SenderClient>) = mpsc::channel();
+    pub fn init() -> Sender<InterfaceSender> {
+        let (event_sender, event_receiver): (Sender<InterfaceSender>, Receiver<InterfaceSender>) =
+            mpsc::channel();
 
         let mut client = Client {
             stream: None,
             sender: None,
+            sender_stream: None,
         };
 
+        let (sender_to_start_reading, receiver_to_start_reading): (
+            Sender<(Sender<StreamType>, gtk::glib::Sender<String>)>,
+            Receiver<(Sender<StreamType>, gtk::glib::Sender<String>)>,
+        ) = mpsc::channel();
+
         thread::spawn(move || {
-            for receive in receiver {
-                match receive {
-                    (
-                        ClientAction::Connect,
-                        Some(host),
-                        Some(port),
-                        Some(user),
-                        Some(password),
-                        Some(id_client),
-                        None,
-                        sender_response,
-                        None,
-                    ) => {
-                        let response =
-                            client.connect_to_server(host, port, user, password, id_client);
-                        sender_response.send(response).unwrap();
+            for event in event_receiver {
+                match event {
+                    InterfaceSender::Connect(connect) => {
+                        let sender_stream = connect.connect_to_server();
+                        if let Ok(sender) = sender_stream {
+                            client.sender_stream = Some(sender.clone());
+                            sender_to_start_reading
+                                .send((sender.clone(), connect.get_gtk_sender()))
+                                .unwrap();
+                        }
                     }
-                    (
-                        ClientAction::Publish,
-                        Some(message),
-                        Some(topic),
-                        None,
-                        None,
-                        None,
-                        Some(is_qos_0),
-                        sender_response,
-                        None,
-                    ) => {
-                        client.publish_into_topic(message, topic, is_qos_0);
+                    InterfaceSender::Publish(publish) => match client.sender_stream.clone() {
+                        Some(sender_stream) => {
+                            println!("\n\n Publish \n\n");
+                            publish.send_publish(sender_stream.clone());
+                        }
+                        None => {
+                            println!("Unexpected error");
+                        }
+                    },
+                    InterfaceSender::Subscribe(subscribe) => match client.sender_stream.clone() {
+                        Some(sender_stream) => {
+                            println!("\n\n Subscribe \n\n");
+                            match subscribe.send_suscribe(sender_stream.clone()) {
+                                Ok(result_ok) => {
+                                    println!("Ok");
+                                },
+                                Err(err) => {
+                                    println!("err: {}", err);
+                                }
+                            }
+                        }
+                        None => {
+                            println!("Unexpected error")
+                        }
+                    },
+                };
+            }
+        });
+
+        thread::spawn(move || {
+            let (sender_stream, sender_gtk) = receiver_to_start_reading.recv().unwrap();
+
+            let (packet_sender, packet_receiver) = mpsc::channel::<Vec<u8>>();
+
+            loop {
+                println!("\n\n\n Leyendo \n\n\n");
+                let message_sent =
+                    sender_stream
+                        .clone()
+                        .send((ReadStream, None, Some(packet_sender.clone())));
+
+                if let Err(_msg) = message_sent {
+                } else if let Ok(packet) = packet_receiver.recv() {
+                    let packet_u8: &[u8] = &packet;
+                    if let Err(err) = Client::process_packet(packet_u8, sender_gtk.clone()) {
+                        println!("err: {}", err);
+                        break;
                     }
-                    (
-                        ClientAction::Subscribe,
-                        Some(topic),
-                        None,
-                        None,
-                        None,
-                        None,
-                        Some(is_qos_0),
-                        sender_response,
-                        Some(sender_for_messages),
-                    ) => {
-                        let response =
-                            client.subscribe_to_topic(topic, is_qos_0, sender_for_messages);
-                        sender_response.send(response).unwrap();
-                    }
-                    _ => panic!("Algo mal"),
                 }
             }
         });
 
-        sender
+        event_sender
     }
 
-    fn send_connect(&self, user: String, password: String, id_client: String) {
-        let client_cloned = self.clone();
-        match client_cloned.stream {
-            Some(mut stream) => {
-                let connect_bytes = build_bytes_for_connect(user, password, id_client);
-                stream.write_all(&connect_bytes).unwrap();
+    fn process_packet(
+        bytes: &[u8],
+        sender: gtk::glib::Sender<std::string::String>,
+    ) -> Result<(), String> {
+        let packet_manager = PacketManager::new();
+        let response = packet_manager.process_message(&bytes);
+
+        match response {
+            Some(message) => sender.send(message).unwrap(),
+            None => {
+                
             }
-            None => panic!("No pude enviar"),
-        }
-    }
+        };
 
-    pub fn send_suscribe(
-        &self,
-        topic: &String,
-        is_qos_0: bool,
-        stream: Option<TcpStream>,
-        sender_for_messages: Sender<String>,
-    ) {
-        match stream {
-            Some(mut stream) => {
-                let suscribe_bytes = build_bytes_for_suscribe(topic, is_qos_0);
-                stream.write_all(&suscribe_bytes).unwrap();
-                thread::spawn(move || {
-                    loop {
-                        let mut data = vec![0_u8; 100];
-                        match stream.read(&mut data) {
-                            Ok(size) => {
-                                let mensaje_publicado = &data[0..size];
-                                let mensaje_publicado = from_utf8(mensaje_publicado).unwrap();
-                                sender_for_messages
-                                    .send(mensaje_publicado.to_string())
-                                    .unwrap();
-                            }
-                            Err(err) => {
-                                // no se, algo
-                            }
-                        };
-                    }
-                });
-            }
-            None => panic!("No pude enviar"),
-        }
-    }
-
-    pub fn subscribe_to_topic(
-        &self,
-        topic: String,
-        is_qos_0: bool,
-        sender_for_messages: Sender<String>,
-    ) -> String {
-        let client_clone = self.clone();
-        let client_clone_2 = self.clone();
-        let (tx, rx) = mpsc::channel::<u8>();
-        self.send_suscribe(&topic, is_qos_0, client_clone.stream, sender_for_messages);
-        thread::spawn(move || {
-            receive_responses_from_broker(client_clone_2.stream.unwrap(), tx);
-        });
-        let suscribe_code_received = rx.recv().unwrap();
-        self.check_suback_code(suscribe_code_received, topic)
-    }
-
-    fn check_suback_code(&self, code: u8, topic: String) -> String {
-        match code {
-            0x00 => format!("Suscripcion realizada a {}", topic),
-            0x01 => format!("Suscripcion realizada a {}", topic),
-            _ => "Error en suscripcion".to_string(),
-        }
-    }
-
-    pub fn send_publish(
-        &self,
-        message: String,
-        topic: String,
-        is_qos_0: bool,
-        stream: Option<TcpStream>,
-    ) {
-        match stream {
-            Some(mut stream) => {
-                let publish_bytes = build_bytes_for_publish(topic, message, is_qos_0);
-                stream.write_all(&publish_bytes).unwrap();
-            }
-            None => panic!("No pude enviar"),
-        }
-    }
-
-    pub fn publish_into_topic(&self, message: String, topic: String, is_qos_0: bool) {
-        let client_clone = self.clone();
-        let client_clone_2 = self.clone();
-        let (tx, rx) = mpsc::channel::<u8>();
-        self.send_publish(message, topic, is_qos_0, client_clone.stream);
-        if !is_qos_0 {
-            thread::spawn(move || {
-                receive_responses_from_broker(client_clone_2.stream.unwrap(), tx);
-            });
-            let suscribe_code_received = rx.recv().unwrap();
-        }
-    }
-
-    fn check_connack_code(&self, code: u8) -> String {
-        match code {
-            0x00 => "Conexion realizada con exito".to_string(),
-            0x01 => "Error: la version del protocolo no es compatible".to_string(),
-            0x04 => "Error: los datos enviados no son correctos".to_string(),
-            0x05 => "Error: no esta autorizado".to_string(),
-            _ => "Error desconocido".to_string(),
-        }
-    }
-
-    pub fn connect_to_server(
-        &mut self,
-        host: String,
-        port: String,
-        user: String,
-        password: String,
-        id_client: String,
-    ) -> String {
-        let address = format!("{}:{}", host, port);
-        match TcpStream::connect(address) {
-            Ok(stream) => {
-                let (tx, rx) = mpsc::channel::<u8>();
-                let stream_copy = stream.try_clone().expect("Could not clone");
-                self.stream = Some(stream);
-                self.send_connect(user, password, id_client);
-                thread::spawn(move || {
-                    receive_responses_from_broker(stream_copy, tx);
-                });
-                let connack_code_received = rx.recv().unwrap();
-                self.check_connack_code(connack_code_received)
-            }
-            Err(e) => {
-                println!("Failed to connect: {}", e);
-                "La conexion no se ha podido establecer".to_string()
-            }
-        }
-    }
-}
-
-fn receive_responses_from_broker(mut stream: TcpStream, channel_producer: mpsc::Sender<u8>) {
-    let mut data = vec![0_u8; 100];
-    match stream.read(&mut data) {
-        Ok(_) => {
-            let packet_manager = PacketManager::new();
-            let packet_received = packet_manager.process_message(&data);
-            match packet_received.get_type() {
-                ResponsePacket::Connack => {
-                    let code = packet_received.get_status_code();
-                    channel_producer.send(code).unwrap();
-                }
-                ResponsePacket::Suback => {
-                    let code = packet_received.get_status_code();
-                    channel_producer.send(code).unwrap();
-                }
-                ResponsePacket::Puback => {
-                    let code = packet_received.get_status_code();
-                    channel_producer.send(code).unwrap();
-                }
-                _ => println!("Received Default"),
-            }
-        }
-        Err(e) => {
-            println!("Failed to receive data: {}", e);
-        }
+        Ok(())
     }
 }

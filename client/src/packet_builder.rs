@@ -51,7 +51,7 @@ fn add_username_bytes(user: String, flags: &mut u8, bytes: &mut Vec<u8>) {
     }
 }
 
-pub fn build_bytes_for_suscribe(topic: &String, is_qos_0: bool) -> Vec<u8> {
+pub fn build_bytes_for_suscribe(topic: String, is_qos_0: bool) -> Vec<u8> {
     let mut bytes = vec![
         //0x82 packet type
         //0x08, remaining length
@@ -81,7 +81,7 @@ fn add_suscribe_packet_type(is_qos_0: bool, bytes: &mut Vec<u8>) {
     }
 }
 
-fn add_topic_bytes(topic: &String, bytes: &mut Vec<u8>) {
+fn add_topic_bytes(topic: String, bytes: &mut Vec<u8>) {
     if !topic.is_empty() {
         let topic_length = topic.len();
         let mut topic_in_bytes = topic.as_bytes().to_vec();
@@ -97,7 +97,7 @@ pub fn build_bytes_for_publish(topic: String, message: String, is_qos_0: bool) -
         //0x09,  Remaining Length
     ];
     add_publish_packet_type(is_qos_0, &mut bytes);
-    add_topic_bytes(&topic, &mut bytes);
+    add_topic_bytes(topic, &mut bytes);
     add_packet_identifier_bytes(is_qos_0, &mut bytes);
     add_message_bytes(message, &mut bytes);
     let length = bytes.len();
