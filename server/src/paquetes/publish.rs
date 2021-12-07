@@ -11,7 +11,7 @@ use std::sync::mpsc::Sender;
 pub struct Publish {
     _dup: u8,
     qos: u8,
-    _retain: u8,
+    retain: u8,
     remaining_length: usize,
     topic: String,
     packet_identifier: [u8; 2],
@@ -29,7 +29,6 @@ impl Publish {
         } else if qos_flag >= 0x02 {
             // TODO: finalizar conexión
         }
-
         let retain_flag = 0x01 & bytes[0];
 
         let bytes_rem_len = &bytes[1..bytes.len()];
@@ -47,7 +46,7 @@ impl Publish {
 
         Publish {
             _dup: dup_flag,
-            _retain: retain_flag,
+            retain: retain_flag,
             qos: qos_flag,
             remaining_length,
             topic,
@@ -92,7 +91,13 @@ impl Publish {
     ) -> Self {
         let topic = self.topic.to_owned();
 
-        let publisher_prueba = Publisher::init(client_id, topic, self.all_bytes.clone(), self.qos);
+        let publisher_prueba = Publisher::init(
+            client_id,
+            topic,
+            self.all_bytes.clone(),
+            self.qos,
+            self.retain == 1,
+        );
 
         if let Err(sender_err) =
             sender_topic_manager.send(TypeTopicManager::Publisher(publisher_prueba))
@@ -103,7 +108,7 @@ impl Publish {
         Publish {
             _dup: self._dup,
             qos: self.qos,
-            _retain: self._retain,
+            retain: self.retain,
             remaining_length: self.remaining_length,
             topic: self.topic.clone(),
             packet_identifier: self.packet_identifier,

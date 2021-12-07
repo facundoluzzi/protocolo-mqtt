@@ -30,7 +30,7 @@ mod tests {
                 }
                 Err(_) => {}
             }
-            thread::sleep(time::Duration::from_millis(100));
+            thread::sleep(time::Duration::from_millis(10));
         }
 
         let (sender, receiver): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
@@ -77,7 +77,7 @@ mod tests {
                                 .unwrap();
                         }
                     });
-                    thread::sleep(time::Duration::from_millis(200));
+                    thread::sleep(time::Duration::from_millis(10));
                 }
                 Err(_) => {}
             }
@@ -88,7 +88,7 @@ mod tests {
         mocked_server(sender);
 
         let mut stream = TcpStream::connect("localhost:1896").unwrap();
-        thread::sleep(time::Duration::from_millis(100));
+        thread::sleep(time::Duration::from_millis(10));
 
         let bytes: &[u8] = &[
             0x32, 0x0D, 0x00, 0x06, 0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F, 0x00, 0x10, 0x00, 0x01,

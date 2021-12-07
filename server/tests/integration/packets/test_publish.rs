@@ -2,6 +2,7 @@ use crate::integration::setup::ServerTest;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
+use std::{thread, time};
 
 #[test]
 fn should_publish_message_with_qos_0_01() {

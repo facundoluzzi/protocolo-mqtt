@@ -112,13 +112,11 @@ impl UserManager {
                 self.sender_topic_manager
                     .send(TypeTopicManager::UnsubscriberAll(unsubscriber_all))
                     .unwrap();
-            } else {
-                if let Some(channel) = channel_publisher_writer {
-                    let publisher_writer_cloned = channel;
-                    publisher_writer_cloned
-                        .send((DisconectPublisherSubscriber, None, None))
-                        .unwrap();
-                }
+            } else if let Some(channel) = channel_publisher_writer {
+                let publisher_writer_cloned = channel;
+                publisher_writer_cloned
+                    .send((DisconectPublisherSubscriber, None, None))
+                    .unwrap();
             }
         }
     }

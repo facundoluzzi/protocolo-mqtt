@@ -83,7 +83,7 @@ impl Subscribe {
                 topic,
                 sender_user_manager.clone(),
                 wildcard,
-                qos
+                qos,
             );
 
             match sender_topic_manager.send(TypeTopicManager::Subscriber(subscriber)) {

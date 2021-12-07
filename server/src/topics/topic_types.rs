@@ -11,7 +11,8 @@ pub type SenderTopicType = (
     Option<String>,
     Option<Vec<u8>>,
     Option<Sender<ChannelUserManager>>,
-    u8
+    u8,
+    Option<bool>,
 );
 
 pub enum TypeTopicManager {
