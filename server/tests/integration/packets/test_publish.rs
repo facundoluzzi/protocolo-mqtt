@@ -280,8 +280,6 @@ fn should_publish_message_with_qos_1_twice() {
     ];
     publisher_stream.write(&publish_bytes).unwrap();
 
-    thread::sleep(time::Duration::from_millis(100));
-
     data = vec![0; 100];
     match publisher_stream.read(&mut data) {
         Ok(size) => {

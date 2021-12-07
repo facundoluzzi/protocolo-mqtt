@@ -1,7 +1,5 @@
 mod tests {
     use crate::integration::setup::ServerTest;
-    use std::thread;
-    use std::time::Duration;
     use std::{
         io::{Read, Write},
         net::TcpStream,
@@ -389,8 +387,6 @@ mod tests {
         stream_to_subscribe_with_wildcard
             .write(&subscribe_bytes_with_wildcard)
             .unwrap();
-
-        thread::sleep(Duration::from_millis(5));
 
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
