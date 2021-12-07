@@ -36,12 +36,10 @@ impl Subscriber {
         &mut self,
         topics: HashMap<String, Sender<SenderTopicType>>,
     ) -> HashMap<String, Sender<SenderTopicType>> {
-        let new_topic = match &self.wildcard {
+        match &self.wildcard {
             Some(wildcard) => self.subscribe_with_wilcard(wildcard.clone(), topics),
             None => self.subscribe_without_wilcard(topics),
-        };
-
-        new_topic
+        }
     }
 
     fn subscribe_without_wilcard(
@@ -115,10 +113,7 @@ impl Subscriber {
     }
 
     pub fn get_wildcard(&self) -> Option<Wildcard> {
-        match &self.wildcard {
-            Some(wildcard) => Some(wildcard.clone()),
-            None => None,
-        }
+        self.wildcard.as_ref().cloned()
     }
 
     pub fn get_qos(&self) -> u8 {

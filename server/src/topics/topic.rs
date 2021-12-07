@@ -61,19 +61,17 @@ impl Topic {
                         let qos = message.4;
 
                         if let Some(retained_message) = message.5 {
-                            if info.len() == 0 && retained_message {
+                            if info.is_empty() && retained_message {
                                 topic.retained_message = None;
-                            } else {
-                                if retained_message && qos == 0 {
-                                    topic.retained_message = Some((
-                                        PublishMessage,
-                                        None,
-                                        Some(info.clone()),
-                                        None,
-                                        qos.clone(),
-                                        Some(true),
-                                    ));
-                                }
+                            } else if retained_message && qos == 0 {
+                                topic.retained_message = Some((
+                                    PublishMessage,
+                                    None,
+                                    Some(info.clone()),
+                                    None,
+                                    qos,
+                                    Some(true),
+                                ));
                             }
                         }
 
@@ -104,11 +102,11 @@ impl Topic {
             let mut new_packet = message.2.clone().expect("Publish with None message");
             let qos_publish = message.4;
             if qos_subscribe + qos_publish < 2 {
-                new_packet[0] = new_packet[0] & 0b11111101;
+                new_packet[0] &= 0b11111101;
             }
             let tuple_for_publish = (
                 PublishMessageUserManager,
-                client_id.to_string(),
+                client_id,
                 None,
                 None,
                 Some(new_packet.clone()),
@@ -123,7 +121,7 @@ impl Topic {
         for (client_id, (subscriber, qos_subscribe)) in &self.subscribers {
             let mut new_packet = packet.clone();
             if qos_subscribe + qos < 2 {
-                new_packet[0] = new_packet[0] & 0b11111101;
+                new_packet[0] &= 0b11111101;
             }
             let tuple_for_publish = (
                 PublishMessageUserManager,
