@@ -569,18 +569,6 @@
                     <property name="y">710</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkLabel" id="messages_received">
-                    <property name="width_request">590</property>
-                    <property name="height_request">50</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="x">140</property>
-                    <property name="y">600</property>
-                  </packing>
-                </child>
               </object>
               <packing>
                 <property name="name">page2</property>
