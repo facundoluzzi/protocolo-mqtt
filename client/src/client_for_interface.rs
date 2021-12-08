@@ -86,7 +86,14 @@ impl Client {
                     InterfaceSender::Publish(publish) => match client.sender_stream.clone() {
                         Some(sender_stream) => {
                             println!("\n\n Publish \n\n");
-                            publish.send_publish(sender_stream.clone());
+                            match publish.send_publish(sender_stream.clone()) {
+                                Ok(_result_ok) => {
+                                    println!("Ok");
+                                }
+                                Err(err) => {
+                                    println!("err: {}", err);
+                                }
+                            }
                         }
                         None => {
                             println!("Unexpected error");
@@ -96,9 +103,9 @@ impl Client {
                         Some(sender_stream) => {
                             println!("\n\n Subscribe \n\n");
                             match subscribe.send_suscribe(sender_stream.clone()) {
-                                Ok(result_ok) => {
+                                Ok(_result_ok) => {
                                     println!("Ok");
-                                },
+                                }
                                 Err(err) => {
                                     println!("err: {}", err);
                                 }
@@ -147,9 +154,7 @@ impl Client {
 
         match response {
             Some(message) => sender.send(message).unwrap(),
-            None => {
-                
-            }
+            None => {}
         };
 
         Ok(())

@@ -36,6 +36,7 @@ impl PacketManager {
     }
 
     pub fn process_message(&self, bytes: &[u8]) -> Option<String> {
+        println!("{:?}", &bytes);
         let first_byte = bytes.get(0);
 
         match first_byte {
@@ -54,6 +55,7 @@ impl PacketManager {
                         Some("TODO".to_string())
                     }
                     4 => {
+                        println!("\n\n\n llega el puback \n\n\n");
                         let _puback = Puback::init(bytes);
                         Some("Publish realizado".to_string())
                     }

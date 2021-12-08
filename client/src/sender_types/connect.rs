@@ -102,7 +102,7 @@ impl Connect {
             0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // Variable Header
             0x04, // Protocol
             0x00, //Flags
-            0x00, 0x0B, //Keep Alive
+            0x00, 0x00, //Keep Alive
         ];
         self.add_client_id_bytes(&mut bytes);
         self.add_username_bytes(&mut flags, &mut bytes);

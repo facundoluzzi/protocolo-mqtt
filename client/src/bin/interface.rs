@@ -50,8 +50,8 @@ fn build_objects_for_publish(
     gtk::RadioButton,
     gtk::Label,
 ) {
-    let message_input: gtk::Entry = builder.object("port_input").unwrap();
-    let topic_input: gtk::Entry = builder.object("ip_input").unwrap();
+    let message_input: gtk::Entry = builder.object("message_input").unwrap();
+    let topic_input: gtk::Entry = builder.object("topic_input").unwrap();
     let publish_message: gtk::Button = builder.object("publish_button").unwrap();
     let qos_publish_1: gtk::RadioButton = builder.object("qos_publish_1").unwrap();
     let qos_publish_0: gtk::RadioButton = builder.object("qos_publish_0").unwrap();

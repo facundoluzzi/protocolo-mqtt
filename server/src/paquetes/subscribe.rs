@@ -4,7 +4,7 @@ use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
 use crate::topics::subscriber::Subscriber;
 use crate::topics::topic_types::TypeTopicManager;
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 use crate::wildcard::verify_wildcard;
 use crate::wildcard::wildcard_result::WildcardResult::{
@@ -50,7 +50,7 @@ impl Subscribe {
     pub fn subscribe_topic(
         &mut self,
         sender_topic_manager: Sender<TypeTopicManager>,
-        sender_user_manager: Sender<ChannelUserManager>,
+        sender_user_manager: Sender<UserManagerAction>,
         client_id: String,
     ) -> Result<Self, String> {
         let mut acumulator: usize = 0;
@@ -83,7 +83,7 @@ impl Subscribe {
                 topic,
                 sender_user_manager.clone(),
                 wildcard,
-                qos
+                qos,
             );
 
             match sender_topic_manager.send(TypeTopicManager::Subscriber(subscriber)) {

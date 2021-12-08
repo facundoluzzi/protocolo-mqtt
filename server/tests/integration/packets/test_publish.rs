@@ -2,13 +2,14 @@ use crate::integration::setup::ServerTest;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
+use std::{thread, time};
 
 #[test]
 fn should_publish_message_with_qos_0_01() {
-    let server = ServerTest::start("0.0.0.0:1893".to_string());
+    let server = ServerTest::start("0.0.0.0:2532".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:1893".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:1893".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2532".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2532".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -199,10 +200,10 @@ fn should_publish_message_with_qos_1() {
 
 #[test]
 fn should_publish_message_with_qos_1_twice() {
-    let server = ServerTest::start("0.0.0.0:1894".to_string());
+    let server = ServerTest::start("0.0.0.0:2537".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:1894".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:1894".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2537".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2537".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -249,7 +250,6 @@ fn should_publish_message_with_qos_1_twice() {
         }
     }
 
-    // SUBSCRIBE
     let subscribe_bytes = [
         0x82, // packet type
         0x08, // remaining length

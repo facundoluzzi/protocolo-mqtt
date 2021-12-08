@@ -18,14 +18,21 @@ impl Publish {
         }
     }
 
-    pub fn send_publish(&self, sender_stream: Sender<StreamType>) {
+    pub fn send_publish(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let publish_bytes = build_bytes_for_publish(
             self.topic.to_string(),
             self.message.to_string(),
             self.is_qos_0,
         );
-        sender_stream
-            .send((WriteStream, Some(publish_bytes), None))
-            .unwrap();
+
+        let result = sender_stream.send((WriteStream, Some(publish_bytes), None));
+
+        match result {
+            Ok(_result_ok) => {
+                println!("publish");
+                Ok(())
+            }
+            Err(err) => Err(err.to_string()),
+        }
     }
 }

@@ -15,16 +15,11 @@ impl Subscribe {
 
     pub fn send_suscribe(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let suscribe_bytes = build_bytes_for_suscribe(self.topic.to_string(), self.is_qos_0);
-        let result = sender_stream
-            .send((WriteStream, Some(suscribe_bytes), None));
+        let result = sender_stream.send((WriteStream, Some(suscribe_bytes), None));
 
         match result {
-            Ok(_result_ok) => {
-                Ok(())
-            },
-            Err(err) => {
-                Err(err.to_string())
-            }
+            Ok(_result_ok) => Ok(()),
+            Err(err) => Err(err.to_string()),
         }
     }
 }
