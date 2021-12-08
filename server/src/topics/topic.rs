@@ -1,5 +1,5 @@
-use crate::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::publishmessageusermanager::PublishMessageUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use std::collections::HashMap;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
@@ -9,7 +9,7 @@ use crate::topics::topic_types::SenderTopicType;
 
 pub struct Topic {
     name: String,
-    subscribers: HashMap<String, (Sender<ChannelUserManager>, u8)>,
+    subscribers: HashMap<String, (Sender<UserManagerAction>, u8)>,
 }
 
 impl Topic {
@@ -71,7 +71,7 @@ impl Topic {
         topic_sender
     }
 
-    fn add(&mut self, client_id: String, sender: Sender<ChannelUserManager>, qos: u8) {
+    fn add(&mut self, client_id: String, sender: Sender<UserManagerAction>, qos: u8) {
         self.subscribers.insert(client_id, (sender, qos));
     }
 
@@ -85,14 +85,15 @@ impl Topic {
             if qos_subscribe + qos < 2 {
                 new_packet[0] = new_packet[0] & 0b11111101;
             }
-            let tuple_for_publish = (
-                PublishMessageUserManager,
-                client_id.to_string(),
-                None,
-                None,
-                Some(new_packet.clone()),
-            );
-            if let Err(msg) = subscriber.send(tuple_for_publish) {
+            // let tuple_for_publish = (
+            //     PublishMessageUserManager,
+            //     client_id.to_string(),
+            //     None,
+            //     None,
+            //     Some(new_packet.clone()),
+            // );
+            let action = UserManagerAction::PublishMessageUserManager::init(client_id.to_string(), new_packet.clone());
+            if let Err(msg) = subscriber.send(action) {
                 println!("Unexpected error: {}", msg);
             };
         }

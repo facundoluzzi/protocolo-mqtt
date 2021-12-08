@@ -1,6 +1,9 @@
-#[derive(PartialEq, Debug)]
+use crate::usermanager::publishmessageusermanager::PublishMessageUserManager;
+use crate::usermanager::disconnectusermanager::DisconnectUserManager;
+use crate::usermanager::addusermanager::AddUserManager;
+
 pub enum UserManagerAction {
-    AddUserManager,
-    DisconnectUserManager,
-    PublishMessageUserManager,
+    AddUserManager(AddUserManager),
+    DisconnectUserManager(DisconnectUserManager),
+    PublishMessageUserManager(PublishMessageUserManager),
 }
