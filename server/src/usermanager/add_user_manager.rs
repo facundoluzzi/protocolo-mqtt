@@ -22,7 +22,7 @@ impl AddUserManager{
         self.client_id.to_string()
     }
     pub fn get_sender_stream(&self) -> Sender<StreamType>{
-        self.sender_stream
+        self.sender_stream.clone()
     }
     pub fn get_clean_session(&self) -> bool{
         self.clean_session

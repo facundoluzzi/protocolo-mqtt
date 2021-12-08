@@ -8,20 +8,20 @@ use crate::paquetes::subscribe::Subscribe;
 use crate::paquetes::unsubscribe::Unsubscribe;
 use crate::stream::stream_handler::StreamType;
 use crate::topics::topic_types::TypeTopicManager;
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use std::sync::mpsc::Sender;
 
 pub struct PacketManager {
     client_id: String,
     sender_stream: Sender<StreamType>,
-    sender_user_manager: Sender<ChannelUserManager>,
+    sender_user_manager: Sender<UserManagerAction>,
     sender_topic_manager: Sender<TypeTopicManager>,
     logger: Logger,
 }
 
 impl PacketManager {
     pub fn init(
-        sender_user_manager: Sender<ChannelUserManager>,
+        sender_user_manager: Sender<UserManagerAction>,
         sender_stream: Sender<StreamType>,
         sender_topic_manager: Sender<TypeTopicManager>,
         logger: Logger,

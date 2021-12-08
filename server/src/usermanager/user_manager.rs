@@ -7,7 +7,6 @@ use crate::topics::publisher_writer::PublisherWriter;
 use crate::topics::topic_types::TypeTopicManager;
 use crate::topics::unsubscriberall::UnsubscriberAll;
 use crate::usermanager::user_manager_action::UserManagerAction;
-use crate::usermanager::user_manager_types::ChannelUserManager;
 
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
@@ -48,7 +47,7 @@ impl UserManager {
                                 sender_stream.clone(),
                                 clean_session,
                             );
-                        };
+                        }; 
                     }
                     UserManagerAction::DisconnectUserManager(user) => {
                         let client_id = user.get_client_id();

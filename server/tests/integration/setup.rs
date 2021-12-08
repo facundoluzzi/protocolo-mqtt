@@ -3,7 +3,7 @@ use server::server::main::handle_new_client;
 use server::stream::stream_handler::Stream;
 use server::topics::topic_manager::TopicManager;
 use server::usermanager::user_manager::UserManager;
-use server::usermanager::user_manager_types::ChannelUserManager;
+use server::usermanager::user_manager_action::UserManagerAction;
 use std::net::TcpListener;
 use std::sync::mpsc::Sender;
 use std::thread::{sleep, spawn, JoinHandle};
@@ -11,7 +11,7 @@ use std::time::Duration;
 
 pub struct ServerTest {
     server_thread: Option<JoinHandle<Result<(), String>>>,
-    sender_user_manager: Sender<ChannelUserManager>,
+    sender_user_manager: Sender<UserManagerAction>,
 }
 
 impl ServerTest {
@@ -73,7 +73,7 @@ impl ServerTest {
         }
     }
 
-    pub fn get_sender_user_manager(&self) -> Sender<ChannelUserManager> {
+    pub fn get_sender_user_manager(&self) -> Sender<UserManagerAction> {
         self.sender_user_manager.clone()
     }
 

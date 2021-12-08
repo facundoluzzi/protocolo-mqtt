@@ -1,4 +1,4 @@
-use crate::usermanager::publishmessageusermanager::PublishMessageUserManager;
+use crate::usermanager::publish_message_user_manager::PublishMessageUserManager;
 use crate::usermanager::user_manager_action::UserManagerAction;
 use std::collections::HashMap;
 use std::sync::mpsc::{self, Receiver, Sender};
@@ -29,7 +29,7 @@ impl Topic {
                 match action_type {
                     AddTopic => {
                         let info = message.1;
-                        let sender_received = message.3;
+                        let sender_received = message.3; // Option<Sender<ChannelUserM>>
                         let qos = message.4;
 
                         let sender = if let Some(sender) = sender_received {
@@ -95,7 +95,7 @@ impl Topic {
     fn publish_retained_message(
         &self,
         client_id: String,
-        sender: Sender<ChannelUserManager>,
+        sender: Sender<UserManagerAction>,
         qos_subscribe: u8,
     ) {
         if let Some(message) = &self.retained_message {
@@ -104,14 +104,8 @@ impl Topic {
             if qos_subscribe + qos_publish < 2 {
                 new_packet[0] &= 0b11111101;
             }
-            let tuple_for_publish = (
-                PublishMessageUserManager,
-                client_id,
-                None,
-                None,
-                Some(new_packet.clone()),
-            );
-            if let Err(msg) = sender.send(tuple_for_publish) {
+            let action = UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()));
+            if let Err(msg) = sender.send(action) {
                 println!("Unexpected error: {}", msg);
             };
         }
@@ -123,14 +117,7 @@ impl Topic {
             if qos_subscribe + qos < 2 {
                 new_packet[0] &= 0b11111101;
             }
-            // let tuple_for_publish = (
-            //     PublishMessageUserManager,
-            //     client_id.to_string(),
-            //     None,
-            //     None,
-            //     Some(new_packet.clone()),
-            // );
-            let action = UserManagerAction::PublishMessageUserManager::init(client_id.to_string(), new_packet.clone());
+            let action = UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()));
             if let Err(msg) = subscriber.send(action) {
                 println!("Unexpected error: {}", msg);
             };

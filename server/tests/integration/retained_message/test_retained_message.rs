@@ -345,15 +345,15 @@ fn testing_retained_message_one_publish_with_retain_and_another_without_retain_m
 
 #[test]
 fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
-    let server = ServerTest::start("0.0.0.0:5004".to_string());
+    let server = ServerTest::start("0.0.0.0:2528".to_string());
 
-    let mut stream_to_create_topic = TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
+    let mut stream_to_create_topic = TcpStream::connect("0.0.0.0:2528".to_string()).unwrap();
     let mut stream_to_verify_retained_messages =
-        TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
+        TcpStream::connect("0.0.0.0:2528".to_string()).unwrap();
     let mut stream_to_publish_message_alteg =
-        TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
+        TcpStream::connect("0.0.0.0:2528".to_string()).unwrap();
     let mut stream_to_publish_message_river =
-        TcpStream::connect("0.0.0.0:5004".to_string()).unwrap();
+        TcpStream::connect("0.0.0.0:2528".to_string()).unwrap();
 
     let subscribe_to_create_topic = [
         0x10, // Packet Type
@@ -512,14 +512,14 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
     match stream_to_verify_retained_messages.read(&mut data) {
         Ok(size) => {
             println!("PRIMER ENTRADA");
-            println!("siez: {}", size);
+            println!("size: {}", size);
             assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
         }
         _ => {
             panic!();
         }
     }
-
+    thread::sleep(Duration::from_millis(20));
     data = vec![0; 100];
     match stream_to_verify_retained_messages.read(&mut data) {
         Ok(size) => {
@@ -539,6 +539,5 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
             panic!();
         }
     }
-
     server.shutdown().unwrap();
 }

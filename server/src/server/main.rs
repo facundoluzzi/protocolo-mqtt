@@ -4,7 +4,7 @@ use crate::stream::stream_handler::Stream;
 use crate::stream::stream_handler::StreamAction::ReadStream;
 use crate::stream::stream_handler::StreamType;
 use crate::topics::topic_types::TypeTopicManager;
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use std::sync::mpsc::Receiver;
 
 use std::net::TcpListener;
@@ -16,7 +16,7 @@ pub fn handle_new_client(
     mut logger: Logger,
     sender_stream: Sender<StreamType>,
     sender_topic_manager: Sender<TypeTopicManager>,
-    sender_user_manager: Sender<ChannelUserManager>,
+    sender_user_manager: Sender<UserManagerAction>,
 ) {
     let mut packet_factory = PacketManager::init(
         sender_user_manager,
@@ -53,7 +53,7 @@ pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,
     sender_topic_manager: Sender<TypeTopicManager>,
-    sender_user_manager: Sender<ChannelUserManager>,
+    sender_user_manager: Sender<UserManagerAction>,
 ) {
     for stream in listener.incoming() {
         match stream {

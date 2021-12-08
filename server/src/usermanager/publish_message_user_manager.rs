@@ -16,7 +16,6 @@ impl PublishMessageUserManager{
         self.client_id.to_string()
     }
     pub fn get_message(&self) -> Vec<u8>{
-        self.message
+        self.message.clone()
     }
-
 }

@@ -4,13 +4,13 @@ use crate::topics::topic_types::SenderTopicType;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use crate::wildcard::wildcard_handler::Wildcard;
 
 pub struct Subscriber {
     client_id: String,
     topic: String,
-    sender_user_manager: Sender<ChannelUserManager>,
+    sender_user_manager: Sender<UserManagerAction>,
     wildcard: Option<Wildcard>,
     qos: u8,
 }
@@ -19,7 +19,7 @@ impl Subscriber {
     pub fn init(
         client_id: String,
         topic: String,
-        sender_user_manager: Sender<ChannelUserManager>,
+        sender_user_manager: Sender<UserManagerAction>,
         wildcard: Option<Wildcard>,
         qos: u8,
     ) -> Subscriber {
@@ -108,7 +108,7 @@ impl Subscriber {
         self.topic.to_string()
     }
 
-    pub fn get_sender_user_manager(&self) -> Sender<ChannelUserManager> {
+    pub fn get_sender_user_manager(&self) -> Sender<UserManagerAction> {
         self.sender_user_manager.clone()
     }
 
