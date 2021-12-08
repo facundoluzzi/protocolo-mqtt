@@ -1,6 +1,6 @@
-use server::paquetes::unsubscribe::Unsubscribe;
-use server::topics::topic_types::TypeTopicManager;
-use server::topics::topic_types::TypeTopicManager::Unsubscriber;
+use server::packets::unsubscribe::Unsubscribe;
+use server::types::topic_types::TypeTopicManager;
+use server::types::topic_types::TypeTopicManager::Unsubscriber;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;

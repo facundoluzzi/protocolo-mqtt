@@ -1,10 +1,10 @@
+use crate::enums::topic::topic_actions::TopicAction::AddTopic;
 use crate::topics::topic::Topic;
-use crate::topics::topic_actions::TopicAction::AddTopic;
-use crate::topics::topic_types::SenderTopicType;
+use crate::types::topic_types::SenderTopicType;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
-use crate::usermanager::user_manager_action::UserManagerAction;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::wildcard::wildcard_handler::Wildcard;
 
 pub struct Subscriber {

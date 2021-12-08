@@ -1,9 +1,9 @@
-use crate::topics::publisher::Publisher;
-use crate::topics::subscriber::Subscriber;
-use crate::topics::topic_actions::TopicAction;
-use crate::topics::unsubscriber::Unsubscriber;
-use crate::topics::unsubscriberall::UnsubscriberAll;
-use crate::usermanager::user_manager_action::UserManagerAction;
+use crate::enums::topic::publisher::Publisher;
+use crate::enums::topic::subscriber::Subscriber;
+use crate::enums::topic::topic_actions::TopicAction;
+use crate::enums::topic::unsubscriber::Unsubscriber;
+use crate::enums::topic::unsubscriberall::UnsubscriberAll;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use std::sync::mpsc::Sender;
 
 pub type SenderTopicType = (

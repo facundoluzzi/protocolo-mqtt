@@ -1,9 +1,9 @@
+use crate::enums::topic::unsubscriber::Unsubscriber;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::topics::topic_types::TypeTopicManager;
-use crate::topics::unsubscriber::Unsubscriber;
+use crate::types::topic_types::TypeTopicManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 
 use std::convert::TryInto;

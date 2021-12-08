@@ -1,14 +1,14 @@
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::logs::logger::Logger;
-use crate::paquetes::connect::Connect;
-use crate::paquetes::default::Default;
-use crate::paquetes::disconnect::Disconnect;
-use crate::paquetes::pingreq;
-use crate::paquetes::publish::Publish;
-use crate::paquetes::subscribe::Subscribe;
-use crate::paquetes::unsubscribe::Unsubscribe;
+use crate::packets::connect::Connect;
+use crate::packets::default::Default;
+use crate::packets::disconnect::Disconnect;
+use crate::packets::pingreq;
+use crate::packets::publish::Publish;
+use crate::packets::subscribe::Subscribe;
+use crate::packets::unsubscribe::Unsubscribe;
 use crate::stream::stream_handler::StreamType;
-use crate::topics::topic_types::TypeTopicManager;
-use crate::usermanager::user_manager_action::UserManagerAction;
+use crate::types::topic_types::TypeTopicManager;
 use std::sync::mpsc::Sender;
 
 pub struct PacketManager {

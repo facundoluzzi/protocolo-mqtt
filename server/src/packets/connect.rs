@@ -1,3 +1,5 @@
+use crate::enums::user_manager::add_user_manager::AddUserManager;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
@@ -6,8 +8,6 @@ use crate::keep_alive::handler_null_keep_alive;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::usermanager::add_user_manager::AddUserManager;
-use crate::usermanager::user_manager_action::UserManagerAction;
 use crate::variable_header::connect_variable_header::{check_variable_header_len, get_keep_alive};
 use std::sync::mpsc::Sender;
 

@@ -2,14 +2,13 @@ use std::sync::mpsc::Sender;
 
 #[cfg(test)]
 mod tests {
+    use server::enums::user_manager::add_user_manager::AddUserManager;
+    use server::enums::user_manager::disconnect_user_manager::DisconnectUserManager;
+    use server::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
+    use server::enums::user_manager::user_manager_action::UserManagerAction;
     use server::stream::stream_handler::StreamType;
     use server::topics::topic_manager::TopicManager;
-    use server::usermanager::add_user_manager::AddUserManager;
-    use server::usermanager::disconnect_user_manager::DisconnectUserManager;
-    use server::usermanager::publish_message_user_manager::PublishMessageUserManager;
     use server::usermanager::user_manager::UserManager;
-    use server::usermanager::user_manager_action::UserManagerAction;
-
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
 

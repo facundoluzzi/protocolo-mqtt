@@ -1,7 +1,7 @@
-use server::topics::topic_types::TypeTopicManager;
-use server::topics::topic_types::TypeTopicManager::Subscriber;
-use server::usermanager::publish_message_user_manager::PublishMessageUserManager;
-use server::usermanager::user_manager_action::UserManagerAction;
+use server::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
+use server::enums::user_manager::user_manager_action::UserManagerAction;
+use server::types::topic_types::TypeTopicManager;
+use server::types::topic_types::TypeTopicManager::Subscriber;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
-use server::paquetes::subscribe::Subscribe;
+use server::packets::subscribe::Subscribe;
 
 #[test]
 fn should_create_subscribe_packet() {

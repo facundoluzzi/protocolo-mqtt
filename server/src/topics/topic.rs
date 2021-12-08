@@ -1,11 +1,10 @@
-use crate::usermanager::publish_message_user_manager::PublishMessageUserManager;
-use crate::usermanager::user_manager_action::UserManagerAction;
+use crate::enums::topic::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
+use crate::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
+use crate::types::topic_types::SenderTopicType;
 use std::collections::HashMap;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
-
-use crate::topics::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
-use crate::topics::topic_types::SenderTopicType;
 
 pub struct Topic {
     name: String,
@@ -29,7 +28,7 @@ impl Topic {
                 match action_type {
                     AddTopic => {
                         let info = message.1;
-                        let sender_received = message.3; // Option<Sender<ChannelUserM>>
+                        let sender_received = message.3;
                         let qos = message.4;
 
                         let sender = if let Some(sender) = sender_received {

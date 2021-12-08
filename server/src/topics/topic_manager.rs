@@ -1,5 +1,5 @@
-use crate::topics::topic_types::SenderTopicType;
-use crate::topics::topic_types::TypeTopicManager;
+use crate::types::topic_types::SenderTopicType;
+use crate::types::topic_types::TypeTopicManager;
 
 use std::collections::HashMap;
 use std::sync::mpsc;

@@ -1,10 +1,10 @@
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::logs::logger::Logger;
-use crate::paquetes::packet_manager::PacketManager;
+use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::Stream;
 use crate::stream::stream_handler::StreamAction::ReadStream;
 use crate::stream::stream_handler::StreamType;
-use crate::topics::topic_types::TypeTopicManager;
-use crate::usermanager::user_manager_action::UserManagerAction;
+use crate::types::topic_types::TypeTopicManager;
 use std::sync::mpsc::Receiver;
 
 use std::net::TcpListener;

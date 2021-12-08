@@ -152,15 +152,15 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
 #[test]
 fn testing_retained_message_one_publish_with_retain_and_another_without_retain_must_receive_the_first(
 ) {
-    let server = ServerTest::start("0.0.0.0:1954".to_string());
+    let server = ServerTest::start("0.0.0.0:2322".to_string());
 
-    let mut stream_to_create_topic = TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
+    let mut stream_to_create_topic = TcpStream::connect("0.0.0.0:2322".to_string()).unwrap();
     let mut stream_to_verify_retained_messages =
-        TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
+        TcpStream::connect("0.0.0.0:2322".to_string()).unwrap();
     let mut stream_to_publish_message_alteg =
-        TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
+        TcpStream::connect("0.0.0.0:2322".to_string()).unwrap();
     let mut stream_to_publish_message_river =
-        TcpStream::connect("0.0.0.0:1954".to_string()).unwrap();
+        TcpStream::connect("0.0.0.0:2322".to_string()).unwrap();
 
     let subscribe_to_create_topic = [
         0x10, // Packet Type

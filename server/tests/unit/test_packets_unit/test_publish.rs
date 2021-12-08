@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use server::paquetes::publish::Publish;
-    use server::topics::topic_types::TypeTopicManager;
-    use server::topics::topic_types::TypeTopicManager::Publisher;
+    use server::packets::publish::Publish;
+    use server::types::topic_types::TypeTopicManager;
+    use server::types::topic_types::TypeTopicManager::Publisher;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
     use std::sync::Arc;

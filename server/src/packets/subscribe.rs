@@ -1,13 +1,13 @@
+use crate::enums::topic::subscriber::Subscriber;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::topics::subscriber::Subscriber;
-use crate::topics::topic_types::TypeTopicManager;
-use crate::usermanager::user_manager_action::UserManagerAction;
+use crate::types::topic_types::TypeTopicManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 use crate::wildcard::verify_wildcard;
-use crate::wildcard::wildcard_result::WildcardResult::{
+use crate::enums::wildcard::wildcard_result::WildcardResult::{
     HasNoWildcard, HasWildcard, InvalidWildcard,
 };
 

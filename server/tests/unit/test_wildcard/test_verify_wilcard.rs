@@ -1,6 +1,6 @@
 mod tests {
     use server::wildcard::verify_wildcard;
-    use server::wildcard::wildcard_result::WildcardResult::{
+    use server::enums::wildcard::wildcard_result::WildcardResult::{
         HasNoWildcard, HasWildcard, InvalidWildcard,
     };
 

@@ -1,13 +1,12 @@
+use crate::enums::topic::publisher::Publisher;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::topics::publisher::Publisher;
-use crate::topics::topic_types::TypeTopicManager;
+use crate::types::topic_types::TypeTopicManager;
 use crate::variable_header::publish_variable_header::{self, get_variable_header};
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
-
 pub struct Publish {
     _dup: u8,
     qos: u8,

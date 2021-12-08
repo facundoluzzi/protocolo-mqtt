@@ -1,6 +1,6 @@
+use crate::enums::user_manager::disconnect_user_manager::DisconnectUserManager;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::stream::stream_handler::StreamAction::CloseConnectionStream;
-use crate::usermanager::disconnect_user_manager::DisconnectUserManager;
-use crate::usermanager::user_manager_action::UserManagerAction;
 
 use crate::stream::stream_handler::StreamType;
 

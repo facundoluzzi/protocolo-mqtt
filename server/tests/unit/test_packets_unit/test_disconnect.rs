@@ -2,9 +2,9 @@ mod tests {
     use std::sync::mpsc::{self, Receiver, Sender};
 
     use server::{
-        paquetes::disconnect::Disconnect,
+        enums::user_manager::user_manager_action::UserManagerAction,
+        packets::disconnect::Disconnect,
         stream::stream_handler::{StreamAction, StreamType},
-        usermanager::user_manager_action::UserManagerAction,
     };
 
     #[test]

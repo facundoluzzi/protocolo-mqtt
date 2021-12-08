@@ -1,5 +1,6 @@
-use super::{wildcard_handler::Wildcard, wildcard_result::WildcardResult};
-use crate::wildcard::wildcard_result::WildcardResult::{
+use crate::enums::wildcard::wildcard_result::WildcardResult;
+use crate::wildcard::wildcard_handler::Wildcard;
+use crate::enums::wildcard::wildcard_result::WildcardResult::{
     HasNoWildcard, HasWildcard, InvalidWildcard,
 };
 

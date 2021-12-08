@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use server::paquetes::packet_manager::PacketManager;
+    use server::packets::packet_manager::PacketManager;
     #[test]
     fn send_connect_should_select_connect_type() {
         let bytes = [

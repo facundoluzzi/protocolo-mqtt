@@ -1,5 +1,5 @@
-use crate::topics::topic_actions::TopicAction::PublishMessage;
-use crate::topics::topic_types::SenderTopicType;
+use crate::enums::topic::topic_actions::TopicAction::PublishMessage;
+use crate::types::topic_types::SenderTopicType;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 

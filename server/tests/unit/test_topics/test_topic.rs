@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use server::topics::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
-    use server::usermanager::user_manager_action::UserManagerAction;
+    use server::enums::topic::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
+    use server::enums::user_manager::user_manager_action::UserManagerAction;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
     use std::sync::mpsc::Sender;
