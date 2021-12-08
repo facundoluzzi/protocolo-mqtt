@@ -5,6 +5,7 @@ use client::sender_types::connect::Connect;
 use client::sender_types::publish::Publish;
 use client::sender_types::subscribe::Subscribe;
 
+use client::sender_types::sender_type::ClientSender;
 use client::sender_types::sender_type::InterfaceSender;
 
 use gtk::glib;
@@ -112,6 +113,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         result_for_connect,
         connect_button,
     ) = build_objects_for_connect(&builder);
+
     let (
         message_input,
         topic_input,
@@ -120,6 +122,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         qos_publish_0,
         result_for_publish,
     ) = build_objects_for_publish(&builder);
+
     let (
         input_topic_suscribe,
         suscribe_button,
@@ -173,21 +176,26 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             .unwrap();
     });
 
-    rc.attach(None, move |(packet, text)| {
-        match packet {
-            ResponsePacket::Connack => {
-                result_for_connect.set_text(&text);
+    rc.attach(None, move |client_sender| {
+        match client_sender {
+            ClientSender::Connack(connack) => {
+                let response = connack.get_response();
+                result_for_connect.set_text(&response);
             }
-            ResponsePacket::Suback => {
-                result_for_suscribe.set_text(&text);
+            ClientSender::Suback(suback) => {
+                let response = suback.get_response();
+                result_for_suscribe.set_text(&response);
             }
-            ResponsePacket::Puback => {
-                result_for_publish.set_text(&text);
+            ClientSender::Puback(puback) => {
+                let response = puback.get_response();
+                result_for_publish.set_text(&response);
             }
-            ResponsePacket::Publish => {
-                messages_received.set_text(&text);
+            ClientSender::Publish(publish) => {
+                let response = publish.get_response();
+                let topic = publish.get_topic();
+                messages_received.set_text(&format!("{} en {}", response, topic));
             }
-            _ => {}
+            ClientSender::Default(_default) => {}
         }
         glib::Continue(true)
     });

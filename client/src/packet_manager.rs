@@ -3,6 +3,12 @@ use crate::default;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::puback::Puback;
+use crate::sender_types::connack_response::ConnackResponse;
+use crate::sender_types::default_response::DefaultResponse;
+use crate::sender_types::puback_response::PubackResponse;
+use crate::sender_types::publish_response::PublishResponse;
+use crate::sender_types::sender_type::ClientSender;
+use crate::sender_types::suback_response::SubackResponse;
 use crate::suback::Suback;
 
 pub enum ResponsePacket {
@@ -38,7 +44,7 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
-    pub fn process_publish(&self, bytes: &[u8]) -> Result<String, String> {
+    pub fn process_publish(&self, bytes: &[u8]) -> Result<(String, String), String> {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, _remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -53,14 +59,14 @@ impl PacketManager {
                 Err(err) => Err(err),
             }?;
 
-        let (_topic, _packet_identifier, length) = variable_header_response;
+        let (topic, _packet_identifier, length) = variable_header_response;
 
         let response =
             std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()]).expect("err");
-        Ok(response.to_string())
+        Ok((topic, response.to_string()))
     }
 
-    pub fn process_message(&self, bytes: &[u8]) -> Option<(ResponsePacket, String)> {
+    pub fn process_message(&self, bytes: &[u8]) -> Option<ClientSender> {
         println!("{:?}", &bytes);
         let first_byte = bytes.get(0);
 
@@ -73,44 +79,48 @@ impl PacketManager {
                         let connack = Connack::init(bytes);
                         let connack_code = connack.get_status_code();
                         let response_text = connack.status_for_code(connack_code);
-                        Some((ResponsePacket::Connack, response_text))
+
+                        let connack_response = ConnackResponse::init(response_text);
+
+                        Some(ClientSender::Connack(connack_response))
                     }
-                    3 => {
-                        match self.process_publish(bytes) {
-                            Ok(message) => Some((ResponsePacket::Publish, "TODO".to_string())),
-                            Err(err) => {
-                                println!("error: {}", err);
-                                None
-                            }
+                    3 => match self.process_publish(bytes) {
+                        Ok((topic, message)) => {
+                            let publish_response = PublishResponse::init(topic, message);
+                            Some(ClientSender::Publish(publish_response))
                         }
-                    }
+                        Err(err) => {
+                            println!("error: {}", err);
+                            None
+                        }
+                    },
                     4 => {
-                        println!("\n\n\n llega el puback \n\n\n");
                         let _puback = Puback::init(bytes);
-                        Some((ResponsePacket::Puback, "Publish realizado".to_string()))
+
+                        let puback_response = PubackResponse::init("Publish realizado".to_string());
+                        Some(ClientSender::Puback(puback_response))
                     }
                     9 => {
-                        println!("\n\n\n suback recibido \n\n\n");
                         let suback = Suback::init(bytes);
                         let suback_code = suback.get_status_code();
                         let response_text = suback.check_suback_code(suback_code);
-                        Some((ResponsePacket::Suback, response_text))
+
+                        let suback_response = SubackResponse::init(response_text);
+
+                        Some(ClientSender::Suback(suback_response))
                     }
                     _ => {
                         default::Default::init(bytes);
-                        Some((
-                            ResponsePacket::Default,
-                            "paquete no identificado".to_string(),
-                        ))
+                        let default_response =
+                            DefaultResponse::init("Paquete no reconocido".to_string());
+                        Some(ClientSender::Default(default_response))
                     }
                 }
             }
             None => {
                 default::Default::init(bytes);
-                Some((
-                    ResponsePacket::Default,
-                    "paquete no identificado".to_string(),
-                ))
+                let default_response = DefaultResponse::init("Paquete no reconocido".to_string());
+                Some(ClientSender::Default(default_response))
             }
         }
 
