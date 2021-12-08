@@ -6,10 +6,7 @@ use crate::topics::publisher_writer::PublisherSubscriberAction::ReconnectPublish
 use crate::topics::publisher_writer::PublisherWriter;
 use crate::topics::topic_types::TypeTopicManager;
 use crate::topics::unsubscriberall::UnsubscriberAll;
-use crate::usermanager::user_manager_action::UserManagerAction::{
-    AddUserManager, DisconnectUserManager, PublishMessageUserManager,
-};
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
@@ -22,10 +19,10 @@ pub struct UserManager {
 }
 
 impl UserManager {
-    pub fn init(sender_topic_manager: Sender<TypeTopicManager>) -> Sender<ChannelUserManager> {
+    pub fn init(sender_topic_manager: Sender<TypeTopicManager>) -> Sender<UserManagerAction> {
         let (sender_user_manager, receiver_user_manager): (
-            Sender<ChannelUserManager>,
-            Receiver<ChannelUserManager>,
+            Sender<UserManagerAction>,
+            Receiver<UserManagerAction>,
         ) = mpsc::channel();
 
         let mut user_manager = UserManager {
@@ -35,12 +32,11 @@ impl UserManager {
 
         thread::spawn(move || {
             for receive in receiver_user_manager {
-                let action = receive.0;
-                match action {
-                    AddUserManager => {
-                        let client_id = receive.1;
-                        let sender_stream = receive.2.unwrap();
-                        let clean_session = receive.3.unwrap();
+                match receive {
+                    UserManagerAction::AddUserManager(user) => {
+                        let client_id = user.get_client_id();
+                        let sender_stream = user.get_sender_stream();
+                        let clean_session = user.get_clean_session();
                         if let Some(usuario) = user_manager.find_user(client_id.to_string()) {
                             usuario
                                 .send((ReconnectPublisherSubscriber, None, Some(sender_stream)))
@@ -53,13 +49,13 @@ impl UserManager {
                             );
                         };
                     }
-                    DisconnectUserManager => {
-                        let client_id = receive.1;
+                    UserManagerAction::DisconnectUserManager(user) => {
+                        let client_id = user.get_client_id();
                         user_manager.disconnect(client_id);
                     }
-                    PublishMessageUserManager => {
-                        let client_id = receive.1;
-                        let message = receive.4.unwrap();
+                    UserManagerAction::PublishMessageUserManager(user) => {
+                        let client_id = user.get_client_id();
+                        let message = user.get_message();
                         if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
                             sender_for_publish
                                 .send((PublishMessagePublisherSubscriber, Some(message), None))

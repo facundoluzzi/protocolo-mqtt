@@ -1,6 +1,6 @@
 use crate::stream::stream_handler::StreamAction::CloseConnectionStream;
-use crate::usermanager::user_manager_action::UserManagerAction::DisconnectUserManager;
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::disconnect_user_manager::DisconnectUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 
 use crate::stream::stream_handler::StreamType;
 
@@ -11,12 +11,12 @@ pub struct Disconnect {}
 impl Disconnect {
     pub fn disconnect_user(
         client_id: String,
-        user_manager_sender: Sender<ChannelUserManager>,
+        user_manager_sender: Sender<UserManagerAction>,
         sender_stream: Sender<StreamType>,
     ) {
-        if let Err(_msg) =
-            user_manager_sender.send((DisconnectUserManager, client_id, None, None, None))
-        {
+        let action =
+            UserManagerAction::DisconnectUserManager(DisconnectUserManager::init(client_id));
+        if let Err(_msg) = user_manager_sender.send(action) {
             println!("Error");
         }
         if let Err(_msg) = sender_stream.send((CloseConnectionStream, None, None, None)) {

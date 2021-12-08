@@ -1,7 +1,7 @@
 use server::topics::topic_types::TypeTopicManager;
 use server::topics::topic_types::TypeTopicManager::Subscriber;
-use server::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
-use server::usermanager::user_manager_types::ChannelUserManager;
+use server::usermanager::publish_message_user_manager::PublishMessageUserManager;
+use server::usermanager::user_manager_action::UserManagerAction;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -23,7 +23,7 @@ fn should_create_subscribe_packet() {
     let (sender_one, receiver_one): (Sender<TypeTopicManager>, Receiver<TypeTopicManager>) =
         mpsc::channel();
 
-    let (sender_two, receiver_two): (Sender<ChannelUserManager>, Receiver<ChannelUserManager>) =
+    let (sender_two, receiver_two): (Sender<UserManagerAction>, Receiver<UserManagerAction>) =
         mpsc::channel();
 
     let messages: Vec<TypeTopicManager> = Vec::new();
@@ -55,103 +55,23 @@ fn should_create_subscribe_packet() {
             let topic = subscriber.get_topic();
 
             assert_eq!(topic, "a/b".to_owned());
+            let action =
+                UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init(
+                    "client_id".to_owned(),
+                    [0x00, 0x01, 0x02].to_vec(),
+                ));
+            subscriber.get_sender_user_manager().send(action).unwrap();
 
-            subscriber
-                .get_sender_user_manager()
-                .send((
-                    PublishMessageUserManager,
-                    "client_id".to_string(),
-                    None,
-                    None,
-                    Some([0x00, 0x01, 0x02].to_vec()),
-                ))
-                .unwrap();
-
-            let receiver_response = receiver_two.recv().unwrap();
-            assert_eq!(receiver_response.1, "client_id".to_string());
-            assert_eq!(receiver_response.4, Some([0x00, 0x01, 0x02].to_vec()));
+            match receiver_two.recv().unwrap() {
+                UserManagerAction::PublishMessageUserManager(user) => {
+                    assert_eq!(user.get_client_id(), "client_id".to_string());
+                    assert_eq!(user.get_message(), [0x00, 0x01, 0x02].to_vec());
+                }
+                _ => assert_eq!(0, 1),
+            }
         }
         _ => {
             panic!("unexpected error");
         }
     }
 }
-
-// #[test]
-// fn should_create_subscribe_packet_with_wilcard_astherisc_and_greater_than() {
-
-//     let (publish_subscriber_sender, publisher_subscriber_receiver): (Sender<PublisherSuscriber>, Receiver<PublisherSuscriber>) =
-//         mpsc::channel();
-
-//     let topic_boca_goles = Topic::new("futbol/boca/cantidaddegoles".to_owned());
-//     let topic_boca_partidos = Topic::new("futbol/boca/cantidaddepartidos".to_owned());
-//     let mut topics: HashMap<String, Sender<SenderTopicType>> = HashMap::new();
-//     topics.insert("futbol/boca/cantidaddegoles".to_owned(), topic_boca_goles);
-//     topics.insert("futbol/boca/cantidaddepartidos".to_owned(), topic_boca_partidos);
-
-//     let subscribe_bytes = [
-//         0x80, // packet type
-//         0x1B, // remaining length ---------> RECALCULAR PORQUE ESTA MAL
-//         0x00, 0x0A, // variable header, en particular packet identifier
-//         0x00, 0x17, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // payload - futbol
-//         0x2F, 0x62, 0x6F, 0x63, 0x61, // boca
-//         0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, // cantidad
-//         0x64, 0x65, 0x2A, // de*     -> /cantidadDe*
-//         0x00,
-//     ];
-
-//     let (sender_two, receiver_two): (Sender<String>, Receiver<String>) = mpsc::channel();
-
-//     std::thread::spawn(move || {
-//         for publisher_subscriber in publisher_subscriber_receiver {
-//             match publisher_subscriber.get_packet_type() {
-//                 PublisherSubscriberCode::Publisher => {
-//                     if let Some(topic_sender) = topics.get(&publisher_subscriber.get_topic()) {
-//                         topic_sender.send((PublishMessage, publisher_subscriber.get_message(), None)).unwrap();
-//                     }
-//                 },
-//                 PublisherSubscriberCode::Subscriber => {
-//                     let subscriber = publisher_subscriber.get_sender();
-//                     let topic_name = publisher_subscriber.get_topic();
-//                     let client_id = publisher_subscriber.get_client_id();
-//                     if let Some(wilcard) = verify_wildcard::get_wilcard(topic_name.to_owned()){
-//                         for (topic_name, topic_sender) in &topics {
-//                             if wilcard.verify_topic(topic_name.to_owned()) {
-//                                 topic_sender.send((AddTopic, client_id.to_owned(), subscriber.clone())).unwrap();
-//                             }
-//                         }
-//                     } else {
-//                         assert_eq!(0, 1);
-//                     }
-//                 }
-//             };
-//         }
-//         for rx in receiver_two {
-//             assert_eq!(rx, "ALTEG".to_owned())
-//         }
-//     });
-
-//     let _subscribe = Subscribe::init(&subscribe_bytes).subscribe_topic(
-//         &publish_subscriber_sender,
-//         sender_two,
-//         "clientId".to_string(),
-//     );
-
-//     let publisher_subscriber = receiver.recv().unwrap();
-
-//     assert_eq!(publisher_subscriber.get_algo(), 'algo');
-
-//     let bytes = [
-//         0x32, // Paquete publish
-//         0x29, // Remaining Length
-//         0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // payload - futbol
-//         0x2F, 0x62, 0x6F, 0x63, 0x61, // boca
-//         0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, // cantidad
-//         0x64, 0x65, 0x70, 0x61, 0x72, 0x74, 0x69, 0x64, 0x6F, 0x73,
-//         0x00, 0x10, // Packet Identifier
-//         0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47, // Payload 'Message'
-//     ];
-
-//     let publish = Publish::init(&bytes);
-//     publish.send_message(&publish_subscriber_sender, "client_id".to_owned());
-// }

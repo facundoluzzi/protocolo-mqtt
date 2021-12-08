@@ -6,8 +6,8 @@ use crate::keep_alive::handler_null_keep_alive;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::usermanager::user_manager_action::UserManagerAction::AddUserManager;
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::add_user_manager::AddUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use crate::variable_header::connect_variable_header::{check_variable_header_len, get_keep_alive};
 use std::sync::mpsc::Sender;
 
@@ -24,7 +24,7 @@ impl Connect {
     pub fn init(
         bytes: &[u8],
         sender_stream: Sender<StreamType>,
-        user_manager_sender: Sender<ChannelUserManager>,
+        user_manager_sender: Sender<UserManagerAction>,
     ) -> Result<Connect, String> {
         let mut status_code = ConnectReturnCode::init();
 
@@ -75,13 +75,13 @@ impl Connect {
             // TODO: Cortar la conexión
             Ok(connect)
         } else {
-            match user_manager_sender.send((
-                AddUserManager,
+            // No se a donde va este sender tengo q velro
+            let action = UserManagerAction::AddUserManager(AddUserManager::init(
                 client_id,
-                Some(sender_stream),
-                Some(session_flag),
-                None,
-            )) {
+                sender_stream,
+                session_flag,
+            ));
+            match user_manager_sender.send(action) {
                 Ok(_) => {}
                 Err(err) => {
                     println!("err: {}", err);
@@ -94,7 +94,7 @@ impl Connect {
     pub fn send_response(
         &self,
         sender_stream: Sender<StreamType>,
-        sender_user_manager: Sender<ChannelUserManager>,
+        sender_user_manager: Sender<UserManagerAction>,
     ) -> Result<(), String> {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let connack_response = [0x20, 0x02, session_present_bit, self.status_code].to_vec();

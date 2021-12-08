@@ -1,5 +1,5 @@
-use crate::usermanager::user_manager_action::UserManagerAction::PublishMessageUserManager;
-use crate::usermanager::user_manager_types::ChannelUserManager;
+use crate::usermanager::publish_message_user_manager::PublishMessageUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use std::collections::HashMap;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
@@ -9,7 +9,7 @@ use crate::topics::topic_types::SenderTopicType;
 
 pub struct Topic {
     name: String,
-    subscribers: HashMap<String, (Sender<ChannelUserManager>, u8)>,
+    subscribers: HashMap<String, (Sender<UserManagerAction>, u8)>,
     retained_message: Option<SenderTopicType>,
 }
 
@@ -29,7 +29,7 @@ impl Topic {
                 match action_type {
                     AddTopic => {
                         let info = message.1;
-                        let sender_received = message.3;
+                        let sender_received = message.3; // Option<Sender<ChannelUserM>>
                         let qos = message.4;
 
                         let sender = if let Some(sender) = sender_received {
@@ -83,7 +83,7 @@ impl Topic {
         topic_sender
     }
 
-    fn add(&mut self, client_id: String, sender: Sender<ChannelUserManager>, qos_subscribe: u8) {
+    fn add(&mut self, client_id: String, sender: Sender<UserManagerAction>, qos_subscribe: u8) {
         self.publish_retained_message(client_id.to_owned(), sender.clone(), qos_subscribe);
         self.subscribers.insert(client_id, (sender, qos_subscribe));
     }
@@ -95,7 +95,7 @@ impl Topic {
     fn publish_retained_message(
         &self,
         client_id: String,
-        sender: Sender<ChannelUserManager>,
+        sender: Sender<UserManagerAction>,
         qos_subscribe: u8,
     ) {
         if let Some(message) = &self.retained_message {
@@ -104,14 +104,10 @@ impl Topic {
             if qos_subscribe + qos_publish < 2 {
                 new_packet[0] &= 0b11111101;
             }
-            let tuple_for_publish = (
-                PublishMessageUserManager,
-                client_id,
-                None,
-                None,
-                Some(new_packet.clone()),
+            let action = UserManagerAction::PublishMessageUserManager(
+                PublishMessageUserManager::init(client_id, new_packet.clone()),
             );
-            if let Err(msg) = sender.send(tuple_for_publish) {
+            if let Err(msg) = sender.send(action) {
                 println!("Unexpected error: {}", msg);
             };
         }
@@ -123,14 +119,10 @@ impl Topic {
             if qos_subscribe + qos < 2 {
                 new_packet[0] &= 0b11111101;
             }
-            let tuple_for_publish = (
-                PublishMessageUserManager,
-                client_id.to_string(),
-                None,
-                None,
-                Some(new_packet.clone()),
+            let action = UserManagerAction::PublishMessageUserManager(
+                PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()),
             );
-            if let Err(msg) = subscriber.send(tuple_for_publish) {
+            if let Err(msg) = subscriber.send(action) {
                 println!("Unexpected error: {}", msg);
             };
         }
