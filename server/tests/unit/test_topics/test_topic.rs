@@ -54,13 +54,13 @@ mod tests {
                 assert_eq!(user.get_client_id(), "Facundo".to_owned());
                 assert_eq!(user.get_message(), [0x00, 0x01, 0x02].to_vec());
             }
-            _ => assert_eq!(0,1)
+            _ => assert_eq!(0, 1),
         }
         match receiver_two.recv().unwrap() {
             UserManagerAction::PublishMessageUserManager(user) => {
                 assert_eq!(user.get_client_id(), "Nacho".to_owned());
                 assert_eq!(user.get_message(), [0x00, 0x01, 0x02].to_vec());
-            },
+            }
             _ => assert_eq!(0, 1),
         }
     }
@@ -116,7 +116,7 @@ mod tests {
             UserManagerAction::PublishMessageUserManager(user) => {
                 assert_eq!(user.get_client_id(), "Nacho".to_owned());
                 assert_eq!(user.get_message(), [0x00, 0x01, 0x02].to_vec());
-            },
+            }
             _ => assert_eq!(0, 1),
         }
     }

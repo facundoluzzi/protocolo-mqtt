@@ -6,9 +6,8 @@ use crate::keep_alive::handler_null_keep_alive;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::usermanager::user_manager_action::UserManagerAction;
 use crate::usermanager::add_user_manager::AddUserManager;
-use crate::usermanager::disconnect_user_manager::DisconnectUserManager;
+use crate::usermanager::user_manager_action::UserManagerAction;
 use crate::variable_header::connect_variable_header::{check_variable_header_len, get_keep_alive};
 use std::sync::mpsc::Sender;
 
@@ -75,10 +74,14 @@ impl Connect {
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
             Ok(connect)
-        } else { // No se a donde va este sender tengo q velro
-            let action = UserManagerAction::AddUserManager(AddUserManager::init(client_id.to_owned(), sender_stream, session_flag));
-            match user_manager_sender.send(action) 
-            {
+        } else {
+            // No se a donde va este sender tengo q velro
+            let action = UserManagerAction::AddUserManager(AddUserManager::init(
+                client_id,
+                sender_stream,
+                session_flag,
+            ));
+            match user_manager_sender.send(action) {
                 Ok(_) => {}
                 Err(err) => {
                     println!("err: {}", err);

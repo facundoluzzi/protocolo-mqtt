@@ -47,7 +47,7 @@ impl UserManager {
                                 sender_stream.clone(),
                                 clean_session,
                             );
-                        }; 
+                        };
                     }
                     UserManagerAction::DisconnectUserManager(user) => {
                         let client_id = user.get_client_id();

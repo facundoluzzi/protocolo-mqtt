@@ -4,9 +4,7 @@ mod tests {
     use server::{
         paquetes::disconnect::Disconnect,
         stream::stream_handler::{StreamAction, StreamType},
-        usermanager::{
-            user_manager_action::UserManagerAction
-        },
+        usermanager::user_manager_action::UserManagerAction,
     };
 
     #[test]
@@ -27,7 +25,9 @@ mod tests {
 
         if let Ok(message_user_manager) = receiver_user_manager.recv() {
             match message_user_manager {
-                UserManagerAction::DisconnectUserManager(user) => assert_eq!(user.get_client_id(), "TestDisconnect".to_owned()),
+                UserManagerAction::DisconnectUserManager(user) => {
+                    assert_eq!(user.get_client_id(), "TestDisconnect".to_owned())
+                }
                 _ => assert_eq!(0, 1),
             };
         } else {

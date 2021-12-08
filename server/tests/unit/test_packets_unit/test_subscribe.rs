@@ -1,7 +1,7 @@
 use server::topics::topic_types::TypeTopicManager;
 use server::topics::topic_types::TypeTopicManager::Subscriber;
-use server::usermanager::user_manager_action::UserManagerAction;
 use server::usermanager::publish_message_user_manager::PublishMessageUserManager;
+use server::usermanager::user_manager_action::UserManagerAction;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -55,11 +55,12 @@ fn should_create_subscribe_packet() {
             let topic = subscriber.get_topic();
 
             assert_eq!(topic, "a/b".to_owned());
-            let action = UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init("client_id".to_owned(), [0x00, 0x01, 0x02].to_vec()));
-            subscriber
-                .get_sender_user_manager()
-                .send(action)
-                .unwrap();
+            let action =
+                UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init(
+                    "client_id".to_owned(),
+                    [0x00, 0x01, 0x02].to_vec(),
+                ));
+            subscriber.get_sender_user_manager().send(action).unwrap();
 
             match receiver_two.recv().unwrap() {
                 UserManagerAction::PublishMessageUserManager(user) => {
@@ -68,7 +69,6 @@ fn should_create_subscribe_packet() {
                 }
                 _ => assert_eq!(0, 1),
             }
-
         }
         _ => {
             panic!("unexpected error");

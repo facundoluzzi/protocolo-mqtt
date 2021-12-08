@@ -104,7 +104,9 @@ impl Topic {
             if qos_subscribe + qos_publish < 2 {
                 new_packet[0] &= 0b11111101;
             }
-            let action = UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()));
+            let action = UserManagerAction::PublishMessageUserManager(
+                PublishMessageUserManager::init(client_id, new_packet.clone()),
+            );
             if let Err(msg) = sender.send(action) {
                 println!("Unexpected error: {}", msg);
             };
@@ -117,7 +119,9 @@ impl Topic {
             if qos_subscribe + qos < 2 {
                 new_packet[0] &= 0b11111101;
             }
-            let action = UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()));
+            let action = UserManagerAction::PublishMessageUserManager(
+                PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()),
+            );
             if let Err(msg) = subscriber.send(action) {
                 println!("Unexpected error: {}", msg);
             };

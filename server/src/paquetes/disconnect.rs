@@ -1,7 +1,6 @@
 use crate::stream::stream_handler::StreamAction::CloseConnectionStream;
-use crate::usermanager::user_manager_action::UserManagerAction;
 use crate::usermanager::disconnect_user_manager::DisconnectUserManager;
-
+use crate::usermanager::user_manager_action::UserManagerAction;
 
 use crate::stream::stream_handler::StreamType;
 
@@ -15,9 +14,9 @@ impl Disconnect {
         user_manager_sender: Sender<UserManagerAction>,
         sender_stream: Sender<StreamType>,
     ) {
-        let action = UserManagerAction::DisconnectUserManager(DisconnectUserManager::init(client_id.to_owned()));
-        if let Err(_msg) =
-            user_manager_sender.send(action){
+        let action =
+            UserManagerAction::DisconnectUserManager(DisconnectUserManager::init(client_id));
+        if let Err(_msg) = user_manager_sender.send(action) {
             println!("Error");
         }
         if let Err(_msg) = sender_stream.send((CloseConnectionStream, None, None, None)) {
