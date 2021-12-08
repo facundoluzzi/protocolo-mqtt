@@ -9,6 +9,7 @@ pub enum ResponsePacket {
     Connack,
     Suback,
     Puback,
+    Publish,
     Default,
 }
 
@@ -59,7 +60,7 @@ impl PacketManager {
         Ok(response.to_string())
     }
 
-    pub fn process_message(&self, bytes: &[u8]) -> Option<String> {
+    pub fn process_message(&self, bytes: &[u8]) -> Option<(ResponsePacket, String)> {
         println!("{:?}", &bytes);
         let first_byte = bytes.get(0);
 
@@ -72,35 +73,44 @@ impl PacketManager {
                         let connack = Connack::init(bytes);
                         let connack_code = connack.get_status_code();
                         let response_text = connack.status_for_code(connack_code);
-                        Some(response_text)
+                        Some((ResponsePacket::Connack, response_text))
                     }
-                    3 => match self.process_publish(bytes) {
-                        Ok(message) => Some(message),
-                        Err(err) => {
-                            println!("error: {}", err);
-                            None
+                    3 => {
+                        match self.process_publish(bytes) {
+                            Ok(message) => Some((ResponsePacket::Publish, "TODO".to_string())),
+                            Err(err) => {
+                                println!("error: {}", err);
+                                None
+                            }
                         }
-                    },
+                    }
                     4 => {
-                        let puback = Puback::init(bytes);
-                        Some("Publish realizado".to_string())
+                        println!("\n\n\n llega el puback \n\n\n");
+                        let _puback = Puback::init(bytes);
+                        Some((ResponsePacket::Puback, "Publish realizado".to_string()))
                     }
                     9 => {
                         println!("\n\n\n suback recibido \n\n\n");
                         let suback = Suback::init(bytes);
                         let suback_code = suback.get_status_code();
                         let response_text = suback.check_suback_code(suback_code);
-                        Some(response_text)
+                        Some((ResponsePacket::Suback, response_text))
                     }
                     _ => {
                         default::Default::init(bytes);
-                        Some("paquete no identificado".to_string())
+                        Some((
+                            ResponsePacket::Default,
+                            "paquete no identificado".to_string(),
+                        ))
                     }
                 }
             }
             None => {
                 default::Default::init(bytes);
-                Some("paquete no identificado".to_string())
+                Some((
+                    ResponsePacket::Default,
+                    "paquete no identificado".to_string(),
+                ))
             }
         }
 

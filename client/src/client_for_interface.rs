@@ -1,3 +1,4 @@
+use crate::packet_manager::ResponsePacket;
 use crate::sender_types::sender_type::InterfaceSender;
 use crate::stream::stream_handler::StreamAction::ReadStream;
 use crate::{packet_manager::PacketManager, stream::stream_handler::StreamType};
@@ -67,8 +68,14 @@ impl Client {
         };
 
         let (sender_to_start_reading, receiver_to_start_reading): (
-            Sender<(Sender<StreamType>, gtk::glib::Sender<String>)>,
-            Receiver<(Sender<StreamType>, gtk::glib::Sender<String>)>,
+            Sender<(
+                Sender<StreamType>,
+                gtk::glib::Sender<(ResponsePacket, String)>,
+            )>,
+            Receiver<(
+                Sender<StreamType>,
+                gtk::glib::Sender<(ResponsePacket, String)>,
+            )>,
         ) = mpsc::channel();
 
         thread::spawn(move || {
@@ -147,13 +154,13 @@ impl Client {
 
     fn process_packet(
         bytes: &[u8],
-        sender: gtk::glib::Sender<std::string::String>,
+        sender: gtk::glib::Sender<(ResponsePacket, std::string::String)>,
     ) -> Result<(), String> {
         let packet_manager = PacketManager::new();
         let response = packet_manager.process_message(&bytes);
 
         match response {
-            Some(message) => sender.send(message).unwrap(),
+            Some((packet, message)) => sender.send((packet, message)).unwrap(),
             None => {}
         };
 
