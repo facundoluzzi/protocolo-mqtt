@@ -1,3 +1,4 @@
+use crate::packet_manager::ResponsePacket;
 use crate::stream::stream_handler::Stream;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
@@ -10,7 +11,7 @@ pub struct Connect {
     user: String,
     password: String,
     id_client: String,
-    send_x: gtk::glib::Sender<String>,
+    send_x: gtk::glib::Sender<(ResponsePacket, String)>,
 }
 
 impl Connect {
@@ -20,7 +21,7 @@ impl Connect {
         user: String,
         password: String,
         id_client: String,
-        send_x: gtk::glib::Sender<String>,
+        send_x: gtk::glib::Sender<(ResponsePacket, String)>,
     ) -> Connect {
         Connect {
             ip,
@@ -49,7 +50,7 @@ impl Connect {
         }
     }
 
-    pub fn get_gtk_sender(&self) -> gtk::glib::Sender<String> {
+    pub fn get_gtk_sender(&self) -> gtk::glib::Sender<(ResponsePacket, String)> {
         self.send_x.clone()
     }
 
