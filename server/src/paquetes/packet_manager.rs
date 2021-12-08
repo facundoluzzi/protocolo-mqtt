@@ -115,7 +115,7 @@ impl PacketManager {
             }
             Err(err) => {
                 let message = format!("Unexpected error processing connect packet: {}", err);
-                self.logger.info(message.to_string());
+                self.logger.info(message);
                 Disconnect::disconnect_user(
                     self.client_id.to_owned(),
                     self.sender_user_manager.clone(),
@@ -145,7 +145,7 @@ impl PacketManager {
             }
             Err(err) => {
                 let message = format!("Unexpected error processing connect packet: {}", err);
-                self.logger.info(message.to_string());
+                self.logger.info(message);
                 Disconnect::disconnect_user(
                     self.client_id.to_owned(),
                     self.sender_user_manager.clone(),

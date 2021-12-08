@@ -29,7 +29,7 @@ impl Unsubscribe {
             .expect("slice with incorrect length");
         let unsubscribe = Unsubscribe {
             remaining_length,
-            packet_identifier: packet_identifier,
+            packet_identifier,
             payload: (*payload).to_vec(),
         };
         Ok(unsubscribe)

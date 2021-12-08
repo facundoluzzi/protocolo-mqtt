@@ -19,7 +19,7 @@ pub fn get_wilcard(topic: String) -> WildcardResult {
     let mut vec_copy = vec_words.clone();
     vec_copy.pop();
     vec_copy.retain(|x| x == &">".to_owned());
-    if vec_copy.len() != 0 {
+    if !vec_copy.is_empty() {
         return InvalidWildcard;
     }
 

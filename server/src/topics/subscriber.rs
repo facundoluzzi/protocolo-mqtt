@@ -12,7 +12,7 @@ pub struct Subscriber {
     topic: String,
     sender_user_manager: Sender<ChannelUserManager>,
     wildcard: Option<Wildcard>,
-    qos: u8
+    qos: u8,
 }
 
 impl Subscriber {
@@ -21,42 +21,56 @@ impl Subscriber {
         topic: String,
         sender_user_manager: Sender<ChannelUserManager>,
         wildcard: Option<Wildcard>,
-        qos: u8
+        qos: u8,
     ) -> Subscriber {
         Subscriber {
             client_id,
             topic,
             sender_user_manager,
             wildcard,
-            qos
+            qos,
         }
     }
 
-    pub fn subscribe(&mut self, topics: HashMap<String, Sender<SenderTopicType>>) -> HashMap<String, Sender<SenderTopicType>> {
-        let new_topic = match &self.wildcard {
-            Some(wildcard) => {
-                self.subscribe_with_wilcard(wildcard.clone(), topics)
-            },
-            None => {
-                self.subscribe_without_wilcard(topics)
-            }
-        };
-        
-        new_topic
+    pub fn subscribe(
+        &mut self,
+        topics: HashMap<String, Sender<SenderTopicType>>,
+    ) -> HashMap<String, Sender<SenderTopicType>> {
+        match &self.wildcard {
+            Some(wildcard) => self.subscribe_with_wilcard(wildcard.clone(), topics),
+            None => self.subscribe_without_wilcard(topics),
+        }
     }
 
-    fn subscribe_without_wilcard(&mut self, mut topics: HashMap<String, Sender<SenderTopicType>>) -> HashMap<String, Sender<SenderTopicType>> {
+    fn subscribe_without_wilcard(
+        &mut self,
+        mut topics: HashMap<String, Sender<SenderTopicType>>,
+    ) -> HashMap<String, Sender<SenderTopicType>> {
         match topics.get(&self.topic) {
             Some(topic_sender) => {
                 topic_sender
-                .send((AddTopic, Some(self.client_id.to_string()), None, Some(self.sender_user_manager.clone()), self.qos))
-                .unwrap();
-            },
+                    .send((
+                        AddTopic,
+                        Some(self.client_id.to_string()),
+                        None,
+                        Some(self.sender_user_manager.clone()),
+                        self.qos,
+                        None,
+                    ))
+                    .unwrap();
+            }
             None => {
                 let sender_topic = Topic::init(self.topic.to_owned());
                 topics.insert(self.topic.to_owned(), sender_topic.clone());
                 sender_topic
-                    .send((AddTopic, Some(self.client_id.to_string()), None, Some(self.sender_user_manager.clone()), self.qos))
+                    .send((
+                        AddTopic,
+                        Some(self.client_id.to_string()),
+                        None,
+                        Some(self.sender_user_manager.clone()),
+                        self.qos,
+                        None,
+                    ))
                     .unwrap();
             }
         }
@@ -64,7 +78,11 @@ impl Subscriber {
         topics
     }
 
-    pub fn subscribe_with_wilcard(&self, wilcard: Wildcard, topics: HashMap<String, Sender<SenderTopicType>>) -> HashMap<String, Sender<SenderTopicType>> {
+    pub fn subscribe_with_wilcard(
+        &self,
+        wilcard: Wildcard,
+        topics: HashMap<String, Sender<SenderTopicType>>,
+    ) -> HashMap<String, Sender<SenderTopicType>> {
         for (topic_name, topic_sender) in &topics {
             if wilcard.verify_topic(topic_name.to_owned()) {
                 topic_sender
@@ -73,7 +91,8 @@ impl Subscriber {
                         Some(self.client_id.to_owned()),
                         None,
                         Some(self.sender_user_manager.clone()),
-                        self.qos
+                        self.qos,
+                        None,
                     ))
                     .unwrap();
             }
@@ -94,10 +113,7 @@ impl Subscriber {
     }
 
     pub fn get_wildcard(&self) -> Option<Wildcard> {
-        match &self.wildcard {
-            Some(wildcard) => Some(wildcard.clone()),
-            None => None,
-        }
+        self.wildcard.as_ref().cloned()
     }
 
     pub fn get_qos(&self) -> u8 {

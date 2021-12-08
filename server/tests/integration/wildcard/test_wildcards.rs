@@ -4,18 +4,17 @@ mod tests {
         io::{Read, Write},
         net::TcpStream,
     };
-
     #[test]
     fn testing_subscribe_and_publish_with_wildcard_astherisc_after_the_bar() {
-        let server = ServerTest::start("0.0.0.0:1900".to_string());
+        let server = ServerTest::start("0.0.0.0:1918".to_string());
 
         let mut stream_to_create_topic_goles =
-            TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
         let mut stream_to_create_topic_partidos =
-            TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
         let mut stream_to_subscribe_with_wildcard =
-            TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
-        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1900".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
+        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1918".to_string()).unwrap();
 
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
@@ -195,13 +194,10 @@ mod tests {
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
                 let expected_bytes = [
-                    0x30,
-                    0x26,
-                    0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C,
-                    0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64,
-                    0x64, 0x65, 0x67, 0x6F, 0x6C, 0x65, 0x73,
-                    0x00, 0x11,
-                    0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47
+                    0x30, 0x26, 0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F,
+                    0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, 0x64, 0x65,
+                    0x67, 0x6F, 0x6C, 0x65, 0x73, 0x00, 0x11, 0x00, 0x05, 0x41, 0x4C, 0x54, 0x45,
+                    0x47,
                 ];
                 assert_eq!(data[0..size], expected_bytes);
             }
@@ -214,13 +210,10 @@ mod tests {
         match stream_to_create_topic_goles.read(&mut data) {
             Ok(size) => {
                 let expected_bytes = [
-                    0x32,
-                    0x26,
-                    0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C,
-                    0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64,
-                    0x64, 0x65, 0x67, 0x6F, 0x6C, 0x65, 0x73,
-                    0x00, 0x11,
-                    0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47
+                    0x32, 0x26, 0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F,
+                    0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, 0x64, 0x65,
+                    0x67, 0x6F, 0x6C, 0x65, 0x73, 0x00, 0x11, 0x00, 0x05, 0x41, 0x4C, 0x54, 0x45,
+                    0x47,
                 ];
                 assert_eq!(data[0..size], expected_bytes);
             }
@@ -394,6 +387,7 @@ mod tests {
         stream_to_subscribe_with_wildcard
             .write(&subscribe_bytes_with_wildcard)
             .unwrap();
+
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
                 assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
@@ -402,6 +396,7 @@ mod tests {
                 panic!();
             }
         }
+
         let bytes_to_publish = [
             0x32, // Paquete publish
             0x26, // Remaining Length

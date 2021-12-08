@@ -1,5 +1,5 @@
-use crate::topics::topic_types::TypeTopicManager;
 use crate::topics::topic_types::SenderTopicType;
+use crate::topics::topic_types::TypeTopicManager;
 
 use std::collections::HashMap;
 use std::sync::mpsc;
@@ -40,13 +40,13 @@ impl TopicManager {
                 match publish_subscriber {
                     TypeTopicManager::Publisher(publisher) => {
                         publisher.publish(topic_manager.topics.clone());
-                    },
+                    }
                     TypeTopicManager::Subscriber(mut subscriber) => {
                         topic_manager.topics = subscriber.subscribe(topic_manager.topics.clone());
-                    },
+                    }
                     TypeTopicManager::Unsubscriber(mut unsubscriber) => {
                         unsubscriber.unsubscribe(topic_manager.topics.clone())
-                    },
+                    }
                     TypeTopicManager::UnsubscriberAll(mut unsubscriber_all) => {
                         unsubscriber_all.unsubscribe_all(topic_manager.topics.clone())
                     }

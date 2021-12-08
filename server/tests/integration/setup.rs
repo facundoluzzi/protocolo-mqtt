@@ -49,7 +49,6 @@ impl ServerTest {
                                             sender_um_cloned,
                                         );
                                     });
-                                    sleep(Duration::from_millis(100));
                                 }
                                 Err(e) => {
                                     logger.error(format!("Error on connection: {}", e));
