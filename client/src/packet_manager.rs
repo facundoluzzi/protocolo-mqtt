@@ -1,5 +1,7 @@
 use crate::connack::Connack;
 use crate::default;
+use crate::helper::remaining_length::save_remaining_length;
+use crate::helper::utf8_parser::UTF8;
 use crate::puback::Puback;
 use crate::suback::Suback;
 
@@ -35,6 +37,28 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
+    pub fn process_publish(&self, bytes: &[u8]) -> Result<String, String> {
+        let bytes_rem_len = &bytes[1..bytes.len()];
+        let (readed_index, _remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
+
+        let init_variable_header = 1 + readed_index;
+
+        let variable_header_response =
+            match UTF8::utf8_parser(&bytes[init_variable_header..bytes.len()]) {
+                Ok((parsed_topic, readed_bytes)) => {
+                    let packet_identifier = &bytes[readed_bytes..readed_bytes + 2];
+                    Ok((parsed_topic, packet_identifier, readed_bytes + 2))
+                }
+                Err(err) => Err(err),
+            }?;
+
+        let (_topic, _packet_identifier, length) = variable_header_response;
+
+        let response =
+            std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()]).expect("err");
+        Ok(response.to_string())
+    }
+
     pub fn process_message(&self, bytes: &[u8]) -> Option<String> {
         println!("{:?}", &bytes);
         let first_byte = bytes.get(0);
@@ -50,13 +74,15 @@ impl PacketManager {
                         let response_text = connack.status_for_code(connack_code);
                         Some(response_text)
                     }
-                    3 => {
-                        // cuando el paquete publish tiene qos 1, hay que hacer la confirmación al server
-                        Some("TODO".to_string())
-                    }
+                    3 => match self.process_publish(bytes) {
+                        Ok(message) => Some(message),
+                        Err(err) => {
+                            println!("error: {}", err);
+                            None
+                        }
+                    },
                     4 => {
-                        println!("\n\n\n llega el puback \n\n\n");
-                        let _puback = Puback::init(bytes);
+                        let puback = Puback::init(bytes);
                         Some("Publish realizado".to_string())
                     }
                     9 => {
