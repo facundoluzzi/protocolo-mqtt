@@ -1,9 +1,9 @@
-use crate::enums::topic::unsubscriber::Unsubscriber;
+use crate::enums::topic_manager::topic_message::TypeMessage;
+use crate::enums::topic_manager::unsubscriber::Unsubscriber;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::types::topic_types::TypeTopicManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 
 use std::convert::TryInto;
@@ -37,7 +37,7 @@ impl Unsubscribe {
 
     pub fn unsubscribe_topic(
         &mut self,
-        sender: Sender<TypeTopicManager>,
+        sender: Sender<TypeMessage>,
         client_id: String,
     ) -> Result<Self, String> {
         let mut acumulator: usize = 0;
@@ -55,7 +55,7 @@ impl Unsubscribe {
 
             let unsubscriber = Unsubscriber::init(client_id.to_string(), topic.to_string());
 
-            if let Err(sender_err) = sender.send(TypeTopicManager::Unsubscriber(unsubscriber)) {
+            if let Err(sender_err) = sender.send(TypeMessage::Unsubscriber(unsubscriber)) {
                 println!("Error sending to publisher_subscriber: {}", sender_err);
             }
         }

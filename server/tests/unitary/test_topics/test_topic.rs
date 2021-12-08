@@ -1,12 +1,15 @@
 #[cfg(test)]
 mod tests {
-    use server::enums::topic::topic_actions::TopicAction::{AddTopic, PublishMessage, RemoveTopic};
+    use server::enums::topic::add_topic::AddTopic;
+    use server::enums::topic::publish_message::PublishMessage;
+    use server::enums::topic::remove_topic::RemoveTopic;
+    use server::enums::topic::topic_actions::TopicAction;
     use server::enums::user_manager::user_manager_action::UserManagerAction;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
     use std::sync::mpsc::Sender;
 
-    use server::topics::topic::Topic;
+    use server::topic::topic::Topic;
 
     #[test]
     fn should_add_topic_and_publish_message() {
@@ -16,38 +19,13 @@ mod tests {
             mpsc::channel();
         let (sender_two, receiver_two): (Sender<UserManagerAction>, Receiver<UserManagerAction>) =
             mpsc::channel();
-
-        topic
-            .send((
-                AddTopic,
-                Some("Facundo".to_owned()),
-                None,
-                Some(sender_one),
-                0,
-                None,
-            ))
-            .unwrap();
-        topic
-            .send((
-                AddTopic,
-                Some("Nacho".to_owned()),
-                None,
-                Some(sender_two),
-                0,
-                None,
-            ))
-            .unwrap();
-
-        topic
-            .send((
-                PublishMessage,
-                None,
-                Some([0x00, 0x01, 0x02].to_vec()),
-                None,
-                0,
-                Some(false),
-            ))
-            .unwrap();
+        let add = TopicAction::Add(AddTopic::init("Facundo".to_owned(), sender_one, 0));
+        topic.send(add).unwrap();
+        let add = TopicAction::Add(AddTopic::init("Nacho".to_owned(), sender_two, 0));
+        topic.send(add).unwrap();
+        let publish =
+            TopicAction::Publish(PublishMessage::init([0x00, 0x01, 0x02].to_vec(), 0, false));
+        topic.send(publish).unwrap();
 
         match receiver_one.recv().unwrap() {
             UserManagerAction::PublishMessageUserManager(user) => {
@@ -72,42 +50,16 @@ mod tests {
             mpsc::channel();
         let (sender_two, receiver_two): (Sender<UserManagerAction>, Receiver<UserManagerAction>) =
             mpsc::channel();
+        let add = TopicAction::Add(AddTopic::init("Facundo".to_owned(), sender_one, 0));
+        topic.send(add).unwrap();
+        let add = TopicAction::Add(AddTopic::init("Nacho".to_owned(), sender_two, 0));
+        topic.send(add).unwrap();
+        let remove = TopicAction::Remove(RemoveTopic::init("Facundo".to_owned()));
+        topic.send(remove).unwrap();
 
-        topic
-            .send((
-                AddTopic,
-                Some("Facundo".to_owned()),
-                None,
-                Some(sender_one),
-                0,
-                None,
-            ))
-            .unwrap();
-        topic
-            .send((
-                AddTopic,
-                Some("Nacho".to_owned()),
-                None,
-                Some(sender_two),
-                0,
-                None,
-            ))
-            .unwrap();
-
-        topic
-            .send((RemoveTopic, Some("Facundo".to_owned()), None, None, 0, None))
-            .unwrap();
-
-        topic
-            .send((
-                PublishMessage,
-                None,
-                Some([0x00, 0x01, 0x02].to_vec()),
-                None,
-                0,
-                Some(false),
-            ))
-            .unwrap();
+        let publish =
+            TopicAction::Publish(PublishMessage::init([0x00, 0x01, 0x02].to_vec(), 0, false));
+        topic.send(publish).unwrap();
 
         for _recv in receiver_one.recv() {
             panic!("Should be fail");

@@ -7,7 +7,7 @@ mod tests {
     use server::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
     use server::enums::user_manager::user_manager_action::UserManagerAction;
     use server::stream::stream_handler::StreamType;
-    use server::topics::topic_manager::TopicManager;
+    use server::topic::topic_manager::TopicManager;
     use server::usermanager::user_manager::UserManager;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
@@ -36,39 +36,6 @@ mod tests {
 
         assert_eq!(vec, Some([0x00, 0x01, 0x02].to_vec()));
     }
-
-    // #[test]
-    // fn should_add_a_user_and_remove_cant_publish_message() {
-    //     let sender_topic_manager = TopicManager::init();
-    //     let sender = UserManager::init(sender_topic_manager);
-
-    //     let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
-    //         mpsc::channel();
-    //         //creo que no, que tenes razon, si
-    //     let action_to_add = UserManagerAction::AddUserManager(AddUserManager::init("Nacho".to_owned(), sender_stream, true));
-    //     let action_to_disconnect = UserManagerAction::DisconnectUserManager(DisconnectUserManager::init("Nacho".to_owned()));
-    //     let action_to_publish = UserManagerAction::PublishMessageUserManager(PublishMessageUserManager::init("Nacho".to_owned(), [0x00, 0x01, 0x02].to_vec()));
-    //     sender
-    //         .send(action_to_add)
-    //         .unwrap();
-
-    //     sender
-    //         .send(action_to_disconnect)
-    //         .unwrap();
-
-    //     sender
-    //         .send(action_to_publish)
-    //         .unwrap();
-
-    //     match receiver_stream.recv() {
-    //         Err(err) => {
-    //             assert_eq!(err.to_string(), "receiving on a closed channel".to_string());
-    //         }
-    //         Ok(_) => {
-    //             panic!();
-    //         }
-    //     }
-    // }
 
     #[test]
     fn should_add_a_user_and_disconnect_publish_message_send_nothing() {

@@ -1,8 +1,8 @@
 mod tests {
-    use server::wildcard::verify_wildcard;
     use server::enums::wildcard::wildcard_result::WildcardResult::{
         HasNoWildcard, HasWildcard, InvalidWildcard,
     };
+    use server::wildcard::verify_wildcard;
 
     #[test]
     pub fn get_ok_on_verification_get_wilcard() {

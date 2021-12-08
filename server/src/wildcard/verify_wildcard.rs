@@ -1,8 +1,8 @@
 use crate::enums::wildcard::wildcard_result::WildcardResult;
-use crate::wildcard::wildcard_handler::Wildcard;
 use crate::enums::wildcard::wildcard_result::WildcardResult::{
     HasNoWildcard, HasWildcard, InvalidWildcard,
 };
+use crate::wildcard::wildcard_handler::Wildcard;
 
 pub fn get_wilcard(topic: String) -> WildcardResult {
     let vec_words: Vec<String> = topic.split('/').map(|s| s.to_string()).collect();

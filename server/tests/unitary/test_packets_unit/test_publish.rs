@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
+    use server::enums::topic_manager::topic_message::TypeMessage;
+    use server::enums::topic_manager::topic_message::TypeMessage::Publisher;
     use server::packets::publish::Publish;
-    use server::types::topic_types::TypeTopicManager;
-    use server::types::topic_types::TypeTopicManager::Publisher;
     use std::sync::mpsc;
     use std::sync::mpsc::Receiver;
     use std::sync::Arc;
@@ -34,11 +34,11 @@ mod tests {
         ];
 
         let (sender_one, receiver_one): (
-            std::sync::mpsc::Sender<TypeTopicManager>,
-            Receiver<TypeTopicManager>,
+            std::sync::mpsc::Sender<TypeMessage>,
+            Receiver<TypeMessage>,
         ) = mpsc::channel();
 
-        let messages: Vec<TypeTopicManager> = Vec::new();
+        let messages: Vec<TypeMessage> = Vec::new();
         let data = Arc::new(Mutex::new(messages));
         let data_for_thread = data.clone();
 

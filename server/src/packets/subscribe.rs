@@ -1,15 +1,15 @@
-use crate::enums::topic::subscriber::Subscriber;
+use crate::enums::topic_manager::subscriber::Subscriber;
+use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
+use crate::enums::wildcard::wildcard_result::WildcardResult::{
+    HasNoWildcard, HasWildcard, InvalidWildcard,
+};
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::types::topic_types::TypeTopicManager;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 use crate::wildcard::verify_wildcard;
-use crate::enums::wildcard::wildcard_result::WildcardResult::{
-    HasNoWildcard, HasWildcard, InvalidWildcard,
-};
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
@@ -49,7 +49,7 @@ impl Subscribe {
 
     pub fn subscribe_topic(
         &mut self,
-        sender_topic_manager: Sender<TypeTopicManager>,
+        sender_topic_manager: Sender<TypeMessage>,
         sender_user_manager: Sender<UserManagerAction>,
         client_id: String,
     ) -> Result<Self, String> {
@@ -86,7 +86,7 @@ impl Subscribe {
                 qos,
             );
 
-            match sender_topic_manager.send(TypeTopicManager::Subscriber(subscriber)) {
+            match sender_topic_manager.send(TypeMessage::Subscriber(subscriber)) {
                 Ok(_) => {}
                 Err(_) => {
                     acumulator += length + 1;

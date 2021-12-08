@@ -1,7 +1,7 @@
+use server::enums::topic_manager::topic_message::TypeMessage;
+use server::enums::topic_manager::topic_message::TypeMessage::Subscriber;
 use server::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
 use server::enums::user_manager::user_manager_action::UserManagerAction;
-use server::types::topic_types::TypeTopicManager;
-use server::types::topic_types::TypeTopicManager::Subscriber;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -20,13 +20,12 @@ fn should_create_subscribe_packet() {
         0x00, 0x03, 0x61, 0x2F, 0x62, 0x01, // payload MQTT como mensaje + qos
     ];
 
-    let (sender_one, receiver_one): (Sender<TypeTopicManager>, Receiver<TypeTopicManager>) =
-        mpsc::channel();
+    let (sender_one, receiver_one): (Sender<TypeMessage>, Receiver<TypeMessage>) = mpsc::channel();
 
     let (sender_two, receiver_two): (Sender<UserManagerAction>, Receiver<UserManagerAction>) =
         mpsc::channel();
 
-    let messages: Vec<TypeTopicManager> = Vec::new();
+    let messages: Vec<TypeMessage> = Vec::new();
     let data = Arc::new(Mutex::new(messages));
     let data_for_thread = data.clone();
 

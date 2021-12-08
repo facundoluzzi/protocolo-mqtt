@@ -1,6 +1,6 @@
+use server::enums::topic_manager::topic_message::TypeMessage;
+use server::enums::topic_manager::topic_message::TypeMessage::Unsubscriber;
 use server::packets::unsubscribe::Unsubscribe;
-use server::types::topic_types::TypeTopicManager;
-use server::types::topic_types::TypeTopicManager::Unsubscriber;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
@@ -17,10 +17,9 @@ fn should_create_unsubscribe_packet() {
         0x00, 0x03, 0x61, 0x2F, 0x62, // payload MQTT como mensaje + qos
     ];
 
-    let (sender_one, receiver_one): (Sender<TypeTopicManager>, Receiver<TypeTopicManager>) =
-        mpsc::channel();
+    let (sender_one, receiver_one): (Sender<TypeMessage>, Receiver<TypeMessage>) = mpsc::channel();
 
-    let messages: Vec<TypeTopicManager> = Vec::new();
+    let messages: Vec<TypeMessage> = Vec::new();
     let data = Arc::new(Mutex::new(messages));
     let data_for_thread = data.clone();
 

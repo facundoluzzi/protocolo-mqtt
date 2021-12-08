@@ -1,3 +1,4 @@
+use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::logs::logger::Logger;
 use crate::packets::connect::Connect;
@@ -8,14 +9,13 @@ use crate::packets::publish::Publish;
 use crate::packets::subscribe::Subscribe;
 use crate::packets::unsubscribe::Unsubscribe;
 use crate::stream::stream_handler::StreamType;
-use crate::types::topic_types::TypeTopicManager;
 use std::sync::mpsc::Sender;
 
 pub struct PacketManager {
     client_id: String,
     sender_stream: Sender<StreamType>,
     sender_user_manager: Sender<UserManagerAction>,
-    sender_topic_manager: Sender<TypeTopicManager>,
+    sender_topic_manager: Sender<TypeMessage>,
     logger: Logger,
 }
 
@@ -23,7 +23,7 @@ impl PacketManager {
     pub fn init(
         sender_user_manager: Sender<UserManagerAction>,
         sender_stream: Sender<StreamType>,
-        sender_topic_manager: Sender<TypeTopicManager>,
+        sender_topic_manager: Sender<TypeMessage>,
         logger: Logger,
     ) -> Self {
         PacketManager {

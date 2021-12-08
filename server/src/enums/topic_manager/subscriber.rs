@@ -1,6 +1,6 @@
-use crate::enums::topic::topic_actions::TopicAction::AddTopic;
-use crate::topics::topic::Topic;
-use crate::types::topic_types::SenderTopicType;
+use crate::enums::topic::add_topic::AddTopic;
+use crate::enums::topic::topic_actions::TopicAction;
+use crate::topic::topic::Topic;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
@@ -34,8 +34,8 @@ impl Subscriber {
 
     pub fn subscribe(
         &mut self,
-        topics: HashMap<String, Sender<SenderTopicType>>,
-    ) -> HashMap<String, Sender<SenderTopicType>> {
+        topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
         match &self.wildcard {
             Some(wildcard) => self.subscribe_with_wilcard(wildcard.clone(), topics),
             None => self.subscribe_without_wilcard(topics),
@@ -44,34 +44,26 @@ impl Subscriber {
 
     fn subscribe_without_wilcard(
         &mut self,
-        mut topics: HashMap<String, Sender<SenderTopicType>>,
-    ) -> HashMap<String, Sender<SenderTopicType>> {
+        mut topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
         match topics.get(&self.topic) {
             Some(topic_sender) => {
-                topic_sender
-                    .send((
-                        AddTopic,
-                        Some(self.client_id.to_string()),
-                        None,
-                        Some(self.sender_user_manager.clone()),
-                        self.qos,
-                        None,
-                    ))
-                    .unwrap();
+                let add_topic = TopicAction::Add(AddTopic::init(
+                    self.client_id.to_owned(),
+                    self.sender_user_manager.clone(),
+                    self.qos,
+                ));
+                topic_sender.send(add_topic).unwrap();
             }
             None => {
                 let sender_topic = Topic::init(self.topic.to_owned());
                 topics.insert(self.topic.to_owned(), sender_topic.clone());
-                sender_topic
-                    .send((
-                        AddTopic,
-                        Some(self.client_id.to_string()),
-                        None,
-                        Some(self.sender_user_manager.clone()),
-                        self.qos,
-                        None,
-                    ))
-                    .unwrap();
+                let add_topic = TopicAction::Add(AddTopic::init(
+                    self.client_id.to_owned(),
+                    self.sender_user_manager.clone(),
+                    self.qos,
+                ));
+                sender_topic.send(add_topic).unwrap();
             }
         }
 
@@ -81,20 +73,16 @@ impl Subscriber {
     pub fn subscribe_with_wilcard(
         &self,
         wilcard: Wildcard,
-        topics: HashMap<String, Sender<SenderTopicType>>,
-    ) -> HashMap<String, Sender<SenderTopicType>> {
-        for (topic_name, topic_sender) in &topics {
+        topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
+        for (topic_name, sender_topic) in &topics {
             if wilcard.verify_topic(topic_name.to_owned()) {
-                topic_sender
-                    .send((
-                        AddTopic,
-                        Some(self.client_id.to_owned()),
-                        None,
-                        Some(self.sender_user_manager.clone()),
-                        self.qos,
-                        None,
-                    ))
-                    .unwrap();
+                let add_topic = TopicAction::Add(AddTopic::init(
+                    self.client_id.to_owned(),
+                    self.sender_user_manager.clone(),
+                    self.qos,
+                ));
+                sender_topic.send(add_topic).unwrap();
             }
         }
         topics

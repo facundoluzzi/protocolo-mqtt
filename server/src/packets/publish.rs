@@ -1,8 +1,8 @@
-use crate::enums::topic::publisher::Publisher;
+use crate::enums::topic_manager::publisher::Publisher;
+use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::types::topic_types::TypeTopicManager;
 use crate::variable_header::publish_variable_header::{self, get_variable_header};
 
 use std::convert::TryInto;
@@ -85,7 +85,7 @@ impl Publish {
 
     pub fn send_message(
         &self,
-        sender_topic_manager: &Sender<TypeTopicManager>,
+        sender_topic_manager: &Sender<TypeMessage>,
         client_id: String,
     ) -> Self {
         let topic = self.topic.to_owned();
@@ -98,8 +98,7 @@ impl Publish {
             self.retain == 1,
         );
 
-        if let Err(sender_err) =
-            sender_topic_manager.send(TypeTopicManager::Publisher(publisher_prueba))
+        if let Err(sender_err) = sender_topic_manager.send(TypeMessage::Publisher(publisher_prueba))
         {
             println!("Error sending to publisher_subscriber: {}", sender_err);
         }

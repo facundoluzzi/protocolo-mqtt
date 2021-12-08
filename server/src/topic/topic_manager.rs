@@ -1,5 +1,5 @@
-use crate::types::topic_types::SenderTopicType;
-use crate::types::topic_types::TypeTopicManager;
+use crate::enums::topic::topic_actions::TopicAction;
+use crate::enums::topic_manager::topic_message::TypeMessage;
 
 use std::collections::HashMap;
 use std::sync::mpsc;
@@ -7,8 +7,8 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 pub struct TopicManager {
-    publisher_subscriber_sender: Sender<TypeTopicManager>,
-    topics: HashMap<String, Sender<SenderTopicType>>,
+    publisher_subscriber_sender: Sender<TypeMessage>,
+    topics: HashMap<String, Sender<TopicAction>>,
 }
 
 impl Clone for TopicManager {
@@ -22,14 +22,14 @@ impl Clone for TopicManager {
 }
 
 impl TopicManager {
-    pub fn init() -> Sender<TypeTopicManager> {
+    pub fn init() -> Sender<TypeMessage> {
         let (publisher_subscriber_sender, publisher_subscriber_receiver): (
-            Sender<TypeTopicManager>,
-            Receiver<TypeTopicManager>,
+            Sender<TypeMessage>,
+            Receiver<TypeMessage>,
         ) = mpsc::channel();
         let sender_to_return = publisher_subscriber_sender.clone();
 
-        let topics: HashMap<String, Sender<SenderTopicType>> = HashMap::new();
+        let topics: HashMap<String, Sender<TopicAction>> = HashMap::new();
         let mut topic_manager = TopicManager {
             publisher_subscriber_sender,
             topics,
@@ -38,16 +38,16 @@ impl TopicManager {
         thread::spawn(move || {
             for publish_subscriber in publisher_subscriber_receiver {
                 match publish_subscriber {
-                    TypeTopicManager::Publisher(publisher) => {
+                    TypeMessage::Publisher(publisher) => {
                         publisher.publish(topic_manager.topics.clone());
                     }
-                    TypeTopicManager::Subscriber(mut subscriber) => {
+                    TypeMessage::Subscriber(mut subscriber) => {
                         topic_manager.topics = subscriber.subscribe(topic_manager.topics.clone());
                     }
-                    TypeTopicManager::Unsubscriber(mut unsubscriber) => {
+                    TypeMessage::Unsubscriber(mut unsubscriber) => {
                         unsubscriber.unsubscribe(topic_manager.topics.clone())
                     }
-                    TypeTopicManager::UnsubscriberAll(mut unsubscriber_all) => {
+                    TypeMessage::UnsubscriberAll(mut unsubscriber_all) => {
                         unsubscriber_all.unsubscribe_all(topic_manager.topics.clone())
                     }
                 }

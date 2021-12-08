@@ -1,5 +1,5 @@
-use crate::enums::topic::topic_actions::TopicAction::RemoveTopic;
-use crate::types::topic_types::SenderTopicType;
+use crate::enums::topic::remove_topic::RemoveTopic;
+use crate::enums::topic::topic_actions::TopicAction;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
@@ -13,18 +13,10 @@ impl Unsubscriber {
         Unsubscriber { client_id, topic }
     }
 
-    pub fn unsubscribe(&mut self, topics: HashMap<String, Sender<SenderTopicType>>) {
+    pub fn unsubscribe(&mut self, topics: HashMap<String, Sender<TopicAction>>) {
         if let Some(topic_sender) = topics.get(&self.topic.to_owned()) {
-            topic_sender
-                .send((
-                    RemoveTopic,
-                    Some(self.client_id.to_owned()),
-                    None,
-                    None,
-                    0,
-                    None,
-                ))
-                .unwrap();
+            let remove_topic = TopicAction::Remove(RemoveTopic::init(self.client_id.to_owned()));
+            topic_sender.send(remove_topic).unwrap();
         }
     }
 

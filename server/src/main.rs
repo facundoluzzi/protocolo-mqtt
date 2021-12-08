@@ -1,7 +1,7 @@
 use server::config_parser::ServerConfigs;
 use server::logs::logger::Logger;
 use server::server::main::run_server;
-use server::topics::topic_manager::TopicManager;
+use server::topic::topic_manager::TopicManager;
 use server::usermanager::user_manager::UserManager;
 
 use std::net::TcpListener;

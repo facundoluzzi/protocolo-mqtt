@@ -1,5 +1,5 @@
-use crate::enums::topic::topic_actions::TopicAction::PublishMessage;
-use crate::types::topic_types::SenderTopicType;
+use crate::enums::topic::publish_message::PublishMessage;
+use crate::enums::topic::topic_actions::TopicAction;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
@@ -28,21 +28,17 @@ impl Publisher {
         }
     }
 
-    pub fn publish(&self, topics: HashMap<String, Sender<SenderTopicType>>) {
+    pub fn publish(&self, topics: HashMap<String, Sender<TopicAction>>) {
         let publish_packet = self.get_publish_packet();
         let topic_name = self.get_topic();
 
         if let Some(topic_sender) = &topics.get(&topic_name) {
-            topic_sender
-                .send((
-                    PublishMessage,
-                    None,
-                    Some(publish_packet),
-                    None,
-                    self.qos,
-                    Some(self.retained_message),
-                ))
-                .unwrap();
+            let publish = TopicAction::Publish(PublishMessage::init(
+                publish_packet,
+                self.qos,
+                self.retained_message,
+            ));
+            topic_sender.send(publish).unwrap();
         }
     }
 
