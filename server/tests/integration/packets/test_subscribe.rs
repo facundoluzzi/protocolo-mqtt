@@ -200,7 +200,7 @@ mod tests {
 
         match stream.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x80, 0x00, 0x01]);
+                assert_eq!(data[0..size], [0x90, 0x05, 0x00, 0x0A, 0x80, 0x00, 0x01]);
             }
             _ => {
                 panic!();

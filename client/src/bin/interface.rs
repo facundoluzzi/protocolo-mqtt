@@ -4,6 +4,7 @@ use client::packet_manager::ResponsePacket;
 use client::sender_types::connect::Connect;
 use client::sender_types::publish::Publish;
 use client::sender_types::subscribe::Subscribe;
+use std::str::from_utf8;
 
 use client::sender_types::sender_type::ClientSender;
 use client::sender_types::sender_type::InterfaceSender;
@@ -250,12 +251,12 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 result_for_publish.set_text(&response);
             }
             ClientSender::Publish(publish) => {
-                println!("Me llega un publish a la interfaz");
-                let response = publish.get_response();
-                println!("response: {}", response);
+                let mut message = publish.get_response();
                 let topic = publish.get_topic();
-                println!("topic: {}", topic);
-                messages_received.set_text(&format!("{} en {}", response, topic));
+                message.push_str(&topic);
+                let result = from_utf8(&message.as_bytes()).unwrap();
+                println!("{}", result);
+                messages_received.set_text(&result);
             }
             ClientSender::Default(_default) => {}
         }

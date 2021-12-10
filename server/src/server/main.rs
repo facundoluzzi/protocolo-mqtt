@@ -1,10 +1,10 @@
+use crate::enums::topic_manager::topic_message::TypeMessage;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::logs::logger::Logger;
-use crate::paquetes::packet_manager::PacketManager;
+use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::Stream;
 use crate::stream::stream_handler::StreamAction::ReadStream;
 use crate::stream::stream_handler::StreamType;
-use crate::topics::topic_types::TypeTopicManager;
-use crate::usermanager::user_manager_action::UserManagerAction;
 use std::sync::mpsc::Receiver;
 
 use std::net::TcpListener;
@@ -15,7 +15,7 @@ use std::thread;
 pub fn handle_new_client(
     mut logger: Logger,
     sender_stream: Sender<StreamType>,
-    sender_topic_manager: Sender<TypeTopicManager>,
+    sender_topic_manager: Sender<TypeMessage>,
     sender_user_manager: Sender<UserManagerAction>,
 ) {
     let mut packet_factory = PacketManager::init(
@@ -52,7 +52,7 @@ pub fn handle_new_client(
 pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,
-    sender_topic_manager: Sender<TypeTopicManager>,
+    sender_topic_manager: Sender<TypeMessage>,
     sender_user_manager: Sender<UserManagerAction>,
 ) {
     for stream in listener.incoming() {

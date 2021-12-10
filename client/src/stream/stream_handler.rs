@@ -62,6 +62,7 @@ impl Stream {
     }
 
     fn write(mut stream: TcpStream, message: Vec<u8>) {
+        println!("ESCRIBIENDO: {:?}", message);
         let c: &[u8] = &message; // c: &[u8]
         if let Err(msg_error) = stream.write(c) {}
     }
@@ -76,6 +77,8 @@ impl Stream {
 
         while match stream.read(&mut data) {
             Ok(size) => {
+                println!("bytes {:?}", &data);
+
                 if is_first_byte && size != 0 {
                     let (_readed_bytes, _packet_length) =
                         save_remaining_length(&data[1..size]).unwrap();

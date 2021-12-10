@@ -151,7 +151,7 @@ impl Client {
         let response = packet_manager.process_message(&bytes);
 
         match response {
-            Some(clientSender) => sender.send(clientSender).unwrap(),
+            Some(client_sender) => sender.send(client_sender).unwrap(),
             None => {}
         };
 
