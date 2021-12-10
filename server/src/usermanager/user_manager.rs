@@ -1,12 +1,12 @@
+use crate::enums::topic_manager::topic_message::TypeMessage;
+use crate::enums::topic_manager::unsubscriberall::UnsubscriberAll;
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::stream::stream_handler::StreamType;
-use crate::topics::publisher_writer::ChannelPublisherWriter;
-use crate::topics::publisher_writer::PublisherSubscriberAction::DisconectPublisherSubscriber;
-use crate::topics::publisher_writer::PublisherSubscriberAction::PublishMessagePublisherSubscriber;
-use crate::topics::publisher_writer::PublisherSubscriberAction::ReconnectPublisherSubscriber;
-use crate::topics::publisher_writer::PublisherWriter;
-use crate::topics::topic_types::TypeTopicManager;
-use crate::topics::unsubscriberall::UnsubscriberAll;
-use crate::usermanager::user_manager_action::UserManagerAction;
+use crate::topic::publisher_writer::ChannelPublisherWriter;
+use crate::topic::publisher_writer::PublisherSubscriberAction::DisconectPublisherSubscriber;
+use crate::topic::publisher_writer::PublisherSubscriberAction::PublishMessagePublisherSubscriber;
+use crate::topic::publisher_writer::PublisherSubscriberAction::ReconnectPublisherSubscriber;
+use crate::topic::publisher_writer::PublisherWriter;
 
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
@@ -15,11 +15,11 @@ use std::{collections::HashMap, sync::mpsc::Sender};
 
 pub struct UserManager {
     users: HashMap<String, (Sender<ChannelPublisherWriter>, bool)>,
-    sender_topic_manager: Sender<TypeTopicManager>,
+    sender_topic_manager: Sender<TypeMessage>,
 }
 
 impl UserManager {
-    pub fn init(sender_topic_manager: Sender<TypeTopicManager>) -> Sender<UserManagerAction> {
+    pub fn init(sender_topic_manager: Sender<TypeMessage>) -> Sender<UserManagerAction> {
         let (sender_user_manager, receiver_user_manager): (
             Sender<UserManagerAction>,
             Receiver<UserManagerAction>,
@@ -106,7 +106,7 @@ impl UserManager {
                 let unsubscriber_all = UnsubscriberAll::init(client_id);
 
                 self.sender_topic_manager
-                    .send(TypeTopicManager::UnsubscriberAll(unsubscriber_all))
+                    .send(TypeMessage::UnsubscriberAll(unsubscriber_all))
                     .unwrap();
             } else if let Some(channel) = channel_publisher_writer {
                 let publisher_writer_cloned = channel;
