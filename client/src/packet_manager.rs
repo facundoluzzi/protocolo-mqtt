@@ -102,8 +102,8 @@ impl PacketManager {
                     }
                     9 => {
                         let suback = Suback::init(bytes);
-                        let suback_code = suback.get_status_code();
-                        let response_text = suback.check_suback_code(suback_code);
+                        let suback_codes = suback.get_status_code();
+                        let response_text = suback.check_suback_code(suback_codes);
 
                         let suback_response = SubackResponse::init(response_text);
 
