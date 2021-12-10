@@ -9,7 +9,7 @@ mod tests {
     use std::sync::mpsc::Receiver;
     use std::sync::mpsc::Sender;
 
-    use server::topic::topic::Topic;
+    use server::topic::topics::Topic;
 
     #[test]
     fn should_add_topic_and_publish_message() {

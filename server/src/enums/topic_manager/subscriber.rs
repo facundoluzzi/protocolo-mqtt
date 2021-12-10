@@ -1,6 +1,6 @@
 use crate::enums::topic::add_topic::AddTopic;
 use crate::enums::topic::topic_actions::TopicAction;
-use crate::topic::topic::Topic;
+use crate::topic::topics::Topic;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
