@@ -116,7 +116,7 @@ impl Subscribe {
 
     pub fn send_response(&self, sender_stream: Sender<StreamType>) {
         let packet_type = 0x90;
-        let remaining_length = 0x03;
+        let remaining_length = 0x02;
         let packet_identifier_msb = self.packet_identifier[0];
         let packet_identifier_lsb = self.packet_identifier[1];
         let mut bytes_response = vec![
@@ -128,7 +128,9 @@ impl Subscribe {
 
         for return_code in &self.return_codes {
             bytes_response.push(*return_code);
+            bytes_response[1] += 1;
         }
+        println!("SUBACK ESTO ES: {:?}", bytes_response);
 
         if let Err(msg_error) =
             sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
