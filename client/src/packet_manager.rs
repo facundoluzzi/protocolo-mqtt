@@ -9,6 +9,7 @@ use crate::sender_types::puback_response::PubackResponse;
 use crate::sender_types::publish_response::PublishResponse;
 use crate::sender_types::sender_type::ClientSender;
 use crate::sender_types::suback_response::SubackResponse;
+use crate::sender_types::unsuback_response::UnsubackResponse;
 use crate::suback::Suback;
 
 pub enum ResponsePacket {
@@ -108,6 +109,11 @@ impl PacketManager {
                         let suback_response = SubackResponse::init(response_text);
 
                         Some(ClientSender::Suback(suback_response))
+                    }
+                    11 => {
+                        let unsuback_response =
+                            UnsubackResponse::init("Unsubscribe realizado".to_string());
+                        Some(ClientSender::Unsuback(unsuback_response))
                     }
                     _ => {
                         default::Default::init(bytes);

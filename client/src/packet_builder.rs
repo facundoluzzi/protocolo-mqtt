@@ -65,6 +65,14 @@ pub fn build_bytes_for_suscribe(topic: String, is_qos_0: bool) -> Vec<u8> {
     bytes
 }
 
+pub fn build_bytes_for_unsubscribe(topic: String) -> Vec<u8> {
+    let mut bytes = vec![0xA0, 0x00, 0x0A];
+    add_topic_bytes(topic, &mut bytes);
+    let length = bytes.len();
+    bytes.insert(1, (length - 1) as u8);
+    bytes
+}
+
 fn add_qos_byte(is_qos_0: bool, bytes: &mut Vec<u8>) {
     if !is_qos_0 {
         bytes.push(0x01);

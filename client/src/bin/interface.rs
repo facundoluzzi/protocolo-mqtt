@@ -4,6 +4,7 @@ use client::packet_manager::ResponsePacket;
 use client::sender_types::connect::Connect;
 use client::sender_types::publish::Publish;
 use client::sender_types::subscribe::Subscribe;
+use client::sender_types::unsubscribe::Unsubscribe;
 
 use client::sender_types::sender_type::ClientSender;
 use client::sender_types::sender_type::InterfaceSender;
@@ -77,9 +78,13 @@ fn build_objects_for_suscribe(
     gtk::RadioButton,
     gtk::Label,
     gtk::Label,
+    gtk::Entry,
+    gtk::Button,
 ) {
     let input_topic_suscribe: gtk::Entry = builder.object("input_topic_suscribe").unwrap();
     let suscribe_button: gtk::Button = builder.object("suscribe_button").unwrap();
+    let input_topic_unsuscribe: gtk::Entry = builder.object("input_topic_unsubscribe").unwrap();
+    let unsubscribe_button: gtk::Button = builder.object("suscribe_button").unwrap();
     let qos_suscriber_0: gtk::RadioButton = builder.object("qos_suscriber_0").unwrap();
     let qos_suscriber_1: gtk::RadioButton = builder.object("qos_suscriber_1").unwrap();
     let result_label_2: gtk::Label = builder.object("result_label2").unwrap();
@@ -91,6 +96,8 @@ fn build_objects_for_suscribe(
         qos_suscriber_1,
         result_label_2,
         messages_received,
+        input_topic_unsuscribe,
+        unsubscribe_button,
     )
 }
 
@@ -98,6 +105,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let sender_connect = client_sender.clone();
     let sender_publish = client_sender.clone();
     let sender_suscribe = client_sender.clone();
+    let sender_unsubscribe = client_sender.clone();
 
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
@@ -130,6 +138,8 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         qos_suscriber_1,
         result_for_suscribe,
         messages_received,
+        input_topic_unsubscribe,
+        unsubscribe_button,
     ) = build_objects_for_suscribe(&builder);
 
     let (tx, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
@@ -176,6 +186,15 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             .unwrap();
     });
 
+    unsubscribe_button.connect_clicked(move |_| {
+        let topic = input_topic_unsubscribe.text().to_string();
+
+        let unsubscribe = Unsubscribe::init(topic);
+        sender_unsubscribe
+            .send(InterfaceSender::Unsubscribe(unsubscribe))
+            .unwrap();
+    });
+
     rc.attach(None, move |client_sender| {
         match client_sender {
             ClientSender::Connack(connack) => {
@@ -194,6 +213,10 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 let response = publish.get_response();
                 let topic = publish.get_topic();
                 messages_received.set_text(&format!("{} en {}", response, topic));
+            }
+            ClientSender::Unsuback(unsuback) => {
+                let response = unsuback.get_response();
+                result_for_suscribe.set_text(&response);
             }
             ClientSender::Default(_default) => {}
         }
