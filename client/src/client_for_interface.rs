@@ -85,24 +85,20 @@ impl Client {
                         }
                     }
                     InterfaceSender::Publish(publish) => match client.sender_stream.clone() {
-                        Some(sender_stream) => {
-                            println!("\n\n Publish \n\n");
-                            match publish.send_publish(sender_stream.clone()) {
-                                Ok(_result_ok) => {
-                                    println!("Ok");
-                                }
-                                Err(err) => {
-                                    println!("err: {}", err);
-                                }
+                        Some(sender_stream) => match publish.send_publish(sender_stream.clone()) {
+                            Ok(_result_ok) => {
+                                println!("Ok");
                             }
-                        }
+                            Err(err) => {
+                                println!("err: {}", err);
+                            }
+                        },
                         None => {
                             println!("Unexpected error");
                         }
                     },
                     InterfaceSender::Subscribe(subscribe) => match client.sender_stream.clone() {
                         Some(sender_stream) => {
-                            println!("\n\n Subscribe \n\n");
                             match subscribe.send_suscribe(sender_stream.clone()) {
                                 Ok(_result_ok) => {
                                     println!("Ok");
@@ -126,7 +122,6 @@ impl Client {
             let (packet_sender, packet_receiver) = mpsc::channel::<Vec<u8>>();
 
             loop {
-                println!("\n\n\n Leyendo \n\n\n");
                 let message_sent =
                     sender_stream
                         .clone()

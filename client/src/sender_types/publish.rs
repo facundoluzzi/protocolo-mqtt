@@ -28,10 +28,7 @@ impl Publish {
         let result = sender_stream.send((WriteStream, Some(publish_bytes), None));
 
         match result {
-            Ok(_result_ok) => {
-                println!("publish");
-                Ok(())
-            }
+            Ok(_result_ok) => Ok(()),
             Err(err) => Err(err.to_string()),
         }
     }

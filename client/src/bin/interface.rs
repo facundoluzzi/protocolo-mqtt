@@ -226,7 +226,6 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     suscribe_button.connect_clicked(move |_| {
         // let list_of_topics_to_suscribe_cloned = list_of_topics_to_suscribe.clone();
         let data = data_for_thread_dos.lock().unwrap();
-        println!("{:?}", data.to_vec());
         let subscribe = Subscribe::init(data.to_vec());
         sender_suscribe
             .send(InterfaceSender::Subscribe(subscribe))
@@ -245,16 +244,12 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 result_for_suscribe.set_text(&response);
             }
             ClientSender::Puback(puback) => {
-                println!("Me llega un puback a la interfaz");
                 let response = puback.get_response();
                 result_for_publish.set_text(&response);
             }
             ClientSender::Publish(publish) => {
-                println!("Me llega un publish a la interfaz");
                 let response = publish.get_response();
-                println!("response: {}", response);
                 let topic = publish.get_topic();
-                println!("topic: {}", topic);
                 messages_received.set_text(&format!("{} en {}", response, topic));
             }
             ClientSender::Default(_default) => {}

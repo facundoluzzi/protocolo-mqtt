@@ -91,6 +91,7 @@ impl Stream {
                 if total_data.len() > packet_length + readed_bytes {
                     is_first_byte = true;
                     let bytes_to_process = &total_data[0..packet_length + readed_bytes + 1];
+                    println!("BYTES QUE LLEGARON {:?}", bytes_to_process);
                     sender.send(bytes_to_process.to_vec()).unwrap();
 
                     total_data = Vec::new();
