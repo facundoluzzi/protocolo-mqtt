@@ -184,7 +184,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -410,7 +410,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -611,7 +611,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -820,7 +820,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -1020,7 +1020,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();

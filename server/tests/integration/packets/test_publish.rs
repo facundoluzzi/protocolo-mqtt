@@ -177,7 +177,7 @@ fn should_publish_message_with_qos_1() {
     data = vec![0; 100];
     match publisher_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x0A]);
+            assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x0A]);
         }
         _ => {
             panic!();
@@ -281,7 +281,7 @@ fn should_publish_message_with_qos_1_twice() {
     data = vec![0; 100];
     match publisher_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x0A]);
+            assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x0A]);
         }
         _ => {
             panic!();
@@ -304,7 +304,7 @@ fn should_publish_message_with_qos_1_twice() {
     data = vec![0; 100];
     match publisher_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x0A]);
+            assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x0A]);
         }
         _ => {
             panic!();

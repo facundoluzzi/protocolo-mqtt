@@ -309,7 +309,7 @@ fn testing_retained_message_one_publish_with_retain_and_another_without_retain_m
     data = vec![0; 100];
     match stream_to_publish_message_river.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+            assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
         }
         _ => {
             panic!();
@@ -486,7 +486,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
         .write(&bytes_to_publish_message_alteg)
         .unwrap();
 
-    thread::sleep(Duration::from_millis(20));
+    thread::sleep(Duration::from_millis(50));
 
     let bytes_to_publish_message_river = [
         0x31, // Paquete publish
@@ -502,7 +502,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
         .write(&bytes_to_publish_message_river)
         .unwrap();
 
-    thread::sleep(Duration::from_millis(20));
+    thread::sleep(Duration::from_millis(50));
 
     stream_to_verify_retained_messages
         .write(&subscribe_bytes_crear_cantidad_de_goles)
@@ -519,7 +519,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
             panic!();
         }
     }
-    thread::sleep(Duration::from_millis(20));
+    thread::sleep(Duration::from_millis(50));
     data = vec![0; 100];
     match stream_to_verify_retained_messages.read(&mut data) {
         Ok(size) => {

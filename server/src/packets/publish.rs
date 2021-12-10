@@ -67,7 +67,7 @@ impl Publish {
             0x01 => {
                 let puback_response = [
                     0x40,
-                    0x01,
+                    0x02,
                     self.packet_identifier[0],
                     self.packet_identifier[1],
                 ];

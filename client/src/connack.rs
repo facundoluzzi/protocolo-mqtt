@@ -1,12 +1,12 @@
 use crate::flags::connack_flags::ConnackFlags;
-use crate::trait_paquetes::Paquetes;
+use crate::packet_manager::ResponsePacket;
 pub struct Connack {
     remaining_length: usize,
     _flags: ConnackFlags,
     status_code: u8,
 }
 
-impl Paquetes for Connack {
+impl Connack {
     /**
      * Se calcula la cantidad de bytes dentro del actual paquete, incluyendo la data del header variable
      * y el payload. Esto no incluye los bytes usados para encodear el remaining length.
@@ -20,22 +20,32 @@ impl Paquetes for Connack {
         self.remaining_length
     }
 
-    fn get_status_code(&self) -> u8 {
+    pub fn get_status_code(&self) -> u8 {
         self.status_code
     }
 
-    fn init(bytes: &[u8]) -> Box<dyn Paquetes> {
+    pub fn init(bytes: &[u8]) -> Connack {
         let variable_header = &bytes[2..4];
         let connack_flags = ConnackFlags::init(&variable_header[0]);
         let connack_code = variable_header[1];
-        Box::new(Connack {
+        Connack {
             remaining_length: 2,
             _flags: connack_flags,
             status_code: connack_code,
-        })
+        }
     }
 
-    fn get_type(&self) -> String {
-        "connack".to_owned()
+    fn get_type(&self) -> ResponsePacket {
+        ResponsePacket::Connack
+    }
+
+    pub fn status_for_code(&self, code: u8) -> String {
+        match code {
+            0x00 => "Conexion realizada con exito".to_string(),
+            0x01 => "Error: la version del protocolo no es compatible".to_string(),
+            0x04 => "Error: los datos enviados no son correctos".to_string(),
+            0x05 => "Error: no esta autorizado".to_string(),
+            _ => "Error desconocido".to_string(),
+        }
     }
 }
