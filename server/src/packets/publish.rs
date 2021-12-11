@@ -7,8 +7,6 @@ use crate::variable_header::publish_variable_header::{self, get_variable_header}
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
-use std::thread;
-use std::time::Duration;
 
 pub struct Publish {
     _dup: u8,

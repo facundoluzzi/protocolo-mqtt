@@ -15,7 +15,7 @@ impl ConnackFlags {
 
 #[cfg(test)]
 mod tests {
-    use crate::flags::connack_flags::ConnackFlags;
+    use crate::helper::flags::connack_flags::ConnackFlags;
 
     #[test]
     fn create_connack_flags_with_session_present() {

@@ -32,6 +32,7 @@ impl Stream {
                 let action = message_received.0;
                 match action {
                     StreamAction::WriteStream => {
+                        println!("ESCRIBO LO MAS BIEN");
                         if let Some(message) = message_received.1 {
                             Stream::write(stream_to_write.try_clone().unwrap(), message);
                         } else {
@@ -39,6 +40,7 @@ impl Stream {
                         }
                     }
                     StreamAction::ReadStream => {
+                        println!("LEO LO MAS BIEN");
                         if let Some(sender) = message_received.2 {
                             let stread = stream_to_read.try_clone().unwrap();
                             let stwrite = stream_to_write.try_clone().unwrap();
