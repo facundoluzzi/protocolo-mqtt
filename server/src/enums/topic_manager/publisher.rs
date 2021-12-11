@@ -9,6 +9,7 @@ pub struct Publisher {
     publish: Vec<u8>,
     qos: u8,
     retained_message: bool,
+    message: String,
 }
 
 impl Publisher {
@@ -18,6 +19,7 @@ impl Publisher {
         publish: Vec<u8>,
         qos: u8,
         retained_message: bool,
+        message: String,
     ) -> Publisher {
         Publisher {
             client_id,
@@ -25,6 +27,7 @@ impl Publisher {
             publish,
             qos,
             retained_message,
+            message,
         }
     }
 
@@ -37,7 +40,9 @@ impl Publisher {
                 publish_packet,
                 self.qos,
                 self.retained_message,
+                self.message.to_string(),
             ));
+
             topic_sender.send(publish).unwrap();
         }
     }
@@ -52,5 +57,9 @@ impl Publisher {
 
     pub fn get_publish_packet(&self) -> Vec<u8> {
         self.publish.clone()
+    }
+
+    pub fn get_message(&self) -> String {
+        self.message.to_string()
     }
 }

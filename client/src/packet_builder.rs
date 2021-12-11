@@ -51,37 +51,41 @@ fn add_username_bytes(user: String, flags: &mut u8, bytes: &mut Vec<u8>) {
     }
 }
 
-pub fn build_bytes_for_suscribe(topic: String, is_qos_0: bool) -> Vec<u8> {
+pub fn build_bytes_for_suscribe(list_of_topics: Vec<(String, bool)>) -> Vec<u8> {
     let mut bytes = vec![
         //0x82 packet type
         //0x08, remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
     ];
-    add_suscribe_packet_type(is_qos_0, &mut bytes);
-    add_topic_bytes(topic, &mut bytes);
-    add_qos_byte(is_qos_0, &mut bytes);
+    add_suscribe_packet_type(&mut bytes);
+    add_bytes_of_topic_list(list_of_topics, &mut bytes);
     let length = bytes.len();
     bytes.insert(1, (length - 1) as u8);
     bytes
 }
 
-fn add_qos_byte(is_qos_0: bool, bytes: &mut Vec<u8>) {
-    if !is_qos_0 {
-        bytes.push(0x01);
-    } else {
-        bytes.push(0x00);
+fn add_suscribe_packet_type(bytes: &mut Vec<u8>) {
+    bytes.insert(0, 0x82)
+}
+
+fn add_bytes_of_topic_list(topic_list: Vec<(String, bool)>, bytes: &mut Vec<u8>) {
+    if !topic_list.is_empty() {
+        for (topic, is_qos_0) in topic_list {
+            let topic_length = topic.len();
+            let mut topic_in_bytes = topic.as_bytes().to_vec();
+            bytes.push(0x00);
+            bytes.push(topic_length as u8);
+            bytes.append(&mut topic_in_bytes);
+            if is_qos_0 {
+                bytes.push(0x00);
+            } else {
+                bytes.push(0x01);
+            }
+        }
     }
 }
 
-fn add_suscribe_packet_type(is_qos_0: bool, bytes: &mut Vec<u8>) {
-    if is_qos_0 {
-        bytes.insert(0, 0x80)
-    } else {
-        bytes.insert(0, 0x82)
-    }
-}
-
-fn add_topic_bytes(topic: String, bytes: &mut Vec<u8>) {
+fn add_topic_bytes_for_publish(topic: String, bytes: &mut Vec<u8>) {
     if !topic.is_empty() {
         let topic_length = topic.len();
         let mut topic_in_bytes = topic.as_bytes().to_vec();
@@ -97,7 +101,7 @@ pub fn build_bytes_for_publish(topic: String, message: String, is_qos_0: bool) -
         //0x09,  Remaining Length
     ];
     add_publish_packet_type(is_qos_0, &mut bytes);
-    add_topic_bytes(topic, &mut bytes);
+    add_topic_bytes_for_publish(topic, &mut bytes);
     add_packet_identifier_bytes(is_qos_0, &mut bytes);
     add_message_bytes(message, &mut bytes);
     let length = bytes.len();

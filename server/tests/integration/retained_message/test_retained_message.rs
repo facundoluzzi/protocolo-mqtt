@@ -511,8 +511,6 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
     data = vec![0; 5];
     match stream_to_verify_retained_messages.read(&mut data) {
         Ok(size) => {
-            println!("PRIMER ENTRADA");
-            println!("size: {}", size);
             assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
         }
         _ => {

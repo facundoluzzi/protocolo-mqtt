@@ -37,17 +37,23 @@ impl Topic {
                         topic.remove(action.get_client_id());
                     }
                     Publish(action) => {
-                        let info = action.get_message();
+                        let packet = action.get_packet();
                         let qos = action.get_qos();
+                        let message = action.get_message();
                         let retained_message = action.get_retained_message();
-                        if info.is_empty() && retained_message {
+                        if packet.is_empty() && retained_message {
                             topic.retained_message = None;
                         } else if retained_message && qos == 0 {
-                            let publish = PublishMessage::init(info.clone(), qos, true);
+                            let publish = PublishMessage::init(
+                                packet.clone(),
+                                qos,
+                                true,
+                                message.to_string(),
+                            );
                             topic.retained_message = Some(publish);
                         }
 
-                        topic.publish_msg(info, qos);
+                        topic.publish_msg(packet, qos, message);
                     }
                 }
             }
@@ -71,7 +77,7 @@ impl Topic {
         qos_subscribe: u8,
     ) {
         if let Some(message) = &self.retained_message {
-            let mut new_packet = message.get_message();
+            let mut new_packet = message.get_packet();
             let qos_publish = message.get_qos();
             if qos_subscribe + qos_publish < 2 {
                 new_packet[0] &= 0b11111101;
@@ -85,15 +91,25 @@ impl Topic {
         }
     }
 
-    fn publish_msg(&self, packet: Vec<u8>, qos: u8) {
+    fn publish_msg(&self, packet: Vec<u8>, qos: u8, message: String) {
         for (client_id, (subscriber, qos_subscribe)) in &self.subscribers {
             let mut new_packet = packet.clone();
             if qos_subscribe + qos < 2 {
                 new_packet[0] &= 0b11111101;
             }
+
+            if qos == 1 && *qos_subscribe == 0 {
+                let message_length = message.len();
+                let index_to_delete = packet.len() - message_length - 2;
+                new_packet.remove(index_to_delete);
+                new_packet.remove(index_to_delete);
+                new_packet[1] -= 2;
+            }
+
             let action = UserManagerAction::PublishMessageUserManager(
                 PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()),
             );
+
             if let Err(msg) = subscriber.send(action) {
                 println!("Unexpected error: {}", msg);
             };

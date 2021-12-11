@@ -7,6 +7,9 @@ use crate::variable_header::publish_variable_header::{self, get_variable_header}
 
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
+use std::thread;
+use std::time::Duration;
+
 pub struct Publish {
     _dup: u8,
     qos: u8,
@@ -71,6 +74,7 @@ impl Publish {
                     self.packet_identifier[0],
                     self.packet_identifier[1],
                 ];
+
                 if let Err(msg_error) =
                     stream.send((WriteStream, Some(puback_response.to_vec()), None, None))
                 {
@@ -96,6 +100,7 @@ impl Publish {
             self.all_bytes.clone(),
             self.qos,
             self.retain == 1,
+            self.payload.to_string(),
         );
 
         if let Err(sender_err) = sender_topic_manager.send(TypeMessage::Publisher(publisher_prueba))
