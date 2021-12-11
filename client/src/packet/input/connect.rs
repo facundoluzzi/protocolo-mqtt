@@ -12,6 +12,11 @@ pub struct Connect {
     password: String,
     id_client: String,
     send_x: gtk::glib::Sender<ClientSender>,
+    last_will_message: String,
+    last_will_topic: String,
+    clean_session_is_active: bool,
+    qos_will_message_0: bool,
+    keep_alive: String,
 }
 
 impl Connect {
@@ -22,6 +27,11 @@ impl Connect {
         password: String,
         id_client: String,
         send_x: gtk::glib::Sender<ClientSender>,
+        last_will_message: String,
+        last_will_topic: String,
+        clean_session_is_active: bool,
+        qos_will_message_0: bool,
+        keep_alive: String,
     ) -> Connect {
         Connect {
             ip,
@@ -30,6 +40,11 @@ impl Connect {
             password,
             id_client,
             send_x,
+            last_will_message,
+            last_will_topic,
+            clean_session_is_active,
+            qos_will_message_0,
+            keep_alive,
         }
     }
 
@@ -95,6 +110,20 @@ impl Connect {
         }
     }
 
+    fn add_keep_alive_bytes(&self, bytes: &mut Vec<u8>) {
+        bytes.push(0x00);
+        if !self.keep_alive.is_empty() {
+            let keep_alive = match self.keep_alive.parse::<i32>() {
+                Ok(keep_alive) => keep_alive,
+                Err(_err) => 0,
+            };
+            let keep_alive_as_u8 = keep_alive as u8;
+            bytes.push(keep_alive_as_u8);
+        } else {
+            bytes.push(0x00);
+        }
+    }
+
     fn build_bytes_for_connect(&self) -> Vec<u8> {
         let mut flags: u8 = 0x00;
         let mut bytes = vec![
@@ -103,8 +132,8 @@ impl Connect {
             0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // Variable Header
             0x04, // Protocol
             0x00, //Flags
-            0x00, 0x00, //Keep Alive
         ];
+        self.add_keep_alive_bytes(&mut bytes);
         self.add_client_id_bytes(&mut bytes);
         self.add_username_bytes(&mut flags, &mut bytes);
         self.add_password_bytes(&mut flags, &mut bytes);
