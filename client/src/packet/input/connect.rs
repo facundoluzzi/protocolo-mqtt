@@ -83,8 +83,8 @@ impl Connect {
             bytes.push(0x00);
             bytes.push(id_length as u8);
             bytes.append(&mut id_client_in_bytes);
-        } 
-        
+        }
+
         if self.clean_session_is_active {
             *flags |= 0b00000010;
         }

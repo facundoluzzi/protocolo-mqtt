@@ -130,7 +130,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let sender_connect = client_sender.clone();
     let sender_publish = client_sender.clone();
     let sender_subscribe = client_sender.clone();
-    let sender_unsubscribe = client_sender.clone();
+    let sender_unsubscribe = client_sender;
 
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
@@ -278,7 +278,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         let topic_list = cloned_topic_list_label
             .text()
             .to_string()
-            .split("\n")
+            .split('\n')
             .filter(|line| !line.contains(&topic))
             .collect::<Vec<&str>>()
             .join("\n");
