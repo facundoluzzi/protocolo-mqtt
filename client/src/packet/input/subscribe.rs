@@ -13,8 +13,9 @@ impl Subscribe {
     }
 
     pub fn send_suscribe(self, sender_stream: Sender<StreamType>) -> Result<(), String> {
-        let suscribe_bytes = build_bytes_for_suscribe(self.list_of_topics);
-        let result = sender_stream.send((WriteStream, Some(suscribe_bytes), None));
+        let subscribe_bytes = build_bytes_for_suscribe(self.list_of_topics);
+        println!("bytes to subscribe: {:?}", subscribe_bytes);
+        let result = sender_stream.send((WriteStream, Some(subscribe_bytes), None));
 
         match result {
             Ok(_result_ok) => Ok(()),

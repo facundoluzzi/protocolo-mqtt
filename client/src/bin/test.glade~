@@ -415,7 +415,7 @@
                   </object>
                   <packing>
                     <property name="x">150</property>
-                    <property name="y">400</property>
+                    <property name="y">370</property>
                   </packing>
                 </child>
                 <child>
@@ -432,7 +432,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="input_topic_suscribe">
+                  <object class="GtkEntry" id="input_topic_subscribe">
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -452,18 +452,18 @@
                   </object>
                   <packing>
                     <property name="x">125</property>
-                    <property name="y">450</property>
+                    <property name="y">420</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="input_topic_unsubscribe">
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                   </object>
                   <packing>
                     <property name="x">225</property>
-                    <property name="y">470</property>
+                    <property name="y">440</property>
                   </packing>
                 </child>
                 <child>
@@ -479,11 +479,11 @@
                   </object>
                   <packing>
                     <property name="x">150</property>
-                    <property name="y">550</property>
+                    <property name="y">500</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="suscribe_button">
+                  <object class="GtkButton" id="subscribe_button">
                     <property name="label" translatable="yes">Suscribirse</property>
                     <property name="width_request">123</property>
                     <property name="visible">True</property>
@@ -504,11 +504,11 @@
                   </object>
                   <packing>
                     <property name="x">550</property>
-                    <property name="y">470</property>
+                    <property name="y">440</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkRadioButton" id="qos_suscriber_1">
+                  <object class="GtkRadioButton" id="qos_subscriber_1">
                     <property name="label" translatable="yes">1</property>
                     <property name="width_request">10</property>
                     <property name="height_request">40</property>
@@ -517,7 +517,7 @@
                     <property name="receives_default">False</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <property name="group">qos_suscriber_0</property>
+                    <property name="group">qos_subscriber_0</property>
                   </object>
                   <packing>
                     <property name="x">250</property>
@@ -525,7 +525,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkRadioButton" id="qos_suscriber_0">
+                  <object class="GtkRadioButton" id="qos_subscriber_0">
                     <property name="label" translatable="yes">0</property>
                     <property name="width_request">10</property>
                     <property name="height_request">40</property>
@@ -534,7 +534,7 @@
                     <property name="receives_default">False</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <property name="group">qos_suscriber_1</property>
+                    <property name="group">qos_subscriber_1</property>
                   </object>
                   <packing>
                     <property name="x">200</property>
@@ -555,7 +555,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="result_label2">
+                  <object class="GtkLabel" id="result_suback_unsubcak">
                     <property name="width_request">500</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
@@ -570,19 +570,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="messages_received">
-                    <property name="width_request">590</property>
-                    <property name="height_request">50</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="x">140</property>
-                    <property name="y">600</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="add_button">
+                  <object class="GtkButton" id="add_topic_button">
                     <property name="label" translatable="yes">add</property>
                     <property name="width_request">100</property>
                     <property name="height_request">20</property>
@@ -607,7 +595,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="topic_list_label">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                           </object>
@@ -618,6 +606,37 @@
                   <packing>
                     <property name="x">610</property>
                     <property name="y">130</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="width_request">500</property>
+                    <property name="height_request">120</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="messages_received_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
+                            <attributes>
+                              <attribute name="weight" value="light"/>
+                              <attribute name="scale" value="2"/>
+                            </attributes>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="x">150</property>
+                    <property name="y">570</property>
                   </packing>
                 </child>
               </object>
