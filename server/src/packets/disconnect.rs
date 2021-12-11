@@ -15,29 +15,29 @@ impl Disconnect {
         sender_stream: Sender<StreamType>,
     ) {
         let action =
-            UserManagerAction::DisconnectUserManager(DisconnectUserManager::init(client_id));
+            UserManagerAction::DisconnectUserManager(DisconnectUserManager::init(client_id, false));
         if let Err(_msg) = user_manager_sender.send(action) {
             println!("Error");
         }
         Disconnect::disconnect_stream(sender_stream);
     }
 
-    // pub fn disconnect_ungracefully(client_id: String,
-    //     user_manager_sender: Sender<UserManagerAction>,
-    //     sender_stream: Sender<StreamType>,
-    // ) {
-    //     let last_will_message = 
-    //     let action = UserManagerAction::DisconnectUserManager(DisconnectUserManager::init(client_id));
-    //     if let Err(_msg) = user_manager_sender.send(action) {
-    //         println!("Error");
-    //     }
-    //     Disconnect::disconnect_stream(sender_stream);
-    // }
+    pub fn disconnect_ungracefully(
+        client_id: String,
+        user_manager_sender: Sender<UserManagerAction>,
+        sender_stream: Sender<StreamType>,
+    ) {
+        let action =
+            UserManagerAction::DisconnectUserManager(DisconnectUserManager::init(client_id, true));
+        if let Err(_msg) = user_manager_sender.send(action) {
+            println!("Error");
+        }
+        Disconnect::disconnect_stream(sender_stream);
+    }
 
-    fn disconnect_stream(sender: Sender<StreamType>){
+    fn disconnect_stream(sender: Sender<StreamType>) {
         if let Err(_msg) = sender.send((CloseConnectionStream, None, None, None)) {
             println!("Error");
         }
     }
-
 }

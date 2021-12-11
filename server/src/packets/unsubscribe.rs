@@ -20,7 +20,7 @@ impl Unsubscribe {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
         let init_variable_header = 1 + readed_index;
-        let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()]);
+        let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()])?;
         let (packet_identifier_rec, length) = variable_header;
 
         let payload = &bytes[init_variable_header + length..bytes.len()];

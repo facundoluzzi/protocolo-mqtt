@@ -50,7 +50,7 @@ impl ConnectPayload {
                     pointer += index;
                 } else {
                     return Err("Error parsing will message".to_string());
-                } 
+                }
             } else {
                 return Err("Error parsing will flag".to_string());
             }

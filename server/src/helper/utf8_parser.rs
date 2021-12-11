@@ -30,7 +30,7 @@ impl UTF8 {
             end = usize::from(lsb) + 0b00000010;
             length = usize::from(lsb + 0b00000010);
         }
-    
+
         Ok((
             String::from_utf8(copy_bytes[init..end].to_vec()).unwrap(),
             length,

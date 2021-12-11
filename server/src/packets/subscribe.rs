@@ -28,7 +28,7 @@ impl Subscribe {
 
         let init_variable_header = 1 + readed_index;
 
-        let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()]);
+        let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()])?;
         let (_packet_identifier, length) = variable_header;
 
         let payload = &bytes[init_variable_header + length..bytes.len()];
@@ -71,7 +71,6 @@ impl Subscribe {
                 InvalidWildcard => {
                     acumulator += length + 1;
                     self.return_codes.push(0x80);
-                    println!("a");
                     continue;
                 }
             };

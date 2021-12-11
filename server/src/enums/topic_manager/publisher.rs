@@ -31,7 +31,6 @@ impl Publisher {
     pub fn publish(&self, topics: HashMap<String, Sender<TopicAction>>) {
         let publish_packet = self.get_publish_packet();
         let topic_name = self.get_topic();
-
         if let Some(topic_sender) = &topics.get(&topic_name) {
             let publish = TopicAction::Publish(PublishMessage::init(
                 publish_packet,

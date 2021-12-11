@@ -5,7 +5,6 @@ pub struct AddUserManager {
     client_id: String,
     sender_stream: Sender<StreamType>,
     clean_session: bool,
-    will_flag: bool,
     will_topic: Option<String>,
     will_message: Option<String>,
     will_qos: Option<u8>,
@@ -17,7 +16,6 @@ impl AddUserManager {
         client_id: String,
         sender_stream: Sender<StreamType>,
         clean_session: bool,
-        will_flag: bool,
         will_topic: Option<String>,
         will_message: Option<String>,
         will_qos: Option<u8>,
@@ -27,7 +25,6 @@ impl AddUserManager {
             client_id,
             sender_stream,
             clean_session,
-            will_flag, 
             will_topic,
             will_message,
             will_qos,
@@ -45,16 +42,12 @@ impl AddUserManager {
         self.clean_session
     }
 
-    pub fn get_will_flag(&self) -> bool {
-        self.will_flag
-    }
-
     pub fn get_will_topic(&self) -> String {
         self.will_topic.to_owned().unwrap()
     }
 
-    pub fn get_will_message(&self) -> String {
-        self.will_message.to_owned().unwrap()
+    pub fn get_will_message(&self) -> Option<String> {
+        self.will_message.to_owned()
     }
 
     pub fn get_will_qos(&self) -> u8 {

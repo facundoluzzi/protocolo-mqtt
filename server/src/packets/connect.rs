@@ -85,18 +85,16 @@ impl Connect {
                     client_id,
                     sender_stream,
                     session_flag,
-                    true,
                     will_topic,
                     will_message,
                     Some(will_qos),
                     Some(will_retained_message),
                 ));
-            }else{
+            } else {
                 action = UserManagerAction::AddUserManager(AddUserManager::init(
                     client_id,
                     sender_stream,
                     session_flag,
-                    false,
                     None,
                     None,
                     None,

@@ -170,8 +170,8 @@ mod tests {
 
     #[test]
     fn should_subscribe_some_topics_05() {
-        let server = ServerTest::start("0.0.0.0:1892".to_string());
-        let mut stream = TcpStream::connect("0.0.0.0:1892".to_string()).unwrap();
+        let server = ServerTest::start("0.0.0.0:1894".to_string());
+        let mut stream = TcpStream::connect("0.0.0.0:1894".to_string()).unwrap();
 
         let mut data = vec![0; 1000];
 
