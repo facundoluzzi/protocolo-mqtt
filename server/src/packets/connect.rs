@@ -75,7 +75,6 @@ impl Connect {
             // TODO: Cortar la conexión
             Ok(connect)
         } else {
-            // No se a donde va este sender tengo q velro
             let action = UserManagerAction::AddUserManager(AddUserManager::init(
                 client_id,
                 sender_stream,

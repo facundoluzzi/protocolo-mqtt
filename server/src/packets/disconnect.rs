@@ -23,4 +23,11 @@ impl Disconnect {
             println!("Error");
         }
     }
+
+    // pub fn disconnect_ungracefully(client_id: String,
+    //     user_manager_sender: Sender<UserManagerAction>,
+    //     sender_stream: Sender<StreamType>,
+    //     sender_topic_manager: Sender<TypeMessage>,
+    // )
+
 }
