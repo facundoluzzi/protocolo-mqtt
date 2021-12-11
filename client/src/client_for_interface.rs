@@ -1,12 +1,14 @@
-use crate::sender_types::sender_type::ClientSender;
-use crate::sender_types::sender_type::InterfaceSender;
-use crate::stream::stream_handler::StreamAction::ReadStream;
-use crate::{packet_manager::PacketManager, stream::stream_handler::StreamType};
-use std::{net::TcpStream, thread};
+use crate::helper::stream::stream_handler::StreamAction::ReadStream;
+use crate::helper::stream::stream_handler::StreamType;
+use crate::packet::packet_manager::PacketManager;
+use crate::packet::sender_type::ClientSender;
+use crate::packet::sender_type::InterfaceSender;
 
+use std::net::TcpStream;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
+use std::thread;
 
 pub struct Client {
     stream: Option<TcpStream>,
@@ -30,11 +32,11 @@ impl Clone for Client {
                 sender_stream: None,
             };
         }
-        return Client {
+        Client {
             stream: None,
             sender: None,
             sender_stream: None,
-        };
+        }
     }
 }
 
@@ -43,6 +45,9 @@ pub enum ClientAction {
     Publish,
     Subscribe,
 }
+
+type SenderForReading = Sender<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
+type ReceiverForReading = Receiver<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
 
 pub type SenderClient = (
     ClientAction,
@@ -66,10 +71,9 @@ impl Client {
             sender: None,
             sender_stream: None,
         };
-
         let (sender_to_start_reading, receiver_to_start_reading): (
-            Sender<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>,
-            Receiver<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>,
+            SenderForReading,
+            ReceiverForReading,
         ) = mpsc::channel();
 
         thread::spawn(move || {
@@ -85,17 +89,14 @@ impl Client {
                         }
                     }
                     InterfaceSender::Publish(publish) => match client.sender_stream.clone() {
-                        Some(sender_stream) => {
-                            println!("\n\n Publish \n\n");
-                            match publish.send_publish(sender_stream.clone()) {
-                                Ok(_result_ok) => {
-                                    println!("Ok");
-                                }
-                                Err(err) => {
-                                    println!("err: {}", err);
-                                }
+                        Some(sender_stream) => match publish.send_publish(sender_stream.clone()) {
+                            Ok(_result_ok) => {
+                                println!("Ok");
                             }
-                        }
+                            Err(err) => {
+                                println!("err: {}", err);
+                            }
+                        },
                         None => {
                             println!("Unexpected error");
                         }
@@ -141,7 +142,6 @@ impl Client {
             let (packet_sender, packet_receiver) = mpsc::channel::<Vec<u8>>();
 
             loop {
-                println!("\n\n\n Leyendo \n\n\n");
                 let message_sent =
                     sender_stream
                         .clone()
@@ -163,11 +163,10 @@ impl Client {
 
     fn process_packet(bytes: &[u8], sender: gtk::glib::Sender<ClientSender>) -> Result<(), String> {
         let packet_manager = PacketManager::new();
-        let response = packet_manager.process_message(&bytes);
+        let response = packet_manager.process_message(bytes);
 
-        match response {
-            Some(clientSender) => sender.send(clientSender).unwrap(),
-            None => {}
+        if let Some(client_sender) = response {
+            sender.send(client_sender).unwrap();
         };
 
         Ok(())

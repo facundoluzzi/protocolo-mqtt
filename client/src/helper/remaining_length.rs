@@ -10,6 +10,7 @@ pub fn save_remaining_length(bytes: &[u8]) -> Result<(usize, usize), String> {
     let mut multiplier: usize = 1;
     let mut value: usize = 0;
     let mut index: usize = 0; // cantidad de bytes leídos
+
     loop {
         let encoded_byte: usize = bytes[index] as usize;
         value += (encoded_byte & 127) * multiplier;

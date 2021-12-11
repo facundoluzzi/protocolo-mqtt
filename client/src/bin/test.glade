@@ -415,7 +415,7 @@
                   </object>
                   <packing>
                     <property name="x">150</property>
-                    <property name="y">400</property>
+                    <property name="y">370</property>
                   </packing>
                 </child>
                 <child>
@@ -452,7 +452,7 @@
                   </object>
                   <packing>
                     <property name="x">125</property>
-                    <property name="y">450</property>
+                    <property name="y">420</property>
                   </packing>
                 </child>
                 <child>
@@ -463,7 +463,7 @@
                   </object>
                   <packing>
                     <property name="x">225</property>
-                    <property name="y">470</property>
+                    <property name="y">440</property>
                   </packing>
                 </child>
                 <child>
@@ -479,7 +479,7 @@
                   </object>
                   <packing>
                     <property name="x">150</property>
-                    <property name="y">550</property>
+                    <property name="y">500</property>
                   </packing>
                 </child>
                 <child>
@@ -504,7 +504,7 @@
                   </object>
                   <packing>
                     <property name="x">550</property>
-                    <property name="y">470</property>
+                    <property name="y">440</property>
                   </packing>
                 </child>
                 <child>
@@ -543,15 +543,15 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="width_request">100</property>
-                    <property name="height_request">80</property>
+                    <property name="width_request">10</property>
+                    <property name="height_request">20</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">QoS</property>
                   </object>
                   <packing>
-                    <property name="x">120</property>
-                    <property name="y">200</property>
+                    <property name="x">150</property>
+                    <property name="y">230</property>
                   </packing>
                 </child>
                 <child>
@@ -570,15 +570,73 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="messages_received">
-                    <property name="width_request">590</property>
-                    <property name="height_request">50</property>
+                  <object class="GtkButton" id="add_button">
+                    <property name="label" translatable="yes">add</property>
+                    <property name="width_request">100</property>
+                    <property name="height_request">20</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
                   </object>
                   <packing>
-                    <property name="x">140</property>
-                    <property name="y">600</property>
+                    <property name="x">460</property>
+                    <property name="y">175</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="width_request">150</property>
+                    <property name="height_request">150</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="topic_list_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="x">610</property>
+                    <property name="y">130</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="width_request">500</property>
+                    <property name="height_request">120</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">in</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="messages_received_label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
+                            <attributes>
+                              <attribute name="weight" value="light"/>
+                              <attribute name="scale" value="2"/>
+                            </attributes>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="x">150</property>
+                    <property name="y">570</property>
                   </packing>
                 </child>
                 <child>

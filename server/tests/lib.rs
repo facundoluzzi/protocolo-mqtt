@@ -1,2 +1,2 @@
 pub mod integration;
-pub mod unit;
+pub mod unitary;

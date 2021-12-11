@@ -184,7 +184,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -194,10 +194,9 @@ mod tests {
         match stream_to_subscribe_with_wildcard.read(&mut data) {
             Ok(size) => {
                 let expected_bytes = [
-                    0x30, 0x26, 0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F,
+                    0x30, 0x24, 0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F,
                     0x63, 0x61, 0x2F, 0x63, 0x61, 0x6E, 0x74, 0x69, 0x64, 0x61, 0x64, 0x64, 0x65,
-                    0x67, 0x6F, 0x6C, 0x65, 0x73, 0x00, 0x11, 0x00, 0x05, 0x41, 0x4C, 0x54, 0x45,
-                    0x47,
+                    0x67, 0x6F, 0x6C, 0x65, 0x73, 0x00, 0x05, 0x41, 0x4C, 0x54, 0x45, 0x47,
                 ];
                 assert_eq!(data[0..size], expected_bytes);
             }
@@ -227,15 +226,15 @@ mod tests {
 
     #[test]
     fn testing_subscribe_and_publish_with_wildcard_astherisc_at_the_end_of_word() {
-        let server = ServerTest::start("0.0.0.0:1901".to_string());
+        let server = ServerTest::start("0.0.0.0:2112".to_string());
 
         let mut stream_to_create_topic_goles =
-            TcpStream::connect("0.0.0.0:1901".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2112".to_string()).unwrap();
         let mut stream_to_create_topic_partidos =
-            TcpStream::connect("0.0.0.0:1901".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2112".to_string()).unwrap();
         let mut stream_to_subscribe_with_wildcard =
-            TcpStream::connect("0.0.0.0:1901".to_string()).unwrap();
-        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1901".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2112".to_string()).unwrap();
+        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:2112".to_string()).unwrap();
 
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
@@ -410,7 +409,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -611,7 +610,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -631,15 +630,15 @@ mod tests {
 
     #[test]
     fn testing_subscribe_and_publish_with_wildcard_astherisc_and_greater_than() {
-        let server = ServerTest::start("0.0.0.0:1903".to_string());
+        let server = ServerTest::start("0.0.0.0:2017".to_string());
 
         let mut stream_to_create_topic_goles =
-            TcpStream::connect("0.0.0.0:1903".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2017".to_string()).unwrap();
         let mut stream_to_create_topic_partidos =
-            TcpStream::connect("0.0.0.0:1903".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2017".to_string()).unwrap();
         let mut stream_to_subscribe_with_wildcard =
-            TcpStream::connect("0.0.0.0:1903".to_string()).unwrap();
-        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1903".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2017".to_string()).unwrap();
+        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:2017".to_string()).unwrap();
 
         //SUBSCRIPTOR A FUTBOL/BOCA/CANTIDADDEGOLES/2021
 
@@ -820,7 +819,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();
@@ -840,15 +839,15 @@ mod tests {
 
     #[test]
     fn testing_subscribe_and_publish_with_wildcard_double_astherisc() {
-        let server = ServerTest::start("0.0.0.0:1904".to_string());
+        let server = ServerTest::start("0.0.0.0:2197".to_string());
 
         let mut stream_to_create_topic_goles =
-            TcpStream::connect("0.0.0.0:1904".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
         let mut stream_to_create_topic_partidos =
-            TcpStream::connect("0.0.0.0:1904".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
         let mut stream_to_subscribe_with_wildcard =
-            TcpStream::connect("0.0.0.0:1904".to_string()).unwrap();
-        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1904".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
+        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
 
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
@@ -1020,7 +1019,7 @@ mod tests {
         data = vec![0; 100];
         match stream_to_publish_message.read(&mut data) {
             Ok(size) => {
-                assert_eq!(data[0..size], [0x40, 0x01, 0x00, 0x11]);
+                assert_eq!(data[0..size], [0x40, 0x02, 0x00, 0x11]);
             }
             _ => {
                 panic!();

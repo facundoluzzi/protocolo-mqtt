@@ -1,9 +1,9 @@
+use server::enums::user_manager::user_manager_action::UserManagerAction;
 use server::logs::logger::Logger;
 use server::server::main::handle_new_client;
 use server::stream::stream_handler::Stream;
-use server::topics::topic_manager::TopicManager;
+use server::topic::topic_manager::TopicManager;
 use server::usermanager::user_manager::UserManager;
-use server::usermanager::user_manager_action::UserManagerAction;
 use std::net::TcpListener;
 use std::sync::mpsc::Sender;
 use std::thread::{sleep, spawn, JoinHandle};
