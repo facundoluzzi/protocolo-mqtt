@@ -50,9 +50,9 @@ impl Stream {
                         }
                     }
                     StreamAction::CloseConnectionStream => {
-                        if let Err(err_msg) = stream_to_read.shutdown(Shutdown::Both) {}
+                        if let Err(_err_msg) = stream_to_read.shutdown(Shutdown::Both) {}
 
-                        if let Err(err_msg) = stream_to_write.shutdown(Shutdown::Both) {}
+                        if let Err(_err_msg) = stream_to_write.shutdown(Shutdown::Both) {}
                     }
                 }
             }
@@ -64,7 +64,7 @@ impl Stream {
     fn write(mut stream: TcpStream, message: Vec<u8>) {
         println!("ESCRIBIENDO: {:?}", message);
         let c: &[u8] = &message; // c: &[u8]
-        if let Err(msg_error) = stream.write(c) {}
+        if let Err(_msg_error) = stream.write(c) {}
     }
 
     fn read(mut stream: TcpStream, stream_to_write: TcpStream, sender: Sender<Vec<u8>>) {
@@ -102,8 +102,8 @@ impl Stream {
                 }
             }
             Err(_err) => {
-                if let Err(err_msg) = stream.shutdown(Shutdown::Both) {}
-                if let Err(err_msg) = stream_to_write.shutdown(Shutdown::Both) {}
+                if let Err(_err_msg) = stream.shutdown(Shutdown::Both) {}
+                if let Err(_err_msg) = stream_to_write.shutdown(Shutdown::Both) {}
                 true
             }
         } {}

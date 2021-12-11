@@ -99,12 +99,11 @@ impl Topic {
             }
 
             if qos == 1 && *qos_subscribe == 0 {
-                println!("bytes antes de remover: {:?}", new_packet);
                 let message_length = message.len();
                 let index_to_delete = packet.len() - message_length - 2;
                 new_packet.remove(index_to_delete);
                 new_packet.remove(index_to_delete);
-                println!("bytes despues de remover: {:?}", new_packet);
+                new_packet[1] -= 2;
             }
 
             let action = UserManagerAction::PublishMessageUserManager(

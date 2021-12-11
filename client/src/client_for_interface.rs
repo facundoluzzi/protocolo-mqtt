@@ -30,11 +30,11 @@ impl Clone for Client {
                 sender_stream: None,
             };
         }
-        return Client {
+        Client {
             stream: None,
             sender: None,
             sender_stream: None,
-        };
+        }
     }
 }
 
@@ -43,6 +43,9 @@ pub enum ClientAction {
     Publish,
     Subscribe,
 }
+
+type SenderForReading = Sender<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
+type ReceiverForReading = Receiver<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
 
 pub type SenderClient = (
     ClientAction,
@@ -66,10 +69,9 @@ impl Client {
             sender: None,
             sender_stream: None,
         };
-
         let (sender_to_start_reading, receiver_to_start_reading): (
-            Sender<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>,
-            Receiver<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>,
+            SenderForReading,
+            ReceiverForReading,
         ) = mpsc::channel();
 
         thread::spawn(move || {
@@ -143,11 +145,10 @@ impl Client {
 
     fn process_packet(bytes: &[u8], sender: gtk::glib::Sender<ClientSender>) -> Result<(), String> {
         let packet_manager = PacketManager::new();
-        let response = packet_manager.process_message(&bytes);
+        let response = packet_manager.process_message(bytes);
 
-        match response {
-            Some(client_sender) => sender.send(client_sender).unwrap(),
-            None => {}
+        if let Some(client_sender) = response {
+            sender.send(client_sender).unwrap();
         };
 
         Ok(())

@@ -1,6 +1,5 @@
 extern crate gtk;
 use client::client_for_interface::Client;
-use client::packet_manager::ResponsePacket;
 use client::sender_types::connect::Connect;
 use client::sender_types::publish::Publish;
 use client::sender_types::subscribe::Subscribe;
@@ -11,14 +10,15 @@ use client::sender_types::sender_type::InterfaceSender;
 
 use gtk::glib;
 use gtk::prelude::*;
-use std::cell::RefCell;
-use std::rc::Rc;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
+
+type SenderNewTopicsAndQoS = Sender<(String, bool)>;
+type ReceiverNewTopicsAndQoS = Receiver<(String, bool)>;
 
 fn build_objects_for_connect(
     builder: &gtk::Builder,
@@ -57,20 +57,17 @@ fn build_objects_for_publish(
     gtk::Entry,
     gtk::Button,
     gtk::RadioButton,
-    gtk::RadioButton,
     gtk::Label,
 ) {
     let message_input: gtk::Entry = builder.object("message_input").unwrap();
     let topic_input: gtk::Entry = builder.object("topic_input").unwrap();
     let publish_message: gtk::Button = builder.object("publish_button").unwrap();
-    let qos_publish_1: gtk::RadioButton = builder.object("qos_publish_1").unwrap();
     let qos_publish_0: gtk::RadioButton = builder.object("qos_publish_0").unwrap();
     let result_label_1: gtk::Label = builder.object("result_label1").unwrap();
     (
         message_input,
         topic_input,
         publish_message,
-        qos_publish_1,
         qos_publish_0,
         result_label_1,
     )
@@ -82,7 +79,6 @@ fn build_objects_for_suscribe(
     gtk::Entry,
     gtk::Button,
     gtk::RadioButton,
-    gtk::RadioButton,
     gtk::Label,
     gtk::Label,
     gtk::Button,
@@ -91,7 +87,6 @@ fn build_objects_for_suscribe(
     let input_topic_suscribe: gtk::Entry = builder.object("input_topic_suscribe").unwrap();
     let suscribe_button: gtk::Button = builder.object("suscribe_button").unwrap();
     let qos_suscriber_0: gtk::RadioButton = builder.object("qos_suscriber_0").unwrap();
-    let qos_suscriber_1: gtk::RadioButton = builder.object("qos_suscriber_1").unwrap();
     let result_label_2: gtk::Label = builder.object("result_label2").unwrap();
     let messages_received: gtk::Label = builder.object("messages_received").unwrap();
     let add_topic_button: gtk::Button = builder.object("add_button").unwrap();
@@ -100,7 +95,6 @@ fn build_objects_for_suscribe(
         input_topic_suscribe,
         suscribe_button,
         qos_suscriber_0,
-        qos_suscriber_1,
         result_label_2,
         messages_received,
         add_topic_button,
@@ -111,7 +105,7 @@ fn build_objects_for_suscribe(
 fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSender>) {
     let sender_connect = client_sender.clone();
     let sender_publish = client_sender.clone();
-    let sender_suscribe = client_sender.clone();
+    let sender_suscribe = client_sender;
 
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
@@ -128,40 +122,32 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         connect_button,
     ) = build_objects_for_connect(&builder);
 
-    let (
-        message_input,
-        topic_input,
-        publish_button,
-        qos_publish_1,
-        qos_publish_0,
-        result_for_publish,
-    ) = build_objects_for_publish(&builder);
+    let (message_input, topic_input, publish_button, qos_publish_0, result_for_publish) =
+        build_objects_for_publish(&builder);
 
     let (
         input_topic_suscribe,
         suscribe_button,
         qos_suscriber_0,
-        qos_suscriber_1,
         result_for_suscribe,
         messages_received,
         add_topic_button,
         topic_list_label,
     ) = build_objects_for_suscribe(&builder);
 
-    let (tx, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-    let tx_for_connection = tx.clone();
+    let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
     let (sender_for_new_topics, receiver_for_new_topics) =
         glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    let mut list_of_topics_to_suscribe = Vec::new();
+    let list_of_topics_to_suscribe = Vec::new();
     let data = Arc::new(Mutex::new(list_of_topics_to_suscribe));
     let data_for_thread = data.clone();
-    let data_for_thread_dos = data.clone();
+    let data_for_thread_dos = data;
 
     let topic_list_label_clone = topic_list_label.clone();
-    let (sender_t, receiver_t): (Sender<(String, bool)>, Receiver<(String, bool)>) =
-        mpsc::channel();
+
+    let (sender_t, receiver_t): (SenderNewTopicsAndQoS, ReceiverNewTopicsAndQoS) = mpsc::channel();
 
     thread::spawn(move || {
         for received_topic in receiver_t {
@@ -172,10 +158,9 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
 
     add_topic_button.connect_clicked(move |_| {
         let topic = input_topic_suscribe.text().to_string();
-        let topic_cloned = topic.clone();
         let is_qos_0 = qos_suscriber_0.is_active();
         let sender = sender_for_new_topics.clone();
-        sender.send((topic_cloned, is_qos_0)).unwrap();
+        sender.send((topic, is_qos_0)).unwrap();
         input_topic_suscribe.set_text("");
     });
 

@@ -65,12 +65,12 @@ impl PacketManager {
         if qos_flag == 0x00 {
             let response = std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()])
                 .expect("err");
-            return Ok((topic, response.to_string()));
+            Ok((topic, response.to_string()))
         } else {
             let response =
                 std::str::from_utf8(&bytes[init_variable_header + 2 + length..bytes.len()])
                     .expect("err");
-            return Ok((topic, response.to_string()));
+            Ok((topic, response.to_string()))
         }
     }
 
