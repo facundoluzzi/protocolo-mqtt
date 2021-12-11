@@ -1,12 +1,14 @@
-use crate::sender_types::sender_type::ClientSender;
-use crate::sender_types::sender_type::InterfaceSender;
-use crate::stream::stream_handler::StreamAction::ReadStream;
-use crate::{packet_manager::PacketManager, stream::stream_handler::StreamType};
-use std::{net::TcpStream, thread};
+use crate::helper::stream::stream_handler::StreamAction::ReadStream;
+use crate::helper::stream::stream_handler::StreamType;
+use crate::packet::packet_manager::PacketManager;
+use crate::packet::sender_type::ClientSender;
+use crate::packet::sender_type::InterfaceSender;
 
+use std::net::TcpStream;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
+use std::thread;
 
 pub struct Client {
     stream: Option<TcpStream>,
