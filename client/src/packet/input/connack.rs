@@ -1,4 +1,4 @@
-use crate::flags::connack_flags::ConnackFlags;
+use crate::helper::flags::connack_flags::ConnackFlags;
 
 pub struct Connack {
     _remaining_length: usize,

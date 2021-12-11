@@ -1,12 +1,12 @@
 extern crate gtk;
 use client::client_for_interface::Client;
-use client::sender_types::connect::Connect;
-use client::sender_types::publish::Publish;
-use client::sender_types::subscribe::Subscribe;
+use client::packet::input::connect::Connect;
+use client::packet::input::publish::Publish;
+use client::packet::input::subscribe::Subscribe;
 use std::str::from_utf8;
 
-use client::sender_types::sender_type::ClientSender;
-use client::sender_types::sender_type::InterfaceSender;
+use client::packet::sender_type::ClientSender;
+use client::packet::sender_type::InterfaceSender;
 
 use gtk::glib;
 use gtk::prelude::*;

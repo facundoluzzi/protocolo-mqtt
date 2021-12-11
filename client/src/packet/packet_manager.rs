@@ -1,15 +1,15 @@
-use crate::connack::Connack;
-use crate::default;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
-use crate::puback::Puback;
-use crate::sender_types::connack_response::ConnackResponse;
-use crate::sender_types::default_response::DefaultResponse;
-use crate::sender_types::puback_response::PubackResponse;
-use crate::sender_types::publish_response::PublishResponse;
-use crate::sender_types::sender_type::ClientSender;
-use crate::sender_types::suback_response::SubackResponse;
-use crate::suback::Suback;
+use crate::packet::input::connack::Connack;
+use crate::packet::input::default;
+use crate::packet::input::puback::Puback;
+use crate::packet::input::suback::Suback;
+use crate::packet::output::connack_response::ConnackResponse;
+use crate::packet::output::default_response::DefaultResponse;
+use crate::packet::output::puback_response::PubackResponse;
+use crate::packet::output::publish_response::PublishResponse;
+use crate::packet::output::suback_response::SubackResponse;
+use crate::packet::sender_type::ClientSender;
 
 pub enum ResponsePacket {
     Connack,

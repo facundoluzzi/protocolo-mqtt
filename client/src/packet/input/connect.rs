@@ -1,7 +1,7 @@
-use crate::sender_types::sender_type::ClientSender;
-use crate::stream::stream_handler::Stream;
-use crate::stream::stream_handler::StreamAction::WriteStream;
-use crate::stream::stream_handler::StreamType;
+use crate::helper::stream::stream_handler::Stream;
+use crate::helper::stream::stream_handler::StreamAction::WriteStream;
+use crate::helper::stream::stream_handler::StreamType;
+use crate::packet::sender_type::ClientSender;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
