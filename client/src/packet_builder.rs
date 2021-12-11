@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-
 pub fn build_bytes_for_connect(user: String, password: String, id_client: String) -> Vec<u8> {
     let mut flags: u8 = 0x00;
     let mut bytes = vec![

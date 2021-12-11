@@ -1,7 +1,7 @@
 use crate::flags::connack_flags::ConnackFlags;
-use crate::packet_manager::ResponsePacket;
+
 pub struct Connack {
-    remaining_length: usize,
+    _remaining_length: usize,
     _flags: ConnackFlags,
     status_code: u8,
 }
@@ -16,10 +16,6 @@ impl Connack {
      * la posición del byte procesado.
      */
 
-    fn get_remaining_length(&self) -> usize {
-        self.remaining_length
-    }
-
     pub fn get_status_code(&self) -> u8 {
         self.status_code
     }
@@ -29,14 +25,10 @@ impl Connack {
         let connack_flags = ConnackFlags::init(&variable_header[0]);
         let connack_code = variable_header[1];
         Connack {
-            remaining_length: 2,
+            _remaining_length: 2,
             _flags: connack_flags,
             status_code: connack_code,
         }
-    }
-
-    fn get_type(&self) -> ResponsePacket {
-        ResponsePacket::Connack
     }
 
     pub fn status_for_code(&self, code: u8) -> String {
