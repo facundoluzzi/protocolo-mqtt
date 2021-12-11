@@ -536,7 +536,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="input_topic_suscribe">
+                  <object class="GtkEntry" id="input_topic_subscribe">
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -560,7 +560,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="input_topic_unsubscribe">
                     <property name="width_request">300</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -587,7 +587,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="suscribe_button">
+                  <object class="GtkButton" id="subscribe_button">
                     <property name="label" translatable="yes">Suscribirse</property>
                     <property name="width_request">123</property>
                     <property name="visible">True</property>
@@ -612,7 +612,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkRadioButton" id="qos_suscriber_1">
+                  <object class="GtkRadioButton" id="qos_subscriber_1">
                     <property name="label" translatable="yes">1</property>
                     <property name="width_request">10</property>
                     <property name="height_request">40</property>
@@ -621,7 +621,7 @@
                     <property name="receives_default">False</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <property name="group">qos_suscriber_0</property>
+                    <property name="group">qos_subscriber_0</property>
                   </object>
                   <packing>
                     <property name="x">250</property>
@@ -629,7 +629,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkRadioButton" id="qos_suscriber_0">
+                  <object class="GtkRadioButton" id="qos_subscriber_0">
                     <property name="label" translatable="yes">0</property>
                     <property name="width_request">10</property>
                     <property name="height_request">40</property>
@@ -638,7 +638,7 @@
                     <property name="receives_default">False</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
-                    <property name="group">qos_suscriber_1</property>
+                    <property name="group">qos_subscriber_1</property>
                   </object>
                   <packing>
                     <property name="x">200</property>
@@ -659,7 +659,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="result_label2">
+                  <object class="GtkLabel" id="result_suback_unsubcak">
                     <property name="width_request">500</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
@@ -674,7 +674,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="add_button">
+                  <object class="GtkButton" id="add_topic_button">
                     <property name="label" translatable="yes">add</property>
                     <property name="width_request">100</property>
                     <property name="height_request">20</property>

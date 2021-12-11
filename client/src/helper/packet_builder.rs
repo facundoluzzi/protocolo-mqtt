@@ -64,6 +64,17 @@ pub fn build_bytes_for_suscribe(list_of_topics: Vec<(String, bool)>) -> Vec<u8> 
     bytes
 }
 
+pub fn build_bytes_for_unsubscribe(topic: String) -> Vec<u8> {
+    let mut bytes = vec![0xA0, 0x00, 0x00, 0x0A];
+    let mut topic_as_bytes = topic.as_bytes().to_vec();
+    bytes.push(0x00);
+    bytes.push(topic_as_bytes.len() as u8);
+    bytes.append(&mut topic_as_bytes);
+    let length = bytes.len();
+    bytes[1] = (length - 2) as u8;
+    bytes
+}
+
 fn add_suscribe_packet_type(bytes: &mut Vec<u8>) {
     bytes.insert(0, 0x82)
 }
