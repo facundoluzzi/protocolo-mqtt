@@ -161,7 +161,7 @@
                     <property name="receives_default">True</property>
                   </object>
                   <packing>
-                    <property name="y">650</property>
+                    <property name="y">670</property>
                   </packing>
                 </child>
                 <child>
@@ -343,7 +343,7 @@
                   </object>
                   <packing>
                     <property name="x">400</property>
-                    <property name="y">650</property>
+                    <property name="y">670</property>
                   </packing>
                 </child>
                 <child>
