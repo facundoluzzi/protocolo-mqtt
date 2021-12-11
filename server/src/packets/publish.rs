@@ -100,6 +100,7 @@ impl Publish {
             self.all_bytes.clone(),
             self.qos,
             self.retain == 1,
+            self.payload.to_string(),
         );
 
         if let Err(sender_err) = sender_topic_manager.send(TypeMessage::Publisher(publisher_prueba))

@@ -77,8 +77,6 @@ impl Stream {
 
         while match stream.read(&mut data) {
             Ok(size) => {
-                println!("bytes {:?}", &data);
-
                 if is_first_byte && size != 0 {
                     let (_readed_bytes, _packet_length) =
                         save_remaining_length(&data[1..size]).unwrap();

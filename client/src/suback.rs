@@ -17,7 +17,6 @@ impl Suback {
     }
 
     pub fn check_suback_code(&self, list_of_codes: &Vec<u8>) -> String {
-        println!("ESTO ES LA LISTA DE CODIGOS: {:?}", list_of_codes);
         for code in list_of_codes {
             if *code != 0x00 && *code != 0x01 {
                 return "Error en la suscripcion".to_string();

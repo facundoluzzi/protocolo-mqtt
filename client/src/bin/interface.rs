@@ -218,6 +218,11 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         let topic = topic_input.text().to_string();
         let is_qos_0 = qos_publish_0.is_active();
 
+        println!("\n\n\n\n");
+        println!("Message: {}", message);
+        println!("Topic: {}", topic);
+        println!("is_qos_0: {}", is_qos_0);
+
         let publish = Publish::init(message, topic, is_qos_0);
         sender_publish
             .send(InterfaceSender::Publish(publish))
@@ -227,7 +232,6 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     suscribe_button.connect_clicked(move |_| {
         // let list_of_topics_to_suscribe_cloned = list_of_topics_to_suscribe.clone();
         let data = data_for_thread_dos.lock().unwrap();
-        println!("{:?}", data.to_vec());
         let subscribe = Subscribe::init(data.to_vec());
         sender_suscribe
             .send(InterfaceSender::Subscribe(subscribe))
@@ -246,17 +250,18 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 result_for_suscribe.set_text(&response);
             }
             ClientSender::Puback(puback) => {
-                println!("Me llega un puback a la interfaz");
                 let response = puback.get_response();
                 result_for_publish.set_text(&response);
             }
             ClientSender::Publish(publish) => {
+                println!("ENTRO a mostrar el publish");
                 let mut message = publish.get_response();
                 let topic = publish.get_topic();
+                message.push_str(" en topic ");
                 message.push_str(&topic);
                 let result = from_utf8(&message.as_bytes()).unwrap();
-                println!("{}", result);
                 messages_received.set_text(&result);
+                println!("TERMINO de mostrar el publish");
             }
             ClientSender::Default(_default) => {}
         }

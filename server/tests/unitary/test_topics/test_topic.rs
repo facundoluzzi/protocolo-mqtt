@@ -19,12 +19,17 @@ mod tests {
             mpsc::channel();
         let (sender_two, receiver_two): (Sender<UserManagerAction>, Receiver<UserManagerAction>) =
             mpsc::channel();
+
         let add = TopicAction::Add(AddTopic::init("Facundo".to_owned(), sender_one, 0));
         topic.send(add).unwrap();
         let add = TopicAction::Add(AddTopic::init("Nacho".to_owned(), sender_two, 0));
         topic.send(add).unwrap();
-        let publish =
-            TopicAction::Publish(PublishMessage::init([0x00, 0x01, 0x02].to_vec(), 0, false));
+        let publish = TopicAction::Publish(PublishMessage::init(
+            [0x00, 0x01, 0x02].to_vec(),
+            0,
+            false,
+            "".to_string(),
+        ));
         topic.send(publish).unwrap();
 
         match receiver_one.recv().unwrap() {
@@ -57,8 +62,12 @@ mod tests {
         let remove = TopicAction::Remove(RemoveTopic::init("Facundo".to_owned()));
         topic.send(remove).unwrap();
 
-        let publish =
-            TopicAction::Publish(PublishMessage::init([0x00, 0x01, 0x02].to_vec(), 0, false));
+        let publish = TopicAction::Publish(PublishMessage::init(
+            [0x00, 0x01, 0x02].to_vec(),
+            0,
+            false,
+            "".to_string(),
+        ));
         topic.send(publish).unwrap();
 
         for _recv in receiver_one.recv() {

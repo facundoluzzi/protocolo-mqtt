@@ -71,7 +71,6 @@ impl Subscribe {
                 InvalidWildcard => {
                     acumulator += length + 1;
                     self.return_codes.push(0x80);
-                    println!("a");
                     continue;
                 }
             };
@@ -130,7 +129,6 @@ impl Subscribe {
             bytes_response.push(*return_code);
             bytes_response[1] += 1;
         }
-        println!("SUBACK ESTO ES: {:?}", bytes_response);
 
         if let Err(msg_error) =
             sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))

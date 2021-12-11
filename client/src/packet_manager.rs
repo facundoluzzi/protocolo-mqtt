@@ -45,6 +45,7 @@ impl PacketManager {
     }
 
     pub fn process_publish(&self, bytes: &[u8]) -> Result<(String, String), String> {
+        let qos_flag = (0x06 & bytes[0]) >> 1;
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, _remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
@@ -61,13 +62,19 @@ impl PacketManager {
 
         let (topic, _packet_identifier, length) = variable_header_response;
 
-        let response =
-            std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()]).expect("err");
-        Ok((topic, response.to_string()))
+        if qos_flag == 0x00 {
+            let response = std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()])
+                .expect("err");
+            return Ok((topic, response.to_string()));
+        } else {
+            let response =
+                std::str::from_utf8(&bytes[init_variable_header + 2 + length..bytes.len()])
+                    .expect("err");
+            return Ok((topic, response.to_string()));
+        }
     }
 
     pub fn process_message(&self, bytes: &[u8]) -> Option<ClientSender> {
-        println!("{:?}", &bytes);
         let first_byte = bytes.get(0);
 
         match first_byte {
