@@ -52,9 +52,13 @@ impl Connect {
         status_code = new_status_code.check_authentication(username, password);
 
         let session_flag = connect_flags.get_clean_session_flag();
-        let flags = connect_flags;
-
+        let will_flag = connect_flags.get_will_flag();
         let client_id = payload.get_client_id();
+        let will_topic = payload.get_will_topic();
+        let will_message = payload.get_will_message();
+        let will_qos = connect_flags.get_will_qos_flag();
+        let will_retained_message = connect_flags.get_will_retain_flag();
+        let flags = connect_flags;
 
         let connect = Connect {
             _remaining_length: remaining_length,
@@ -75,12 +79,28 @@ impl Connect {
             // TODO: Cortar la conexión
             Ok(connect)
         } else {
-            // No se a donde va este sender tengo q velro
-            let action = UserManagerAction::AddUserManager(AddUserManager::init(
-                client_id,
-                sender_stream,
-                session_flag,
-            ));
+            let action: UserManagerAction;
+            if will_flag {
+                action = UserManagerAction::AddUserManager(AddUserManager::init(
+                    client_id,
+                    sender_stream,
+                    session_flag,
+                    will_topic,
+                    will_message,
+                    Some(will_qos),
+                    Some(will_retained_message),
+                ));
+            } else {
+                action = UserManagerAction::AddUserManager(AddUserManager::init(
+                    client_id,
+                    sender_stream,
+                    session_flag,
+                    None,
+                    None,
+                    None,
+                    None,
+                ));
+            }
             match user_manager_sender.send(action) {
                 Ok(_) => {}
                 Err(err) => {

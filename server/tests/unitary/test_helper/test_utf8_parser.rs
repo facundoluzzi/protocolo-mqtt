@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn should_parse_msb() {
-        let vec: &[u8] = &[0x02, 0x00, 0x41, 0x42];
+        let vec: &[u8] = &[0x02, 0x00, 0x41, 0x42, 0x45, 0x4D];
         let (string_result, length) = UTF8::utf8_parser(vec).unwrap();
         assert_eq!(string_result, "BA".to_owned());
         assert_eq!(length, 4);
