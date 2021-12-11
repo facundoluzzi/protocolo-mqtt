@@ -132,6 +132,21 @@ impl Client {
                             println!("Unexpected error")
                         }
                     },
+                    InterfaceSender::Disconnect(disconnect) => match client.sender_stream.clone() {
+                        Some(sender_stream) => {
+                            match disconnect.send_disconnect(sender_stream.clone()) {
+                                Ok(_result_ok) => {
+                                    println!("Ok");
+                                }
+                                Err(err) => {
+                                    println!("err: {}", err);
+                                }
+                            }
+                        }
+                        None => {
+                            println!("Unexpected error");
+                        }
+                    },
                 };
             }
         });

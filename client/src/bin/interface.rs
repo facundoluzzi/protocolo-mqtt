@@ -1,13 +1,15 @@
 extern crate gtk;
 use client::client_for_interface::Client;
 use client::packet::input::connect::Connect;
+use client::packet::input::disconnect::Disconnect;
 use client::packet::input::publish::Publish;
 use client::packet::input::subscribe::Subscribe;
 use client::packet::input::unsubscribe::Unsubscribe;
-use std::str::from_utf8;
+use client::packet::output::disconnect_response::DisconnectResponse;
 
 use client::packet::sender_type::ClientSender;
 use client::packet::sender_type::InterfaceSender;
+use std::str::from_utf8;
 
 use gtk::glib;
 use gtk::prelude::*;
@@ -31,10 +33,12 @@ fn build_objects_for_connect(
     gtk::Entry,
     gtk::Label,
     gtk::Button,
+    gtk::Button,
 ) {
     let input_port: gtk::Entry = builder.object("port_input").unwrap();
     let ip_input: gtk::Entry = builder.object("ip_input").unwrap();
     let connect_button: gtk::Button = builder.object("connect_button").unwrap();
+    let disconnect_button: gtk::Button = builder.object("disconnect_button").unwrap();
     let result_for_connect: gtk::Label = builder.object("result_label").unwrap();
     let user_input: gtk::Entry = builder.object("user_input").unwrap();
     let id_input: gtk::Entry = builder.object("id_input").unwrap();
@@ -48,6 +52,7 @@ fn build_objects_for_connect(
         id_input,
         result_for_connect,
         connect_button,
+        disconnect_button,
     )
 }
 
@@ -114,6 +119,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let sender_publish = client_sender.clone();
     let sender_subscribe = client_sender.clone();
     let sender_unsubscribe = client_sender.clone();
+    let sender_disconnect = client_sender.clone();
 
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
@@ -128,6 +134,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         id_input,
         result_for_connect,
         connect_button,
+        disconnect_button,
     ) = build_objects_for_connect(&builder);
 
     let (message_input, topic_input, publish_button, qos_publish_0, result_for_publish) =
@@ -148,6 +155,9 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let cloned_topic_list_label = topic_list_label.clone();
 
     let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    let cloned_tx_for_connect = tx_for_connection.clone();
+    let cloned_tx_for_disconnect = tx_for_connection.clone();
 
     let (sender_for_new_topics, receiver_for_new_topics) =
         glib::MainContext::channel(glib::PRIORITY_DEFAULT);
@@ -201,11 +211,24 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             user,
             password,
             id_client,
-            tx_for_connection.clone(),
+            cloned_tx_for_connect.clone(),
         );
 
         sender_connect
             .send(InterfaceSender::Connect(connection))
+            .unwrap();
+    });
+
+    disconnect_button.connect_clicked(move |_| {
+        let disconnect = Disconnect::init();
+
+        sender_disconnect
+            .send(InterfaceSender::Disconnect(disconnect))
+            .unwrap();
+
+        let disconnect_response = DisconnectResponse::init();
+        cloned_tx_for_disconnect
+            .send(ClientSender::Disconnect(disconnect_response))
             .unwrap();
     });
 
@@ -274,6 +297,10 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             ClientSender::Unsuback(unsuback) => {
                 let response = unsuback.get_response();
                 result_suback_unsuback.set_text(&response);
+            }
+            ClientSender::Disconnect(disconnect) => {
+                let response = disconnect.get_response();
+                result_for_connect.set_text(&response);
             }
             ClientSender::Default(_default) => {}
         }
