@@ -80,25 +80,25 @@ fn build_objects_for_suscribe(
     gtk::Button,
     gtk::RadioButton,
     gtk::Label,
-    gtk::Label,
     gtk::Button,
+    gtk::Label,
     gtk::Label,
 ) {
     let input_topic_suscribe: gtk::Entry = builder.object("input_topic_suscribe").unwrap();
     let suscribe_button: gtk::Button = builder.object("suscribe_button").unwrap();
     let qos_suscriber_0: gtk::RadioButton = builder.object("qos_suscriber_0").unwrap();
     let result_label_2: gtk::Label = builder.object("result_label2").unwrap();
-    let messages_received: gtk::Label = builder.object("messages_received").unwrap();
     let add_topic_button: gtk::Button = builder.object("add_button").unwrap();
     let topic_list_label: gtk::Label = builder.object("topic_list_label").unwrap();
+    let messages_received_label: gtk::Label = builder.object("messages_received_label").unwrap();
     (
         input_topic_suscribe,
         suscribe_button,
         qos_suscriber_0,
         result_label_2,
-        messages_received,
         add_topic_button,
         topic_list_label,
+        messages_received_label,
     )
 }
 
@@ -130,9 +130,9 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         suscribe_button,
         qos_suscriber_0,
         result_for_suscribe,
-        messages_received,
         add_topic_button,
         topic_list_label,
+        messages_received_label,
     ) = build_objects_for_suscribe(&builder);
 
     let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
@@ -144,8 +144,6 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let data = Arc::new(Mutex::new(list_of_topics_to_suscribe));
     let data_for_thread = data.clone();
     let data_for_thread_dos = data;
-
-    let topic_list_label_clone = topic_list_label.clone();
 
     let (sender_t, receiver_t): (SenderNewTopicsAndQoS, ReceiverNewTopicsAndQoS) = mpsc::channel();
 
@@ -216,12 +214,12 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
 
     suscribe_button.connect_clicked(move |_| {
         // let list_of_topics_to_suscribe_cloned = list_of_topics_to_suscribe.clone();
-        let data = data_for_thread_dos.lock().unwrap();
+        let mut data = data_for_thread_dos.lock().unwrap();
         let subscribe = Subscribe::init(data.to_vec());
+        data.clear();
         sender_suscribe
             .send(InterfaceSender::Subscribe(subscribe))
             .unwrap();
-        topic_list_label_clone.set_text("");
     });
 
     rc.attach(None, move |client_sender| {
@@ -244,8 +242,9 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 let topic = publish.get_topic();
                 message.push_str(" en topic ");
                 message.push_str(&topic);
-                let result = from_utf8(&message.as_bytes()).unwrap();
-                messages_received.set_text(&result);
+                let result = from_utf8(message.as_bytes()).unwrap();
+                messages_received_label
+                    .set_text(&(messages_received_label.text().to_string() + result + "\n"));
                 println!("TERMINO de mostrar el publish");
             }
             ClientSender::Default(_default) => {}
