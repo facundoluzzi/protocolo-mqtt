@@ -1,9 +1,9 @@
 extern crate gtk;
 use client::client_for_interface::Client;
-use client::packet::input::unsubscribe::Unsubscribe;
 use client::packet::input::connect::Connect;
 use client::packet::input::publish::Publish;
 use client::packet::input::subscribe::Subscribe;
+use client::packet::input::unsubscribe::Unsubscribe;
 use std::str::from_utf8;
 
 use client::packet::sender_type::ClientSender;
@@ -87,13 +87,13 @@ fn build_objects_for_suscribe(
     gtk::Label,
     gtk::Label,
 ) {
-    let input_topic_suscribe: gtk::Entry = builder.object("input_topic_suscribe").unwrap();
-    let suscribe_button: gtk::Button = builder.object("suscribe_button").unwrap();
-    let qos_suscriber_0: gtk::RadioButton = builder.object("qos_suscriber_0").unwrap();
-    let result_label_2: gtk::Label = builder.object("result_label2").unwrap();
-    let unsubscribe_button: gtk::Button = builder.object("suscribe_button").unwrap();
+    let input_topic_suscribe: gtk::Entry = builder.object("input_topic_subscribe").unwrap();
+    let subscribe_button: gtk::Button = builder.object("subscribe_button").unwrap();
+    let qos_suscriber_0: gtk::RadioButton = builder.object("qos_subscriber_0").unwrap();
+    let result_label_2: gtk::Label = builder.object("result_suback_unsubcak").unwrap();
+    let unsubscribe_button: gtk::Button = builder.object("unsubscribe_button").unwrap();
     let input_topic_unsubscribe: gtk::Entry = builder.object("input_topic_unsubscribe").unwrap();
-    let add_topic_button: gtk::Button = builder.object("add_button").unwrap();
+    let add_topic_button: gtk::Button = builder.object("add_topic_button").unwrap();
     let topic_list_label: gtk::Label = builder.object("topic_list_label").unwrap();
     let messages_received_label: gtk::Label = builder.object("messages_received_label").unwrap();
     (
@@ -101,7 +101,7 @@ fn build_objects_for_suscribe(
         add_topic_button,
         qos_suscriber_0,
         result_label_2,
-        suscribe_button,
+        subscribe_button,
         input_topic_unsubscribe,
         unsubscribe_button,
         topic_list_label,
@@ -138,12 +138,14 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         add_topic_button,
         qos_suscriber_0,
         result_suback_unsuback,
-        suscribe_button,
+        subscribe_button,
         input_topic_unsubscribe,
         unsubscribe_button,
         topic_list_label,
         messages_received_label,
     ) = build_objects_for_suscribe(&builder);
+
+    let cloned_topic_list_label = topic_list_label.clone();
 
     let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -201,6 +203,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             id_client,
             tx_for_connection.clone(),
         );
+
         sender_connect
             .send(InterfaceSender::Connect(connection))
             .unwrap();
@@ -211,19 +214,13 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         let topic = topic_input.text().to_string();
         let is_qos_0 = qos_publish_0.is_active();
 
-        println!("\n\n\n\n");
-        println!("Message: {}", message);
-        println!("Topic: {}", topic);
-        println!("is_qos_0: {}", is_qos_0);
-
         let publish = Publish::init(message, topic, is_qos_0);
         sender_publish
             .send(InterfaceSender::Publish(publish))
             .unwrap();
     });
 
-    suscribe_button.connect_clicked(move |_| {
-        // let list_of_topics_to_suscribe_cloned = list_of_topics_to_suscribe.clone();
+    subscribe_button.connect_clicked(move |_| {
         let mut data = data_for_thread_dos.lock().unwrap();
         let subscribe = Subscribe::init(data.to_vec());
         data.clear();
@@ -234,6 +231,16 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
 
     unsubscribe_button.connect_clicked(move |_| {
         let topic = input_topic_unsubscribe.text().to_string();
+
+        let topic_list = cloned_topic_list_label
+            .text()
+            .to_string()
+            .split("\n")
+            .filter(|line| !line.contains(&topic))
+            .collect::<Vec<&str>>()
+            .join("\n");
+
+        cloned_topic_list_label.set_text(&topic_list);
 
         let unsubscribe = Unsubscribe::init(topic);
         sender_unsubscribe
@@ -256,7 +263,6 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 result_for_publish.set_text(&response);
             }
             ClientSender::Publish(publish) => {
-                println!("ENTRO a mostrar el publish");
                 let mut message = publish.get_response();
                 let topic = publish.get_topic();
                 message.push_str(" en topic ");
@@ -264,7 +270,6 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 let result = from_utf8(message.as_bytes()).unwrap();
                 messages_received_label
                     .set_text(&(messages_received_label.text().to_string() + result + "\n"));
-                println!("TERMINO de mostrar el publish");
             }
             ClientSender::Unsuback(unsuback) => {
                 let response = unsuback.get_response();

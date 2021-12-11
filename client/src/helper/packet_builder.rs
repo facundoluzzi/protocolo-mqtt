@@ -65,19 +65,14 @@ pub fn build_bytes_for_suscribe(list_of_topics: Vec<(String, bool)>) -> Vec<u8> 
 }
 
 pub fn build_bytes_for_unsubscribe(topic: String) -> Vec<u8> {
-    let mut bytes = vec![0xA0, 0x00, 0x0A];
-    // add_topic_bytes(topic, &mut bytes);
-    // let length = bytes.len();
-    // bytes.insert(1, (length - 1) as u8);
+    let mut bytes = vec![0xA0, 0x00, 0x00, 0x0A];
+    let mut topic_as_bytes = topic.as_bytes().to_vec();
+    bytes.push(0x00);
+    bytes.push(topic_as_bytes.len() as u8);
+    bytes.append(&mut topic_as_bytes);
+    let length = bytes.len();
+    bytes[1] = (length - 2) as u8;
     bytes
-}
-
-fn add_qos_byte(is_qos_0: bool, bytes: &mut Vec<u8>) {
-    if !is_qos_0 {
-        bytes.push(0x01);
-    } else {
-        bytes.push(0x00);
-    }
 }
 
 fn add_suscribe_packet_type(bytes: &mut Vec<u8>) {
