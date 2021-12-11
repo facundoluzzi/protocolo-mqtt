@@ -4,8 +4,8 @@ use crate::helper::utf8_parser::UTF8;
 
 #[derive(Debug)]
 pub struct ConnectPayload {
-    _will_topic: Option<String>,
-    _will_message: Option<String>,
+    will_topic: Option<String>,
+    will_message: Option<String>,
     client_identifier: String,
     username: Option<String>,
     password: Option<String>,
@@ -37,6 +37,28 @@ impl ConnectPayload {
             client_identifier = "PayloadNull".to_owned();
         }
 
+        if connect_flags.get_will_flag() {
+            if let Ok((will_topic_copy, index)) =
+                parser(&remaining_bytes[pointer..remaining_bytes.len()])
+            {
+                will_topic = Some(will_topic_copy);
+                pointer += index;
+                if let Ok((will_message_copy, index)) =
+                    parser(&remaining_bytes[pointer..remaining_bytes.len()])
+                {
+                    will_message = Some(will_message_copy);
+                    pointer += index;
+                } else {
+                    return Err("Error parsing will message".to_string());
+                } 
+            } else {
+                return Err("Error parsing will flag".to_string());
+            }
+        } else {
+            will_topic = None;
+            will_message = None;
+        }
+
         if connect_flags.get_username_flag() {
             let username_to_validate = &remaining_bytes[pointer..remaining_bytes.len()];
             if let Ok((username_copy, index)) = parser(username_to_validate) {
@@ -49,11 +71,10 @@ impl ConnectPayload {
                     password = None;
                 } else {
                     let password_to_validate = &remaining_bytes[pointer..remaining_bytes.len()];
-                    if let Ok((password_copy, index)) = parser(password_to_validate) {
+                    if let Ok((password_copy, _index)) = parser(password_to_validate) {
                         return_code =
                             return_code.check_malformed_password(password_copy.to_string());
                         password = Some(password_copy);
-                        pointer += index;
                     } else {
                         return Err("Error parsing password".to_string());
                     }
@@ -66,32 +87,12 @@ impl ConnectPayload {
             password = None;
         }
 
-        if connect_flags.get_will_flag() {
-            if let Ok((will_topic_copy, index)) =
-                parser(&remaining_bytes[pointer..remaining_bytes.len()])
-            {
-                will_topic = Some(will_topic_copy);
-                pointer += index;
-                if let Ok((will_message_copy, _index)) =
-                    parser(&remaining_bytes[pointer..remaining_bytes.len()])
-                {
-                    will_message = Some(will_message_copy);
-                } else {
-                    return Err("Error parsing will message".to_string());
-                }
-            } else {
-                return Err("Error parsing will flag".to_string());
-            }
-        } else {
-            will_topic = None;
-            will_message = None;
-        }
         let new_connect_payload = ConnectPayload {
             client_identifier,
             username,
             password,
-            _will_topic: will_topic,
-            _will_message: will_message,
+            will_topic,
+            will_message,
         };
 
         Ok((new_connect_payload, return_code))
@@ -109,11 +110,11 @@ impl ConnectPayload {
         self.client_identifier.to_owned()
     }
 
-    pub fn get_will_topic(&self) -> Option<&String> {
-        self._will_topic.as_ref()
+    pub fn get_will_topic(&self) -> Option<String> {
+        self.will_topic.to_owned()
     }
 
-    pub fn get_will_message(&self) -> Option<&String> {
-        self._will_message.as_ref()
+    pub fn get_will_message(&self) -> Option<String> {
+        self.will_message.to_owned()
     }
 }

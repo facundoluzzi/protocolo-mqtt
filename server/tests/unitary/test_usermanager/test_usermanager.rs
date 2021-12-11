@@ -25,6 +25,11 @@ mod tests {
             "Nacho".to_owned(),
             sender_stream,
             true,
+            false,
+            None,
+            None,
+            None,
+            None,
         ));
         let action_to_publish = UserManagerAction::PublishMessageUserManager(
             PublishMessageUserManager::init("Nacho".to_owned(), [0x00, 0x01, 0x02].to_vec()),
@@ -47,7 +52,12 @@ mod tests {
         let action_to_add = UserManagerAction::AddUserManager(AddUserManager::init(
             "Nacho".to_owned(),
             sender_stream,
+            false,    
             false,
+            None,
+            None,
+            None,
+            None,
         ));
         let action_to_disconnect = UserManagerAction::DisconnectUserManager(
             DisconnectUserManager::init("Nacho".to_owned()),
@@ -80,7 +90,12 @@ mod tests {
         let action_to_add = UserManagerAction::AddUserManager(AddUserManager::init(
             "Nacho".to_owned(),
             sender_stream,
+            false, 
             false,
+            None,
+            None,
+            None,
+            None,
         ));
         let action_to_disconnect = UserManagerAction::DisconnectUserManager(
             DisconnectUserManager::init("Nacho".to_owned()),
@@ -99,7 +114,12 @@ mod tests {
         let action_to_add_for_reconnect = UserManagerAction::AddUserManager(AddUserManager::init(
             "Nacho".to_owned(),
             sender_stream_two,
+            false,          
             false,
+            None,
+            None,
+            None,
+            None,
         ));
         sender.send(action_to_add_for_reconnect).unwrap();
 

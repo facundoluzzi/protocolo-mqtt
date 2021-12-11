@@ -20,16 +20,17 @@ impl UTF8 {
         let end: usize;
         let mut copy_bytes = bytes.to_vec();
         if msb > lsb {
-            copy_bytes.reverse();
             init = 0;
             end = usize::from(msb);
+            copy_bytes = copy_bytes[2..end + 2].to_vec();
+            copy_bytes.reverse();
             length = usize::from(msb + 0b00000010);
         } else {
             init = 2;
             end = usize::from(lsb) + 0b00000010;
             length = usize::from(lsb + 0b00000010);
         }
-
+    
         Ok((
             String::from_utf8(copy_bytes[init..end].to_vec()).unwrap(),
             length,

@@ -486,7 +486,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
         .write(&bytes_to_publish_message_alteg)
         .unwrap();
 
-    thread::sleep(Duration::from_millis(50));
+    thread::sleep(Duration::from_millis(100));
 
     let bytes_to_publish_message_river = [
         0x31, // Paquete publish
@@ -502,7 +502,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
         .write(&bytes_to_publish_message_river)
         .unwrap();
 
-    thread::sleep(Duration::from_millis(50));
+    thread::sleep(Duration::from_millis(100));
 
     stream_to_verify_retained_messages
         .write(&subscribe_bytes_crear_cantidad_de_goles)
@@ -519,7 +519,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
             panic!();
         }
     }
-    thread::sleep(Duration::from_millis(50));
+    thread::sleep(Duration::from_millis(100));
     data = vec![0; 100];
     match stream_to_verify_retained_messages.read(&mut data) {
         Ok(size) => {
