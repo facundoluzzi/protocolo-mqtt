@@ -116,7 +116,7 @@ impl PacketManager {
             Err(err) => {
                 let message = format!("Unexpected error processing connect packet: {}", err);
                 self.logger.info(message);
-                Disconnect::disconnect_user(
+                Disconnect::disconnect_ungracefully(
                     self.client_id.to_owned(),
                     self.sender_user_manager.clone(),
                     self.sender_stream.clone(),
@@ -128,7 +128,6 @@ impl PacketManager {
 
     fn process_unsubscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         self.logger.info("proccessing subscribe packet".to_string());
-
         let unsubscribe = Unsubscribe::init(bytes);
         match unsubscribe {
             Ok(mut created_unsubscribe) => {
@@ -144,6 +143,7 @@ impl PacketManager {
                 }
             }
             Err(err) => {
+                println!("Entro :D ");
                 let message = format!("Unexpected error processing connect packet: {}", err);
                 self.logger.info(message);
                 Disconnect::disconnect_user(
@@ -167,7 +167,6 @@ impl PacketManager {
                 let packet_type = PacketManager::get_control_packet_type(*first_byte_ok);
 
                 self.logger.info(format!("Packet type: {}", packet_type));
-
                 match packet_type {
                     1 => self.process_connect_message(bytes)?,
                     3 => self.process_publish_message(bytes),

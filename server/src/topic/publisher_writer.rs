@@ -5,7 +5,7 @@ use std::sync::mpsc::{self, Receiver, Sender};
 pub enum PublisherSubscriberAction {
     PublishMessagePublisherSubscriber,
     ReconnectPublisherSubscriber,
-    DisconectPublisherSubscriber,
+    DisconnectPublisherSubscriber,
 }
 
 pub type ChannelPublisherWriter = (
@@ -41,7 +41,7 @@ impl PublisherWriter {
                     PublisherSubscriberAction::ReconnectPublisherSubscriber => {
                         publisher.reconnect(receive.2.unwrap());
                     }
-                    PublisherSubscriberAction::DisconectPublisherSubscriber => {
+                    PublisherSubscriberAction::DisconnectPublisherSubscriber => {
                         publisher.disconect();
                     }
                 };
