@@ -1,4 +1,5 @@
 use crate::enums::topic_manager::topic_message::TypeMessage;
+
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::logs::logger::Logger;
 use crate::packets::connect::Connect;
@@ -11,13 +12,15 @@ use crate::packets::unsubscribe::Unsubscribe;
 use crate::stream::stream_handler::StreamType;
 use std::sync::mpsc::Sender;
 
+use super::puback::Puback;
+
 pub struct PacketManager {
     client_id: String,
     sender_stream: Sender<StreamType>,
     sender_user_manager: Sender<UserManagerAction>,
     sender_topic_manager: Sender<TypeMessage>,
     logger: Logger,
-    is_disconnected: bool
+    is_disconnected: bool,
 }
 
 impl PacketManager {
@@ -33,7 +36,7 @@ impl PacketManager {
             sender_user_manager,
             sender_topic_manager,
             logger,
-            is_disconnected: true
+            is_disconnected: true,
         }
     }
 
@@ -170,6 +173,11 @@ impl PacketManager {
         pingreq::send_response(self.sender_stream.clone());
     }
 
+    fn process_puback(&self, bytes: &[u8]) {
+        let puback = Puback::init(bytes)
+            .stop_publish(self.client_id.to_owned(), self.sender_user_manager.clone());
+    }
+
     pub fn process_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         let first_byte = bytes.get(0);
         match first_byte {
@@ -180,6 +188,7 @@ impl PacketManager {
                 match packet_type {
                     1 => self.process_connect_message(bytes)?,
                     3 => self.process_publish_message(bytes),
+                    4 => self.process_puback(bytes),
                     8 => self.process_subscribe_message(bytes)?,
                     10 => self.process_unsubscribe_message(bytes)?,
                     12 => self.process_pingreq_message(),

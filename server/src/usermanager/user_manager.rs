@@ -7,6 +7,7 @@ use crate::topic::publisher_writer::ChannelPublisherWriter;
 use crate::topic::publisher_writer::PublisherSubscriberAction::DisconnectPublisherSubscriber;
 use crate::topic::publisher_writer::PublisherSubscriberAction::PublishMessagePublisherSubscriber;
 use crate::topic::publisher_writer::PublisherSubscriberAction::ReconnectPublisherSubscriber;
+use crate::topic::publisher_writer::PublisherSubscriberAction::StopPublishPublisherSubscriber;
 use crate::topic::publisher_writer::PublisherWriter;
 
 use std::sync::mpsc;
@@ -74,6 +75,19 @@ impl UserManager {
                         if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
                             sender_for_publish
                                 .send((PublishMessagePublisherSubscriber, Some(message), None))
+                                .unwrap();
+                        }
+                    }
+                    UserManagerAction::StopPublishUserManager(user) => {
+                        let client_id = user.get_client_id();
+                        let packet_identifier = user.get_packet_identifier();
+                        if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
+                            sender_for_publish
+                                .send((
+                                    StopPublishPublisherSubscriber,
+                                    Some(packet_identifier.to_vec()),
+                                    None,
+                                ))
                                 .unwrap();
                         }
                     }
