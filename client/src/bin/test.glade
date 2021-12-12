@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.22.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <object class="GtkEntryCompletion" id="entrycompletion1"/>
   <object class="GtkWindow" id="main_window">
     <property name="width_request">0</property>
     <property name="height_request">500</property>
@@ -51,7 +52,7 @@
                     <property name="can_focus">True</property>
                   </object>
                   <packing>
-                    <property name="x">160</property>
+                    <property name="x">175</property>
                     <property name="y">55</property>
                   </packing>
                 </child>
@@ -146,7 +147,7 @@
                     <property name="label" translatable="yes">Last Will Topic</property>
                   </object>
                   <packing>
-                    <property name="x">50</property>
+                    <property name="x">45</property>
                     <property name="y">445</property>
                   </packing>
                 </child>
@@ -160,7 +161,7 @@
                     <property name="receives_default">True</property>
                   </object>
                   <packing>
-                    <property name="y">650</property>
+                    <property name="y">670</property>
                   </packing>
                 </child>
                 <child>
@@ -168,9 +169,10 @@
                     <property name="width_request">240</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="input_purpose">number</property>
                   </object>
                   <packing>
-                    <property name="x">160</property>
+                    <property name="x">175</property>
                     <property name="y">150</property>
                   </packing>
                 </child>
@@ -181,7 +183,7 @@
                     <property name="can_focus">True</property>
                   </object>
                   <packing>
-                    <property name="x">160</property>
+                    <property name="x">175</property>
                     <property name="y">235</property>
                   </packing>
                 </child>
@@ -192,7 +194,7 @@
                     <property name="can_focus">True</property>
                   </object>
                   <packing>
-                    <property name="x">160</property>
+                    <property name="x">175</property>
                     <property name="y">280</property>
                   </packing>
                 </child>
@@ -203,12 +205,12 @@
                     <property name="can_focus">True</property>
                   </object>
                   <packing>
-                    <property name="x">160</property>
+                    <property name="x">175</property>
                     <property name="y">100</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="last_will_message_input">
                     <property name="width_request">240</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -219,7 +221,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="last_will_topic_input">
                     <property name="width_request">240</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
@@ -279,8 +281,8 @@
                     <property name="label" translatable="yes">Will QoS</property>
                   </object>
                   <packing>
-                    <property name="x">40</property>
-                    <property name="y">545</property>
+                    <property name="x">30</property>
+                    <property name="y">540</property>
                   </packing>
                 </child>
                 <child>
@@ -296,8 +298,8 @@
                     <property name="group">qos_will_message_1</property>
                   </object>
                   <packing>
-                    <property name="x">165</property>
-                    <property name="y">545</property>
+                    <property name="x">160</property>
+                    <property name="y">537</property>
                   </packing>
                 </child>
                 <child>
@@ -313,16 +315,16 @@
                     <property name="group">qos_will_message_0</property>
                   </object>
                   <packing>
-                    <property name="x">225</property>
-                    <property name="y">545</property>
+                    <property name="x">210</property>
+                    <property name="y">537</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton">
-                    <property name="label" translatable="yes">Yes</property>
+                  <object class="GtkCheckButton" id="clean_session_checkbox">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
+                    <property name="always_show_image">True</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -341,7 +343,30 @@
                   </object>
                   <packing>
                     <property name="x">400</property>
-                    <property name="y">650</property>
+                    <property name="y">670</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Keep Alive</property>
+                  </object>
+                  <packing>
+                    <property name="x">50</property>
+                    <property name="y">580</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="keep_alive_input">
+                    <property name="width_request">240</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="input_purpose">number</property>
+                  </object>
+                  <packing>
+                    <property name="x">170</property>
+                    <property name="y">570</property>
                   </packing>
                 </child>
               </object>
@@ -675,12 +700,14 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="add_topic_button">
-                    <property name="label" translatable="yes">add</property>
+                    <property name="label">gtk-add</property>
                     <property name="width_request">100</property>
                     <property name="height_request">20</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="use_stock">True</property>
+                    <property name="always_show_image">True</property>
                   </object>
                   <packing>
                     <property name="x">460</property>
