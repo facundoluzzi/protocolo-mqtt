@@ -19,7 +19,7 @@ mod tests {
             0x00, 0x10, // Packet Identifier
             0x00, 0x01, 0x41,
         ];
-        let publish = Publish::init(&bytes);
+        let publish = Publish::init(&bytes).unwrap();
         let topic = publish.get_topic();
         assert_eq!(topic, "ALTEGO".to_owned());
     }
@@ -52,7 +52,7 @@ mod tests {
             }
         });
 
-        Publish::init(&bytes).send_message(&sender_one, "client_id".to_string());
+        Publish::init(&bytes).unwrap().send_message(sender_one, "client_id".to_string());
 
         t.join().unwrap();
         let locked_data = data.lock().unwrap();
