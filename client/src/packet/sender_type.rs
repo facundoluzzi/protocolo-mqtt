@@ -3,6 +3,7 @@ use crate::packet::input::publish::Publish;
 use crate::packet::input::subscribe::Subscribe;
 use crate::packet::input::unsubscribe::Unsubscribe;
 use crate::packet::output::connack_response::ConnackResponse;
+use crate::packet::output::connect_error_response::ConnectErrorResponse;
 use crate::packet::output::default_response::DefaultResponse;
 use crate::packet::output::puback_response::PubackResponse;
 use crate::packet::output::publish_response::PublishResponse;
@@ -23,4 +24,5 @@ pub enum ClientSender {
     Suback(SubackResponse),
     Default(DefaultResponse),
     Unsuback(UnsubackResponse),
+    ConnectError(ConnectErrorResponse),
 }

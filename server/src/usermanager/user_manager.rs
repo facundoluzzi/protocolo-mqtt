@@ -183,7 +183,9 @@ impl UserManager {
     fn publish_last_will_message(&mut self, client_id: String) {
         if let Some(user) = self.users.get(&client_id) {
             if let Some(publish) = &user.2 {
-                publish.send_message(self.sender_topic_manager.clone(), client_id.to_owned()).unwrap();
+                publish
+                    .send_message(self.sender_topic_manager.clone(), client_id.to_owned())
+                    .unwrap();
             }
         }
     }

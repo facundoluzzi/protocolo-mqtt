@@ -1,4 +1,3 @@
-use crate::packets::packet_manager::PacketManager;
 use crate::enums::user_manager::add_user_manager::AddUserManager;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::flags::connect_flags::ConnectFlags;
@@ -6,6 +5,7 @@ use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::status_code::ConnectReturnCode;
 use crate::keep_alive::handler_keep_alive;
 use crate::keep_alive::handler_null_keep_alive;
+use crate::packets::packet_manager::PacketManager;
 use crate::payload::connect_payload::ConnectPayload;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
@@ -22,7 +22,6 @@ pub struct Connect {
 }
 
 impl Connect {
-
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         if !packet_manager.is_disconnected() {
             Err("Client is already connected".to_string())
