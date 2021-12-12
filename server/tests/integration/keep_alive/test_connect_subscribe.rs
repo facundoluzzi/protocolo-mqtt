@@ -97,25 +97,25 @@ fn should_send_pingreq_and_response_ok_with_keep_alive() {
 
     data = vec![0; 100];
     let size = stream.read(&mut data).unwrap();
-    assert_eq!(data[0..size], [0xD0, 0x00]);
+    assert_eq!(data[0..size], [0xE0, 0x00]);
 
     stream.write(&pingreq_bytes).unwrap();
 
     data = vec![0; 100];
     let size = stream.read(&mut data).unwrap();
-    assert_eq!(data[0..size], [0xD0, 0x00]);
+    assert_eq!(data[0..size], [0xE0, 0x00]);
 
     stream.write(&pingreq_bytes).unwrap();
 
     data = vec![0; 100];
     let size = stream.read(&mut data).unwrap();
-    assert_eq!(data[0..size], [0xD0, 0x00]);
+    assert_eq!(data[0..size], [0xE0, 0x00]);
 
     stream.write(&pingreq_bytes).unwrap();
 
     data = vec![0; 100];
     let size = stream.read(&mut data).unwrap();
-    assert_eq!(data[0..size], [0xD0, 0x00]);
+    assert_eq!(data[0..size], [0xE0, 0x00]);
 
     sleep(Duration::from_secs(2));
 
