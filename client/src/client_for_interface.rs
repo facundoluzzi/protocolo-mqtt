@@ -1,14 +1,18 @@
 use crate::helper::stream::stream_handler::StreamAction::ReadStream;
 use crate::helper::stream::stream_handler::StreamType;
+use crate::packet::input::connect::Connect;
+use crate::packet::input::pingreq::Pingreq;
 use crate::packet::packet_manager::PacketManager;
 use crate::packet::sender_type::ClientSender;
 use crate::packet::sender_type::InterfaceSender;
+use crate::types::{ReceiverForReading, SenderForReading, SenderForServer};
 
 use std::net::TcpStream;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::thread;
+use std::time::Duration;
 
 pub struct Client {
     stream: Option<TcpStream>,
@@ -45,9 +49,6 @@ pub enum ClientAction {
     Publish,
     Subscribe,
 }
-
-type SenderForReading = Sender<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
-type ReceiverForReading = Receiver<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
 
 pub type SenderClient = (
     ClientAction,
@@ -86,6 +87,10 @@ impl Client {
                             sender_to_start_reading
                                 .send((sender.clone(), connect.get_gtk_sender()))
                                 .unwrap();
+
+                            if !connect.keep_alive_is_empty() {
+                                Client::start_to_send_pingreq(&connect, sender.clone());
+                            }
                         }
                     }
                     InterfaceSender::Publish(publish) => match client.sender_stream.clone() {
@@ -159,6 +164,21 @@ impl Client {
         });
 
         event_sender
+    }
+
+    fn start_to_send_pingreq(connect: &Connect, sender: SenderForServer) {
+        let pingreq = Pingreq::init(connect.get_keep_alive());
+        thread::spawn(move || loop {
+            thread::sleep(Duration::from_secs(pingreq.get_interval() as u64));
+            match pingreq.send_pingreq(sender.clone()) {
+                Ok(_result) => {
+                    println!("Mando pingreq");
+                }
+                Err(err) => {
+                    println!("err: {}", err);
+                }
+            }
+        });
     }
 
     fn process_packet(bytes: &[u8], sender: gtk::glib::Sender<ClientSender>) -> Result<(), String> {

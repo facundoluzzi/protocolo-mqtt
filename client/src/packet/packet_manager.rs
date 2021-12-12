@@ -12,6 +12,8 @@ use crate::packet::output::suback_response::SubackResponse;
 use crate::packet::output::unsuback_response::UnsubackResponse;
 use crate::packet::sender_type::ClientSender;
 
+use super::output::pingresp_response::PingrespResponse;
+
 pub enum ResponsePacket {
     Connack,
     Suback,
@@ -81,6 +83,7 @@ impl PacketManager {
         match first_byte {
             Some(first_byte_ok) => {
                 let packet_type = PacketManager::get_control_packet_type(*first_byte_ok);
+                println!("{}", packet_type);
 
                 match packet_type {
                     2 => {
@@ -121,6 +124,11 @@ impl PacketManager {
                         let unsuback_response =
                             UnsubackResponse::init("Unsubscribe realizado".to_string());
                         Some(ClientSender::Unsuback(unsuback_response))
+                    }
+                    14 => {
+                        let pingresp_response = PingrespResponse::init();
+                        println!("Pingresp recibido");
+                        Some(ClientSender::Pingresp(pingresp_response))
                     }
                     _ => {
                         default::Default::init(bytes);

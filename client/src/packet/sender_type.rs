@@ -10,6 +10,8 @@ use crate::packet::output::publish_response::PublishResponse;
 use crate::packet::output::suback_response::SubackResponse;
 use crate::packet::output::unsuback_response::UnsubackResponse;
 
+use super::output::pingresp_response::PingrespResponse;
+
 pub enum InterfaceSender {
     Connect(Connect),
     Publish(Publish),
@@ -25,4 +27,5 @@ pub enum ClientSender {
     Default(DefaultResponse),
     Unsuback(UnsubackResponse),
     ConnectError(ConnectErrorResponse),
+    Pingresp(PingrespResponse),
 }

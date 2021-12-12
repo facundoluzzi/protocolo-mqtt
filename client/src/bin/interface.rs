@@ -322,6 +322,9 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
                 let error_response = connect.get_response();
                 result_for_connect.set_text(&error_response);
             }
+            ClientSender::Pingresp(_pingresp) => {
+                println!("resp a interfaz");
+            }
             ClientSender::Default(_default) => {}
         }
         glib::Continue(true)
