@@ -17,6 +17,7 @@ pub struct PacketManager {
     sender_user_manager: Sender<UserManagerAction>,
     sender_topic_manager: Sender<TypeMessage>,
     logger: Logger,
+    is_disconnected: bool
 }
 
 impl PacketManager {
@@ -32,6 +33,7 @@ impl PacketManager {
             sender_user_manager,
             sender_topic_manager,
             logger,
+            is_disconnected: true
         }
     }
 
@@ -47,34 +49,42 @@ impl PacketManager {
         self.client_id.to_string()
     }
 
+    pub fn get_sender_stream(&self) -> Sender<StreamType> {
+        self.sender_stream.clone()
+    }
+
+    pub fn get_sender_user_manager(&self) -> Sender<UserManagerAction> {
+        self.sender_user_manager.clone()
+    }
+
+    pub fn is_disconnected(&self) -> bool {
+        self.is_disconnected
+    }
+
+    fn connect(&mut self) {
+        self.is_disconnected = false;
+    }
+
+    fn disconnect(&mut self) {
+        self.is_disconnected = true;
+    }
+
     fn process_connect_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         self.logger.info("proccessing connect packet".to_string());
 
-        let connect = Connect::init(
-            bytes,
-            self.sender_stream.clone(),
-            self.sender_user_manager.clone(),
-        );
-
-        match connect {
-            Ok(connect_result) => {
-                self.set_client_id(connect_result.get_client_id());
-                connect_result
-                    .send_response(self.sender_stream.clone(), self.sender_user_manager.clone())?;
-                Ok(())
-            }
-            Err(err_msg) => {
-                self.logger.info(format!(
-                    "Unexpected error processing connect packet: {}",
-                    err_msg
-                ));
-                Disconnect::disconnect_user(
-                    self.client_id.to_owned(),
-                    self.sender_user_manager.clone(),
-                    self.sender_stream.clone(),
-                );
-                Ok(())
-            }
+        if let Err(err) = Connect::process_message(bytes, self) {
+            let message_to_log = "Unexpected error processing connect packet:";
+            self.logger.info(format!("{}: {}", message_to_log, err));
+            Disconnect::disconnect_user(
+                self.client_id.to_owned(),
+                self.sender_user_manager.clone(),
+                self.sender_stream.clone(),
+            );
+            self.disconnect();
+            Err(err.to_string())
+        } else {
+            self.connect();
+            Ok(())
         }
     }
 

@@ -229,3 +229,45 @@ fn connect_should_fail_not_authorized_06() {
 
     server.shutdown().unwrap();
 }
+
+#[test]
+fn should_fail_when_a_user_connects_twice() {
+    let server = ServerTest::start("0.0.0.0:1889".to_string());
+    let mut stream = TcpStream::connect("0.0.0.0:1889".to_string()).unwrap();
+
+    let connect_bytes = [
+        0x10, // packet type
+        0x10, // remaining length
+        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x04, // protocol name
+        0x00, // flags
+        0x00, 0x0B, // keep alive
+        0x00, 0x04, 0x62, 0x6F, 0x63, 0x61, // client identifier
+    ];
+
+    stream.write(&connect_bytes).unwrap();
+    let mut data = vec![0; 100];
+    match stream.read(&mut data) {
+        Ok(size) => {
+            assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
+        }
+        Err(err) => {
+            panic!("{}", err.to_string());
+        }
+    }
+
+    stream.write(&connect_bytes).unwrap();
+
+    data = vec![0; 100];
+    match stream.read(&mut data) {
+        Ok(size) => {
+            assert_eq!(data[0..size], []);
+        }
+        Err(err) => {
+            println!("{}", err);
+            panic!();
+        }
+    }
+
+    server.shutdown().unwrap();
+}

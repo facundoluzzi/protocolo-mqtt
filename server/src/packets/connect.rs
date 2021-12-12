@@ -1,3 +1,4 @@
+use crate::packets::packet_manager::PacketManager;
 use crate::enums::user_manager::add_user_manager::AddUserManager;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::flags::connect_flags::ConnectFlags;
@@ -21,6 +22,21 @@ pub struct Connect {
 }
 
 impl Connect {
+
+    pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
+        if !packet_manager.is_disconnected() {
+            Err("Client is already connected".to_string())
+        } else {
+            let sender_stream = packet_manager.get_sender_stream();
+            let sender_user_manager = packet_manager.get_sender_user_manager();
+
+            let connect = Connect::init(bytes, sender_stream.clone(), sender_user_manager.clone())?;
+            packet_manager.set_client_id(connect.get_client_id());
+            connect.send_response(sender_stream.clone(), sender_user_manager.clone())?;
+            Ok(())
+        }
+    }
+
     pub fn init(
         bytes: &[u8],
         sender_stream: Sender<StreamType>,
