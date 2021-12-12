@@ -5,11 +5,11 @@ use client::packet::input::disconnect::Disconnect;
 use client::packet::input::publish::Publish;
 use client::packet::input::subscribe::Subscribe;
 use client::packet::input::unsubscribe::Unsubscribe;
-use client::packet::output::disconnect_response::DisconnectResponse;
 use client::packet::output::connect_error_response::ConnectErrorResponse;
-use std::str::from_utf8;
+use client::packet::output::disconnect_response::DisconnectResponse;
 use client::packet::sender_type::ClientSender;
 use client::packet::sender_type::InterfaceSender;
+use std::str::from_utf8;
 
 use gtk::glib;
 use gtk::prelude::*;
@@ -222,6 +222,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     });
 
     connect_button.connect_clicked(move |_| {
+        println!("0");
         let port = input_port.text().to_string();
         let ip = ip_input.text().to_string();
         let user = user_input.text().to_string();
@@ -233,6 +234,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         let qos_will_message_is_0 = qos_will_message_0.is_active();
         let keep_alive = keep_alive_input.text().to_string();
 
+        println!("1");
         if id_client.is_empty() && !clean_session_is_active {
             let connect_error = ConnectErrorResponse::init(
                 "ClientID requerido o activar Clean Session".to_string(),
@@ -243,6 +245,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             return;
         }
 
+        println!("2");
         let connection = Connect::init(
             ip,
             port,
@@ -260,6 +263,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         sender_connect
             .send(InterfaceSender::Connect(connection))
             .unwrap();
+        println!("4");
     });
 
     disconnect_button.connect_clicked(move |_| {
@@ -270,9 +274,11 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             .unwrap();
 
         let disconnect_response = DisconnectResponse::init();
-        cloned_tx_for_disconnect
-            .send(ClientSender::Disconnect(disconnect_response))
-            .unwrap();
+        if let Err(err) =
+            cloned_tx_for_disconnect.send(ClientSender::Disconnect(disconnect_response))
+        {
+            println!("err: {}", err);
+        }
     });
 
     publish_button.connect_clicked(move |_| {
@@ -344,7 +350,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             ClientSender::Disconnect(disconnect) => {
                 let response = disconnect.get_response();
                 result_for_connect.set_text(&response);
-            },
+            }
             ClientSender::ConnectError(connect) => {
                 let error_response = connect.get_response();
                 result_for_connect.set_text(&error_response);
