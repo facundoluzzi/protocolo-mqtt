@@ -45,7 +45,7 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
-    fn get_client_id(&self) -> String {
+    pub fn get_client_id(&self) -> String {
         self.client_id.to_string()
     }
 
@@ -55,6 +55,10 @@ impl PacketManager {
 
     pub fn get_sender_user_manager(&self) -> Sender<UserManagerAction> {
         self.sender_user_manager.clone()
+    }
+
+    pub fn get_sender_topic_manager(&self) -> Sender<TypeMessage> {
+        self.sender_topic_manager.clone()
     }
 
     pub fn is_disconnected(&self) -> bool {
@@ -88,20 +92,30 @@ impl PacketManager {
         }
     }
 
+    pub fn process_publish_message(&mut self, bytes: &[u8]) -> Result<(), String> {
+        self.logger.info("proccessing publish packet".to_string());
+
+        if let Err(err) = Publish::process_message(bytes, self) {
+            let message_to_log = "Unexpected error processing publish packet:";
+            self.logger.info(format!("{}: {}", message_to_log, err));
+            Disconnect::disconnect_user(
+                self.client_id.to_owned(),
+                self.sender_user_manager.clone(),
+                self.sender_stream.clone(),
+            );
+            self.disconnect();
+            Err(err.to_string())
+        } else {
+            Ok(())
+        }
+    }
+
     pub fn process_disconnect_message(&mut self) {
         Disconnect::disconnect_user(
             self.client_id.to_owned(),
             self.sender_user_manager.clone(),
             self.sender_stream.clone(),
         );
-    }
-
-    pub fn process_publish_message(&mut self, bytes: &[u8]) {
-        self.logger.info("proccessing publish packet".to_string());
-
-        Publish::init(bytes)
-            .send_message(&self.sender_topic_manager, self.get_client_id())
-            .send_response(self.sender_stream.clone());
     }
 
     fn process_subscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
@@ -179,7 +193,7 @@ impl PacketManager {
                 self.logger.info(format!("Packet type: {}", packet_type));
                 match packet_type {
                     1 => self.process_connect_message(bytes)?,
-                    3 => self.process_publish_message(bytes),
+                    3 => self.process_publish_message(bytes)?,
                     8 => self.process_subscribe_message(bytes)?,
                     10 => self.process_unsubscribe_message(bytes)?,
                     12 => self.process_pingreq_message(),
