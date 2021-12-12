@@ -52,7 +52,9 @@ mod tests {
             }
         });
 
-        Publish::init(&bytes).unwrap().send_message(sender_one, "client_id".to_string());
+        Publish::init(&bytes)
+            .unwrap()
+            .send_message(sender_one, "client_id".to_string());
 
         t.join().unwrap();
         let locked_data = data.lock().unwrap();

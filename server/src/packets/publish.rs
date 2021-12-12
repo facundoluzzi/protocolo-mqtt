@@ -1,10 +1,10 @@
-use crate::packets::packet_manager::PacketManager;
 use crate::enums::topic_manager::publisher::Publisher;
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::helper::remaining_length::save_remaining_length;
+use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
-use crate::variable_header::publish_variable_header::{get_variable_header};
+use crate::variable_header::publish_variable_header::get_variable_header;
 
 use std::sync::mpsc::Sender;
 
@@ -20,7 +20,6 @@ pub struct Publish {
 }
 
 impl Publish {
-
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         if packet_manager.is_disconnected() {
             Err("Client is not connected".to_string())
@@ -59,7 +58,8 @@ impl Publish {
         let (topic, packet_id, length) = get_variable_header(variable_header)?;
 
         let packet_identifier = [packet_id[0], packet_id[1]];
-        let payload_to_be_parsed = std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()]);
+        let payload_to_be_parsed =
+            std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()]);
         let payload = if let Ok(parsed_payload) = payload_to_be_parsed {
             parsed_payload.to_string()
         } else {
@@ -84,9 +84,7 @@ impl Publish {
 
     pub fn send_response(&self, stream: Sender<StreamType>) -> Result<(), String> {
         match self.qos {
-            0x00 => {
-                Ok(())
-            }
+            0x00 => Ok(()),
             0x01 => {
                 let puback_response = [
                     0x40,
@@ -95,7 +93,8 @@ impl Publish {
                     self.packet_identifier[1],
                 ];
 
-                let sender_stream_result = stream.send((WriteStream, Some(puback_response.to_vec()), None, None));
+                let sender_stream_result =
+                    stream.send((WriteStream, Some(puback_response.to_vec()), None, None));
 
                 if let Err(msg_error) = sender_stream_result {
                     Err(format!("Error in sending response: {}", msg_error))
@@ -103,9 +102,7 @@ impl Publish {
                     Ok(())
                 }
             }
-            _ => {
-                return Err(format!(""))
-            }
+            _ => return Err(format!("")),
         }
     }
 
@@ -125,8 +122,12 @@ impl Publish {
             self.payload.to_string(),
         );
 
-        if let Err(sender_err) = sender_topic_manager.send(TypeMessage::Publisher(publisher_prueba)) {
-            return Err(format!("Error sending to publisher_subscriber: {}", sender_err));
+        if let Err(sender_err) = sender_topic_manager.send(TypeMessage::Publisher(publisher_prueba))
+        {
+            return Err(format!(
+                "Error sending to publisher_subscriber: {}",
+                sender_err
+            ));
         }
 
         Ok(Publish {

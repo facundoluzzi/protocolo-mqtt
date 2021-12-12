@@ -17,7 +17,7 @@ pub struct PacketManager {
     sender_user_manager: Sender<UserManagerAction>,
     sender_topic_manager: Sender<TypeMessage>,
     logger: Logger,
-    is_disconnected: bool
+    is_disconnected: bool,
 }
 
 impl PacketManager {
@@ -33,7 +33,7 @@ impl PacketManager {
             sender_user_manager,
             sender_topic_manager,
             logger,
-            is_disconnected: true
+            is_disconnected: true,
         }
     }
 
