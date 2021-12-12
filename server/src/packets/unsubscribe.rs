@@ -1,3 +1,4 @@
+use crate::packets::packet_manager::PacketManager;
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::topic_manager::unsubscriber::Unsubscriber;
 use crate::helper::remaining_length::save_remaining_length;
@@ -16,6 +17,17 @@ pub struct Unsubscribe {
 }
 
 impl Unsubscribe {
+
+    pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
+        let mut unsubscribe = Unsubscribe::init(bytes)?;
+        let sender_topic_manager = packet_manager.get_sender_topic_manager();
+        let client_id = packet_manager.get_client_id();
+        let sender_stream = packet_manager.get_sender_stream();
+        unsubscribe = unsubscribe.unsubscribe_topic(sender_topic_manager, client_id)?;
+        unsubscribe.send_response(sender_stream)?;
+        Ok(())
+    }
+
     pub fn init(bytes: &[u8]) -> Result<Unsubscribe, String> {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
@@ -69,7 +81,7 @@ impl Unsubscribe {
         Ok(unsubscribe)
     }
 
-    pub fn send_response(&self, sender_stream: Sender<StreamType>) {
+    pub fn send_response(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let packet_type = 0xB0u8;
         let packet_identifier = self.packet_identifier.clone();
         let bytes_response = vec![
@@ -79,10 +91,11 @@ impl Unsubscribe {
             packet_identifier[1],
         ];
 
-        if let Err(msg_error) =
-            sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
-        {
-            println!("Error in sending response: {}", msg_error);
+        let sender_result = sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None));
+        if let Err(msg_error) = sender_result {
+            Err(format!("Error in sending response: {}", msg_error))
+        } else {
+            Ok(())
         }
     }
 }
