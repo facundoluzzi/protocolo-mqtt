@@ -46,9 +46,6 @@ pub enum ClientAction {
     Subscribe,
 }
 
-type SenderForReading = Sender<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
-type ReceiverForReading = Receiver<(Sender<StreamType>, gtk::glib::Sender<ClientSender>)>;
-
 pub type SenderClient = (
     ClientAction,
     Option<String>,
@@ -71,10 +68,6 @@ impl Client {
             sender: None,
             sender_stream: None,
         };
-        let (sender_to_start_reading, receiver_to_start_reading): (
-            SenderForReading,
-            ReceiverForReading,
-        ) = mpsc::channel();
 
         thread::spawn(move || {
             for event in event_receiver {
@@ -83,9 +76,7 @@ impl Client {
                         let sender_stream = connect.connect_to_server();
                         if let Ok(sender) = sender_stream {
                             client.sender_stream = Some(sender.clone());
-                            sender_to_start_reading
-                                .send((sender.clone(), connect.get_gtk_sender()))
-                                .unwrap();
+                            Client::start_to_read(sender.clone(), connect.get_gtk_sender());
                         }
                     }
                     InterfaceSender::Publish(publish) => match client.sender_stream.clone() {
@@ -132,29 +123,22 @@ impl Client {
                             println!("Unexpected error")
                         }
                     },
+                    InterfaceSender::Disconnect(disconnect) => match client.sender_stream.clone() {
+                        Some(sender_stream) => {
+                            match disconnect.send_disconnect(sender_stream.clone()) {
+                                Ok(_result_ok) => {
+                                    println!("Ok");
+                                }
+                                Err(err) => {
+                                    println!("err: {}", err);
+                                }
+                            }
+                        }
+                        None => {
+                            println!("Unexpected error");
+                        }
+                    },
                 };
-            }
-        });
-
-        thread::spawn(move || {
-            let (sender_stream, sender_gtk) = receiver_to_start_reading.recv().unwrap();
-
-            let (packet_sender, packet_receiver) = mpsc::channel::<Vec<u8>>();
-
-            loop {
-                let message_sent =
-                    sender_stream
-                        .clone()
-                        .send((ReadStream, None, Some(packet_sender.clone())));
-
-                if let Err(_msg) = message_sent {
-                } else if let Ok(packet) = packet_receiver.recv() {
-                    let packet_u8: &[u8] = &packet;
-                    if let Err(err) = Client::process_packet(packet_u8, sender_gtk.clone()) {
-                        println!("err: {}", err);
-                        break;
-                    }
-                }
             }
         });
 
@@ -170,5 +154,41 @@ impl Client {
         };
 
         Ok(())
+    }
+
+    fn is_empty_packet(packet: Vec<u8>) -> bool {
+        packet
+            .clone()
+            .into_iter()
+            .filter(|element| *element != 0)
+            .collect::<Vec<u8>>()
+            .len()
+            == 0
+    }
+
+    fn start_to_read(sender_stream: Sender<StreamType>, sender_gtk: gtk::glib::Sender<ClientSender>) {
+        thread::spawn(move || {
+            let (packet_sender, packet_receiver) = mpsc::channel::<Vec<u8>>();
+
+            loop {
+                let message_sent =
+                    sender_stream
+                        .clone()
+                        .send((ReadStream, None, Some(packet_sender.clone())));
+
+                if let Err(_msg) = message_sent {
+                } else if let Ok(packet) = packet_receiver.recv() {
+                    let empty_packet = Client::is_empty_packet(packet.clone());
+                    if empty_packet {
+                        break;
+                    }
+                    let packet_u8: &[u8] = &packet;
+                    if let Err(err) = Client::process_packet(packet_u8, sender_gtk.clone()) {
+                        println!("err: {}", err);
+                        break;
+                    }
+                }
+            }
+        });
     }
 }
