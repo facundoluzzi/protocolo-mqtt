@@ -139,7 +139,8 @@ impl PacketManager {
     }
 
     fn process_unsubscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
-        self.logger.info("proccessing unsubscribe packet".to_string());
+        self.logger
+            .info("proccessing unsubscribe packet".to_string());
         if let Err(err) = Unsubscribe::process_message(bytes, self) {
             let message = format!("Unexpected error processing unsubscribe packet: {}", err);
             self.logger.info(message);

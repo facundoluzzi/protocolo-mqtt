@@ -8,6 +8,6 @@ pub fn send_response(sender_stream: Sender<StreamType>) -> Result<(), String> {
     let sender_result = sender_stream.send(tuple_to_send);
     match sender_result {
         Err(err) => Err(err.to_string()),
-        Ok(()) => Ok(())
+        Ok(()) => Ok(()),
     }
 }
