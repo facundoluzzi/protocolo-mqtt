@@ -166,7 +166,10 @@ impl Client {
             == 0
     }
 
-    fn start_to_read(sender_stream: Sender<StreamType>, sender_gtk: gtk::glib::Sender<ClientSender>) {
+    fn start_to_read(
+        sender_stream: Sender<StreamType>,
+        sender_gtk: gtk::glib::Sender<ClientSender>,
+    ) {
         thread::spawn(move || {
             let (packet_sender, packet_receiver) = mpsc::channel::<Vec<u8>>();
 

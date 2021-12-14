@@ -1,19 +1,17 @@
-use crate::packets::packet_manager::PacketManager;
 use crate::enums::topic_manager::subscriber::Subscriber;
 use crate::enums::topic_manager::topic_message::TypeMessage;
-use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::enums::wildcard::wildcard_result::WildcardResult::{
     HasNoWildcard, HasWildcard, InvalidWildcard,
 };
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
-use crate::stream::stream_handler::StreamType;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 use crate::wildcard::verify_wildcard;
+use crate::wildcard::wildcard_handler::Wildcard;
 
 use std::convert::TryInto;
-use std::sync::mpsc::Sender;
 
 pub struct Subscribe {
     remaining_length: usize,
@@ -23,16 +21,10 @@ pub struct Subscribe {
 }
 
 impl Subscribe {
-
     pub fn process_message(bytes: &[u8], packet_manager: &PacketManager) -> Result<(), String> {
         let mut subscribe = Subscribe::init(bytes)?;
-
-        let sender_topic_manager = packet_manager.get_sender_topic_manager();
-        let sender_user_manager = packet_manager.get_sender_user_manager();
-        let sender_stream = packet_manager.get_sender_stream();
-        let client_id = packet_manager.get_client_id();
-        let subscribe_topic_response = subscribe.subscribe_topic(sender_topic_manager, sender_user_manager, client_id)?;
-        subscribe_topic_response.send_response(sender_stream);
+        let subscribe_topic_response = subscribe.subscribe_topic(packet_manager)?;
+        subscribe_topic_response.send_response(packet_manager)?;
         Ok(())
     }
 
@@ -61,61 +53,79 @@ impl Subscribe {
         Ok(subscribe)
     }
 
-    pub fn subscribe_topic(
+    fn send_to_topic_manager(
         &mut self,
-        sender_topic_manager: Sender<TypeMessage>,
-        sender_user_manager: Sender<UserManagerAction>,
-        client_id: String,
-    ) -> Result<Self, String> {
+        packet_manager: &PacketManager,
+        qos: u8,
+        subscriber: Subscriber,
+    ) {
+        let sender_topic_manager = packet_manager.get_sender_topic_manager();
+
+        match sender_topic_manager.send(TypeMessage::Subscriber(subscriber)) {
+            Ok(_) => self.return_codes.push(qos),
+            Err(_) => self.return_codes.push(0x80),
+        }
+    }
+
+    fn process_topic_with_wildcard(
+        &mut self,
+        topic: String,
+        qos: u8,
+        wildcard: Option<Wildcard>,
+        packet_manager: &PacketManager,
+    ) {
+        let client_id = packet_manager.get_client_id();
+        let sender_user_manager = packet_manager.get_sender_user_manager();
+        let subscriber = Subscriber::init(client_id, topic, sender_user_manager, wildcard, qos);
+        self.send_to_topic_manager(packet_manager, qos, subscriber);
+    }
+
+    fn process_topic_without_wildcard(
+        &mut self,
+        topic: String,
+        qos: u8,
+        packet_manager: &PacketManager,
+    ) {
+        let client_id = packet_manager.get_client_id();
+        let sender_user_manager = packet_manager.get_sender_user_manager();
+        let subscriber = Subscriber::init(client_id, topic, sender_user_manager, None, qos);
+        self.send_to_topic_manager(packet_manager, qos, subscriber);
+    }
+
+    fn send_subscribe_to_topic_manager(
+        &mut self,
+        topics: Vec<(String, u8)>,
+        packet_manager: &PacketManager,
+    ) {
+        topics.into_iter().for_each(|(topic, qos)| {
+            if qos > 1 {
+                self.return_codes.push(0x80);
+                return;
+            }
+            match verify_wildcard::get_wilcard(topic.to_owned()) {
+                HasWildcard(wildcard) => {
+                    self.process_topic_with_wildcard(topic, qos, Some(wildcard), packet_manager)
+                }
+                HasNoWildcard => self.process_topic_without_wildcard(topic, qos, packet_manager),
+                InvalidWildcard => self.return_codes.push(0x80),
+            };
+            return;
+        });
+    }
+
+    pub fn subscribe_topic(&mut self, packet_manager: &PacketManager) -> Result<Self, String> {
         let mut acumulator: usize = 0;
+        let mut topics_qos: Vec<(String, u8)> = Vec::new();
 
         while self.payload.len() > acumulator {
-            let (topic, length) =
-                match UTF8::utf8_parser(&self.payload[acumulator..self.payload.len()]) {
-                    Ok((topic, length)) => (topic, length),
-                    Err(_err_result) => {
-                        self.return_codes.push(0x80);
-                        continue;
-                    }
-                };
-
-            let wildcard = match verify_wildcard::get_wilcard(topic.to_owned()) {
-                HasWildcard(wildcard) => Some(wildcard),
-                HasNoWildcard => None,
-                InvalidWildcard => {
-                    acumulator += length + 1;
-                    self.return_codes.push(0x80);
-                    continue;
-                }
-            };
-
+            let topic_qos = &self.payload[acumulator..self.payload.len()];
+            let (topic, length) = UTF8::utf8_parser(topic_qos)?;
             let qos = self.payload[length + acumulator];
-
-            let subscriber = Subscriber::init(
-                client_id.to_string(),
-                topic,
-                sender_user_manager.clone(),
-                wildcard,
-                qos,
-            );
-
-            match sender_topic_manager.send(TypeMessage::Subscriber(subscriber)) {
-                Ok(_) => {}
-                Err(_) => {
-                    acumulator += length + 1;
-                    self.return_codes.push(0x80);
-                    continue;
-                }
-            }
-
+            topics_qos.push((topic, qos));
             acumulator += length + 1;
-
-            match qos {
-                0 => self.return_codes.push(0x00),
-                1 => self.return_codes.push(0x01),
-                _ => self.return_codes.push(0x80),
-            };
         }
+
+        self.send_subscribe_to_topic_manager(topics_qos, packet_manager);
 
         let subscribe = Subscribe {
             remaining_length: self.remaining_length,
@@ -127,16 +137,13 @@ impl Subscribe {
         Ok(subscribe)
     }
 
-    pub fn send_response(&self, sender_stream: Sender<StreamType>) {
-        let packet_type = 0x90;
-        let remaining_length = 0x02;
-        let packet_identifier_msb = self.packet_identifier[0];
-        let packet_identifier_lsb = self.packet_identifier[1];
+    pub fn send_response(&self, packet_manager: &PacketManager) -> Result<(), String> {
+        let sender_stream = packet_manager.get_sender_stream();
         let mut bytes_response = vec![
-            packet_type,
-            remaining_length,
-            packet_identifier_msb,
-            packet_identifier_lsb,
+            0x90,
+            0x02,
+            self.packet_identifier[0],
+            self.packet_identifier[1],
         ];
 
         for return_code in &self.return_codes {
@@ -144,10 +151,12 @@ impl Subscribe {
             bytes_response[1] += 1;
         }
 
-        if let Err(msg_error) =
-            sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None))
-        {
-            println!("Error in sending response: {}", msg_error);
+        let sender_response =
+            sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None));
+        if let Err(msg_error) = sender_response {
+            return Err(format!("Error in sending response: {}", msg_error));
+        } else {
+            Ok(())
         }
     }
 }
