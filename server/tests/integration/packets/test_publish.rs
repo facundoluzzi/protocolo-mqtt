@@ -559,10 +559,10 @@ fn should_publish_message_with_both_qos_with_same_user() {
 
 #[test]
 fn should_subscribe_qos0_and_publish_qos1() {
-    let server = ServerTest::start("0.0.0.0:2538".to_string());
+    let server = ServerTest::start("0.0.0.0:2539".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -667,9 +667,9 @@ fn should_subscribe_qos0_and_publish_qos1() {
 
 #[test]
 fn should_not_publish_if_client_is_not_connected() {
-    let server = ServerTest::start("0.0.0.0:2538".to_string());
+    let server = ServerTest::start("0.0.0.0:2540".to_string());
 
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2540".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 

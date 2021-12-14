@@ -1,4 +1,5 @@
 mod tests {
+    use core::time;
     use std::{
         io::{Read, Write},
         net::TcpStream,
