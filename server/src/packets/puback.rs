@@ -1,7 +1,8 @@
 use std::sync::mpsc::Sender;
 
 use crate::enums::user_manager::{
-    stop_publish_user_manager::StopPublish, user_manager_action::UserManagerAction,
+    stop_publish_user_manager::StopPublish,
+    user_manager_action::UserManagerAction::{self},
 };
 pub struct Puback {
     packet_identifier: [u8; 2],

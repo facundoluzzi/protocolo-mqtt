@@ -39,7 +39,7 @@ impl TopicManager {
             for publish_subscriber in publisher_subscriber_receiver {
                 match publish_subscriber {
                     TypeMessage::Publisher(publisher) => {
-                        publisher.publish(topic_manager.topics.clone());
+                        topic_manager.topics = publisher.publish(topic_manager.topics.clone());
                     }
                     TypeMessage::Subscriber(mut subscriber) => {
                         topic_manager.topics = subscriber.subscribe(topic_manager.topics.clone());
