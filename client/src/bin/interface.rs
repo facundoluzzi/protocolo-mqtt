@@ -9,6 +9,7 @@ use std::str::from_utf8;
 use std::sync::mpsc::Sender;
 
 use client::interface_extra::connect_tab::ConnectTab;
+use client::interface_extra::object_builder::build_label_with_name;
 use client::interface_extra::publish_tab::PublishTab;
 use client::interface_extra::subscribe_tab::SubscribeTab;
 
@@ -54,7 +55,10 @@ impl AppUI {
                     let topic = publish.get_topic();
                     message.push_str(" en topic ");
                     message.push_str(&topic);
-                    let result = from_utf8(message.as_bytes()).unwrap();
+                    let result = match from_utf8(message.as_bytes()) {
+                        Ok(result) => result,
+                        Err(_err) => "There's been a problem getting the text",
+                    };
                     messages_received_label
                         .set_text(&(messages_received_label.text().to_string() + result + "\n"));
                 }
@@ -80,17 +84,23 @@ impl AppUI {
 fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSender>) {
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
-    let window: gtk::Window = builder.object("main_window").unwrap();
+
+    let window: gtk::Window = match builder.object("main_window") {
+        Some(window) => window,
+        None => panic!("Can not create the UI"),
+    };
+
     let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    let result_for_connect: gtk::Label = builder.object("result_label").unwrap();
-    let result_label_1: gtk::Label = builder.object("result_label1").unwrap();
-    let result_label_2: gtk::Label = builder.object("result_suback_unsubcak").unwrap();
-    let messages_received_label: gtk::Label = builder.object("messages_received_label").unwrap();
+    let result_for_connect: gtk::Label = build_label_with_name(&builder, "result_label");
+    let result_label_1: gtk::Label = build_label_with_name(&builder, "result_label1");
+    let result_label_2: gtk::Label = build_label_with_name(&builder, "result_suback_unsubcak");
+    let messages_received_label: gtk::Label =
+        build_label_with_name(&builder, "messages_received_label");
 
     let connect_tab = ConnectTab::new(client_sender.clone(), tx_for_connection);
     let subscribe_tab = SubscribeTab::new(client_sender.clone());
-    let publish_tab = PublishTab::new(client_sender.clone());
+    let publish_tab = PublishTab::new(client_sender);
 
     let app_window = AppUI::new(connect_tab, subscribe_tab, publish_tab);
     app_window.connect_tab.build(&builder);

@@ -8,6 +8,11 @@ use crate::packet::output::connect_error_response::ConnectErrorResponse;
 use crate::packet::output::disconnect_response::DisconnectResponse;
 use crate::packet::sender_type::{ClientSender, InterfaceSender};
 
+use crate::interface_extra::object_builder::{
+    build_button_with_name, build_checkbutton_with_name, build_entry_with_name,
+    build_radiobutton_with_name,
+};
+
 pub struct ConnectTab {
     sender_of_client: Sender<InterfaceSender>,
     sender_for_client: gtk::glib::Sender<ClientSender>,
@@ -25,25 +30,24 @@ impl ConnectTab {
     }
 
     pub fn build(&self, builder: &gtk::Builder) {
-        let input_port: gtk::Entry = self.build_entry_with_name(builder, "port_input");
-        let ip_input: gtk::Entry = self.build_entry_with_name(builder, "ip_input");
-        let user_input: gtk::Entry = self.build_entry_with_name(builder, "user_input");
-        let id_input: gtk::Entry = self.build_entry_with_name(builder, "id_input");
-        let password_input: gtk::Entry = self.build_entry_with_name(builder, "password_input");
+        let input_port: gtk::Entry = build_entry_with_name(builder, "port_input");
+        let ip_input: gtk::Entry = build_entry_with_name(builder, "ip_input");
+        let user_input: gtk::Entry = build_entry_with_name(builder, "user_input");
+        let id_input: gtk::Entry = build_entry_with_name(builder, "id_input");
+        let password_input: gtk::Entry = build_entry_with_name(builder, "password_input");
         let last_will_message_input: gtk::Entry =
-            self.build_entry_with_name(builder, "last_will_message_input");
+            build_entry_with_name(builder, "last_will_message_input");
         let last_will_topic_input: gtk::Entry =
-            self.build_entry_with_name(builder, "last_will_topic_input");
-        let keep_alive_input: gtk::Entry = self.build_entry_with_name(builder, "keep_alive_input");
+            build_entry_with_name(builder, "last_will_topic_input");
+        let keep_alive_input: gtk::Entry = build_entry_with_name(builder, "keep_alive_input");
 
-        let connect_button: gtk::Button = self.build_button_with_name(builder, "connect_button");
-        let disconnect_button: gtk::Button =
-            self.build_button_with_name(builder, "disconnect_button");
+        let connect_button: gtk::Button = build_button_with_name(builder, "connect_button");
+        let disconnect_button: gtk::Button = build_button_with_name(builder, "disconnect_button");
 
         let clean_session_checkbox: gtk::CheckButton =
-            self.build_checkbutton_with_name(builder, "clean_session_checkbox");
+            build_checkbutton_with_name(builder, "clean_session_checkbox");
         let qos_will_message_0: gtk::RadioButton =
-            self.build_radiobutton_with_name(builder, "qos_will_message_0");
+            build_radiobutton_with_name(builder, "qos_will_message_0");
 
         let sender_connect = self.get_clone_sender_of_client();
         let sender_disconnect = self.get_clone_sender_of_client();
@@ -54,11 +58,10 @@ impl ConnectTab {
 
         disconnect_button.connect_clicked(move |_| {
             let disconnect = Disconnect::init();
-
-            sender_disconnect
-                .send(InterfaceSender::Disconnect(disconnect))
-                .unwrap();
-
+            if let Err(_error) = sender_disconnect.send(InterfaceSender::Disconnect(disconnect)) {
+                println!("Error en el disconnect");
+                return;
+            }
             let disconnect_response = DisconnectResponse::init();
             if let Err(err) =
                 tx_for_disconnection.send(ClientSender::Disconnect(disconnect_response))
@@ -83,10 +86,11 @@ impl ConnectTab {
                 let connect_error = ConnectErrorResponse::init(
                     "ClientID requerido o activar Clean Session".to_string(),
                 );
-                tx_for_error_connection
-                    .send(ClientSender::ConnectError(connect_error))
-                    .unwrap();
-                return;
+                if let Ok(()) =
+                    tx_for_error_connection.send(ClientSender::ConnectError(connect_error))
+                {
+                    return;
+                }
             }
 
             let connection = Connect::init(
@@ -103,10 +107,9 @@ impl ConnectTab {
                 keep_alive,
             );
 
-            sender_connect
-                .send(InterfaceSender::Connect(connection))
-                .unwrap();
-            println!("4");
+            if let Err(_error) = sender_connect.send(InterfaceSender::Connect(connection)) {
+                println!("Error en el connect");
+            }
         });
     }
 

@@ -157,13 +157,7 @@ impl Client {
     }
 
     fn is_empty_packet(packet: Vec<u8>) -> bool {
-        packet
-            .clone()
-            .into_iter()
-            .filter(|element| *element != 0)
-            .collect::<Vec<u8>>()
-            .len()
-            == 0
+        !packet.into_iter().any(|element| element != 0)
     }
 
     fn start_to_read(

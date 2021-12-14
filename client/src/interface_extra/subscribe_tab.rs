@@ -8,6 +8,11 @@ use std::{
 extern crate gtk;
 use gtk::prelude::*;
 
+use crate::interface_extra::object_builder::{
+    build_button_with_name, build_entry_with_name, build_label_with_name,
+    build_radiobutton_with_name,
+};
+
 use crate::packet::{
     input::{subscribe::Subscribe, unsubscribe::Unsubscribe},
     sender_type::InterfaceSender,
@@ -27,18 +32,15 @@ impl SubscribeTab {
 
     pub fn build(&self, builder: &gtk::Builder) {
         let input_topic_suscribe: gtk::Entry =
-            self.build_entry_with_name(&builder, "input_topic_subscribe");
-        let subscribe_button: gtk::Button =
-            self.build_button_with_name(builder, "subscribe_button");
+            build_entry_with_name(builder, "input_topic_subscribe");
+        let subscribe_button: gtk::Button = build_button_with_name(builder, "subscribe_button");
         let qos_suscriber_0: gtk::RadioButton =
-            self.build_radiobutton_with_name(builder, "qos_subscriber_0");
-        let unsubscribe_button: gtk::Button =
-            self.build_button_with_name(builder, "unsubscribe_button");
+            build_radiobutton_with_name(builder, "qos_subscriber_0");
+        let unsubscribe_button: gtk::Button = build_button_with_name(builder, "unsubscribe_button");
         let input_topic_unsubscribe: gtk::Entry =
-            self.build_entry_with_name(&builder, "input_topic_unsubscribe");
-        let add_topic_button: gtk::Button =
-            self.build_button_with_name(builder, "add_topic_button");
-        let topic_list_label: gtk::Label = self.build_label_with_name(builder, "topic_list_label");
+            build_entry_with_name(builder, "input_topic_unsubscribe");
+        let add_topic_button: gtk::Button = build_button_with_name(builder, "add_topic_button");
+        let topic_list_label: gtk::Label = build_label_with_name(builder, "topic_list_label");
         let sender_unsubscribe = self.get_clone_sender_of_client();
 
         let list_of_topics_to_suscribe = Vec::new();
@@ -57,8 +59,9 @@ impl SubscribeTab {
 
         thread::spawn(move || {
             for received_topic in receiver_t {
-                let mut data = data_for_thread.lock().unwrap();
-                data.push(received_topic);
+                if let Ok(mut data) = data_for_thread.lock() {
+                    data.push(received_topic);
+                };
             }
         });
 
@@ -76,18 +79,19 @@ impl SubscribeTab {
             cloned_topic_list_label.set_text(&topic_list);
 
             let unsubscribe = Unsubscribe::init(topic);
-            sender_unsubscribe
-                .send(InterfaceSender::Unsubscribe(unsubscribe))
-                .unwrap();
+            if let Err(_err) = sender_unsubscribe.send(InterfaceSender::Unsubscribe(unsubscribe)) {
+                println!("Error desuscribiendose");
+            }
         });
 
         subscribe_button.connect_clicked(move |_| {
-            let mut data = data_for_thread_dos.lock().unwrap();
-            let subscribe = Subscribe::init(data.to_vec());
-            data.clear();
-            sender_subscribe
-                .send(InterfaceSender::Subscribe(subscribe))
-                .unwrap();
+            if let Ok(mut data) = data_for_thread_dos.lock() {
+                let subscribe = Subscribe::init(data.to_vec());
+                data.clear();
+                if let Err(_err) = sender_subscribe.send(InterfaceSender::Subscribe(subscribe)) {
+                    println!("Error en la suscripcion");
+                }
+            };
         });
 
         receiver_for_new_topics.attach(None, move |(topic, qos)| {
@@ -99,7 +103,9 @@ impl SubscribeTab {
                 topic_list_label.set_text(&(actual.to_string() + &format!("\n{},{}", topic, 1)));
             }
 
-            cloned_sender_t.send((topic, qos)).unwrap();
+            if let Err(_err) = cloned_sender_t.send((topic, qos)) {
+                println!("Error mostrando nuevo topic");
+            }
 
             glib::Continue(true)
         });
@@ -108,7 +114,9 @@ impl SubscribeTab {
             let topic = input_topic_suscribe.text().to_string();
             let is_qos_0 = qos_suscriber_0.is_active();
             let sender = sender_for_new_topics.clone();
-            sender.send((topic, is_qos_0)).unwrap();
+            if let Err(_err) = sender.send((topic, is_qos_0)) {
+                println!("Error mostrando nuevo topic");
+            }
             input_topic_suscribe.set_text("");
         });
     }
