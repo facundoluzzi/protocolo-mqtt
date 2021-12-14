@@ -35,14 +35,12 @@ impl PublisherWriter {
     }
 
     fn get_packet_identifier(&self, bytes: &[u8]) -> Vec<u8> {
-        let bytes_rem_len = &bytes[1..bytes.len()];
-        let (readed_index, _) = save_remaining_length(bytes_rem_len).unwrap();
-
+        let (readed_index, _): (usize, usize) = save_remaining_length(&bytes[1..bytes.len()]).unwrap();
         let init_variable_header = 1 + readed_index;
+        let variable_header = &bytes[init_variable_header..bytes.len()];
+        let (_, packet_id, _) = get_variable_header(variable_header).unwrap();
 
-        let (_, packet_identifier, _) =
-            get_variable_header(&bytes[init_variable_header..bytes.len()]).unwrap();
-        packet_identifier[0..2]
+        packet_id[0..2]
             .try_into()
             .expect("slice with incorrect length")
     }
@@ -89,7 +87,7 @@ impl PublisherWriter {
                         .send(AutoSendAction::Add(AddAutoSend::init(
                             self.get_packet_identifier(&receive),
                             receive,
-                        )));
+                        ))).unwrap();
                 }
                 Err(_err) => {}
             }
@@ -109,6 +107,6 @@ impl PublisherWriter {
         self.publish_autosend
             .send(AutoSendAction::Remove(RemoveAutoSend::init(
                 packet_identifier,
-            )));
+            ))).unwrap();
     }
 }

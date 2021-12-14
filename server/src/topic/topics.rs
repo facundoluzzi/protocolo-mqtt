@@ -98,7 +98,6 @@ impl Topic {
             if qos_subscribe + qos < 2 {
                 new_packet[0] &= 0b11111101;
             }
-            println!("Publicando :D : {}", self.subscribers.len());
 
             if qos == 1 && *qos_subscribe == 0 {
                 let message_length = message.len();

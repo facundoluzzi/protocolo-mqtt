@@ -19,7 +19,6 @@ impl Unsubscriber {
             topic_sender.send(remove_topic).unwrap();
             println!("Suscriptor eliminado!: topic: {}", self.topic.to_owned());
         }
-        println!("Desubscribiendo...");
         topics
     }
 

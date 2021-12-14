@@ -4,6 +4,7 @@ use core::time;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
+use std::thread;
 
 #[test]
 fn should_unsubscribe_correctly() {
@@ -95,7 +96,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
         0x80, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje
+        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x01, // payload MQTT como mensaje
     ];
 
     stream_subscriber.write(&subscribe_bytes).unwrap();
@@ -103,7 +104,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     data = vec![0; 100];
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x00]);
+            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
         }
         _ => {
             panic!();
@@ -112,7 +113,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     // PUBLISH
     let publish_bytes = [
-        0x30, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
         0x0D, // remaining length
         0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // topic name
         0x00, 0x0A, // packet identifier
@@ -126,6 +127,8 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
         0x02,   //remainign length
         0x00, 0x0A  //packet identifier
     ];
+
+    thread::sleep(time::Duration::from_millis(100));
 
     data = vec![0; 100];
     match stream_publisher.read(&mut data) {
@@ -141,7 +144,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
             let expected_packet = [
-                0x30, 0x0B, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x03, 0x61, 0x2F, 0x62,
+                0x32, 0x0D, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x0A, 0x00, 0x03, 0x61, 0x2F, 0x62,
             ];
             assert_eq!(data[0..size], expected_packet);
         }
@@ -152,21 +155,6 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     stream_subscriber.write(&puback_bytes).unwrap();
 
-    std::thread::sleep(time::Duration::from_secs(6));
-
-    data = vec![0; 100];
-
-    match stream_subscriber.read(&mut data) {
-        Ok(size) => {
-            let expected_packet = 
-                [0x38, 0x0B, 0x00 , 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x03, 0x61, 0x2F, 0x62];
-            assert_eq!(data[0..size], expected_packet);
-        }
-        _ => {
-            panic!();
-        }
-    }
-
     //UNSUBSCRIBE
     let unsubscribe_bytes = [
         0xA0, // packet type
@@ -174,6 +162,8 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
         0x00, 0x0A, // variable header, en particular packet identifier
         0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // payload MQTT como mensaje
     ];
+
+    thread::sleep(time::Duration::from_millis(100));
     stream_subscriber.write(&unsubscribe_bytes).unwrap();
 
     data = vec![0; 100];
@@ -186,7 +176,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
         }
     }
 
-    // stream_publisher.write(&publish_bytes).unwrap();
+    stream_publisher.write(&publish_bytes).unwrap();
     data = vec![0; 100];
 
     match stream_subscriber.read(&mut data) {
