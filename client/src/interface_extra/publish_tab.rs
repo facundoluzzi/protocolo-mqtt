@@ -16,16 +16,14 @@ impl PublishTab {
         PublishTab { sender_of_client }
     }
 
-    pub fn build(&self, builder: &gtk::Builder) {
-        let message_input: gtk::Entry = build_entry_with_name(builder, "message_input");
-        let topic_input: gtk::Entry = build_entry_with_name(builder, "topic_input");
-
-        let publish_button: gtk::Button = build_button_with_name(builder, "publish_button");
-
-        let qos_publish_0: gtk::RadioButton = build_radiobutton_with_name(builder, "qos_publish_0");
-
-        let sender_publish = self.get_clone_sender_of_client();
-
+    fn attach_action_for_publish_button(
+        &self,
+        publish_button: gtk::Button,
+        message_input: gtk::Entry,
+        topic_input: gtk::Entry,
+        qos_publish_0: gtk::RadioButton,
+        sender_publish: Sender<InterfaceSender>,
+    ) {
         publish_button.connect_clicked(move |_| {
             let message = message_input.text().to_string();
             let topic = topic_input.text().to_string();
@@ -36,6 +34,25 @@ impl PublishTab {
                 println!("Error en el publish");
             }
         });
+    }
+
+    pub fn build(&self, builder: &gtk::Builder) {
+        let message_input: gtk::Entry = build_entry_with_name(builder, "message_input");
+        let topic_input: gtk::Entry = build_entry_with_name(builder, "topic_input");
+
+        let publish_button: gtk::Button = build_button_with_name(builder, "publish_button");
+
+        let qos_publish_0: gtk::RadioButton = build_radiobutton_with_name(builder, "qos_publish_0");
+
+        let sender_publish = self.get_clone_sender_of_client();
+
+        self.attach_action_for_publish_button(
+            publish_button,
+            message_input,
+            topic_input,
+            qos_publish_0,
+            sender_publish,
+        );
     }
 
     fn get_clone_sender_of_client(&self) -> Sender<InterfaceSender> {
