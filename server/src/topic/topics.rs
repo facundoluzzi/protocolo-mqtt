@@ -106,7 +106,11 @@ impl Topic {
                 new_packet.remove(index_to_delete);
                 new_packet[1] -= 2;
             }
-
+            println!(
+                "VIEJO: {:?}.... NUEVO: {:?}",
+                packet.len(),
+                new_packet.len()
+            );
             let action = UserManagerAction::PublishMessageUserManager(
                 PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()),
             );
