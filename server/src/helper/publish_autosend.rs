@@ -43,15 +43,12 @@ impl PublishAutoSend {
                 }
             }
         });
-        std::thread::spawn(move || {
-            loop{
-                std::thread::sleep(time::Duration::from_secs(5));
-                if let Err(error) = sender.send(AutoSendAction::PublishAll(PublishAllAutoSend::init()))
-                {
-                    println!("{:?}", error);
-                };
-            }
-                
+        std::thread::spawn(move || loop {
+            std::thread::sleep(time::Duration::from_secs(5));
+            if let Err(error) = sender.send(AutoSendAction::PublishAll(PublishAllAutoSend::init()))
+            {
+                println!("{:?}", error);
+            };
         });
         sender_to_return
     }

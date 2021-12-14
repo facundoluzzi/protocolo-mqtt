@@ -247,8 +247,6 @@ fn should_receive_third_publish_with_dup() {
     server.shutdown().unwrap();
 }
 
-
-
 #[test]
 fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     let server = ServerTest::start("0.0.0.0:2533".to_string());
@@ -359,10 +357,9 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     }
     let puback_bytes = [
         0x40, //packet type puback
-        0x02,   //remainign length
-        0x00, 0x0A  //packet idezntifier
+        0x02, //remainign length
+        0x00, 0x0A, //packet idezntifier
     ];
-
 
     subscriber_stream.write(&puback_bytes).unwrap();
     std::thread::sleep(time::Duration::from_secs(10));
@@ -370,10 +367,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(
-                data[0..size],
-                []
-            );
+            assert_eq!(data[0..size], []);
         }
         _ => {
             panic!();

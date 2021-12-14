@@ -13,7 +13,10 @@ impl Unsubscriber {
         Unsubscriber { client_id, topic }
     }
 
-    pub fn unsubscribe(&mut self, topics: HashMap<String, Sender<TopicAction>>) -> HashMap<String, Sender<TopicAction>>{
+    pub fn unsubscribe(
+        &mut self,
+        topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
         if let Some(topic_sender) = topics.get(&self.topic.to_owned()) {
             let remove_topic = TopicAction::Remove(RemoveTopic::init(self.client_id.to_owned()));
             topic_sender.send(remove_topic).unwrap();

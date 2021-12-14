@@ -1,8 +1,8 @@
-use crate::packets::packet_manager::PacketManager;
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::topic_manager::unsubscriber::Unsubscriber;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
@@ -17,7 +17,6 @@ pub struct Unsubscribe {
 }
 
 impl Unsubscribe {
-
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         let mut unsubscribe = Unsubscribe::init(bytes)?;
         let sender_topic_manager = packet_manager.get_sender_topic_manager();
@@ -90,7 +89,8 @@ impl Unsubscribe {
             packet_identifier[1],
         ];
 
-        let sender_result = sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None));
+        let sender_result =
+            sender_stream.send((WriteStream, Some(bytes_response.to_vec()), None, None));
         if let Err(msg_error) = sender_result {
             Err(format!("Error in sending response: {}", msg_error))
         } else {

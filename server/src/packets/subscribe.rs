@@ -1,4 +1,3 @@
-use crate::packets::packet_manager::PacketManager;
 use crate::enums::topic_manager::subscriber::Subscriber;
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
@@ -7,6 +6,7 @@ use crate::enums::wildcard::wildcard_result::WildcardResult::{
 };
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
@@ -23,7 +23,6 @@ pub struct Subscribe {
 }
 
 impl Subscribe {
-
     pub fn process_message(bytes: &[u8], packet_manager: &PacketManager) -> Result<(), String> {
         let mut subscribe = Subscribe::init(bytes)?;
 
@@ -31,7 +30,8 @@ impl Subscribe {
         let sender_user_manager = packet_manager.get_sender_user_manager();
         let sender_stream = packet_manager.get_sender_stream();
         let client_id = packet_manager.get_client_id();
-        let subscribe_topic_response = subscribe.subscribe_topic(sender_topic_manager, sender_user_manager, client_id)?;
+        let subscribe_topic_response =
+            subscribe.subscribe_topic(sender_topic_manager, sender_user_manager, client_id)?;
         subscribe_topic_response.send_response(sender_stream);
         Ok(())
     }

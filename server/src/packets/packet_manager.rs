@@ -88,7 +88,7 @@ impl PacketManager {
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
         } else {
             self.connect();
             Ok(())
@@ -107,7 +107,7 @@ impl PacketManager {
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
         } else {
             Ok(())
         }
@@ -135,14 +135,15 @@ impl PacketManager {
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
         } else {
             Ok(())
         }
     }
 
     fn process_unsubscribe_message(&mut self, bytes: &[u8]) -> Result<(), String> {
-        self.logger.info("proccessing unsubscribe packet".to_string());
+        self.logger
+            .info("proccessing unsubscribe packet".to_string());
         if let Err(err) = Unsubscribe::process_message(bytes, self) {
             let message = format!("Unexpected error processing unsubscribe packet: {}", err);
             self.logger.info(message);
@@ -151,7 +152,7 @@ impl PacketManager {
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),
             );
-            Err(err.to_string())
+            Err(err)
         } else {
             Ok(())
         }
@@ -167,7 +168,7 @@ impl PacketManager {
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
         } else {
             Ok(())
         }

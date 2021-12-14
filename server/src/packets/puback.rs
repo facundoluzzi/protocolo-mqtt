@@ -4,7 +4,6 @@ use crate::enums::user_manager::{
     stop_publish_user_manager::StopPublish, user_manager_action::UserManagerAction,
 };
 pub struct Puback {
-    remaining_length: usize,
     packet_identifier: [u8; 2],
 }
 
@@ -14,7 +13,6 @@ impl Puback {
         let packet_identifier_msb = variable_header[0];
         let packet_identifier_lsb = variable_header[1];
         Puback {
-            remaining_length: 2,
             packet_identifier: [packet_identifier_msb, packet_identifier_lsb],
         }
     }

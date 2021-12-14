@@ -1,9 +1,9 @@
 mod tests {
+    use core::time;
     use std::{
         io::{Read, Write},
         net::TcpStream,
     };
-    use core::time;
 
     use crate::integration::setup::ServerTest;
 
@@ -98,7 +98,6 @@ mod tests {
         stream_to_try_last_will_message
             .write(&subscribe_bytes)
             .unwrap();
-
 
         data = vec![0; 100];
         match stream_to_create_and_subscribe_topic.read(&mut data) {

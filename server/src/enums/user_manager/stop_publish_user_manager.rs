@@ -16,6 +16,6 @@ impl StopPublish {
     }
 
     pub fn get_packet_identifier(&self) -> [u8; 2] {
-        self.packet_identifier.clone()
+        self.packet_identifier
     }
 }

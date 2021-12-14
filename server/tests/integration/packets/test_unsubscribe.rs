@@ -124,8 +124,8 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     let puback_bytes = [
         0x40, //packet type puback
-        0x02,   //remainign length
-        0x00, 0x0A  //packet identifier
+        0x02, //remainign length
+        0x00, 0x0A, //packet identifier
     ];
 
     thread::sleep(time::Duration::from_millis(100));
@@ -144,7 +144,8 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
             let expected_packet = [
-                0x32, 0x0D, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x0A, 0x00, 0x03, 0x61, 0x2F, 0x62,
+                0x32, 0x0D, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x0A, 0x00, 0x03, 0x61, 0x2F,
+                0x62,
             ];
             assert_eq!(data[0..size], expected_packet);
         }
