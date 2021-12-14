@@ -839,15 +839,15 @@ mod tests {
 
     #[test]
     fn testing_subscribe_and_publish_with_wildcard_double_astherisc() {
-        let server = ServerTest::start("0.0.0.0:2197".to_string());
+        let server = ServerTest::start("0.0.0.0:2212".to_string());
 
         let mut stream_to_create_topic_goles =
-            TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2212".to_string()).unwrap();
         let mut stream_to_create_topic_partidos =
-            TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2212".to_string()).unwrap();
         let mut stream_to_subscribe_with_wildcard =
-            TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
-        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:2197".to_string()).unwrap();
+            TcpStream::connect("0.0.0.0:2212".to_string()).unwrap();
+        let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:2212".to_string()).unwrap();
 
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
