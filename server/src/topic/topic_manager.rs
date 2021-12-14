@@ -45,7 +45,7 @@ impl TopicManager {
                         topic_manager.topics = subscriber.subscribe(topic_manager.topics.clone());
                     }
                     TypeMessage::Unsubscriber(mut unsubscriber) => {
-                        unsubscriber.unsubscribe(topic_manager.topics.clone())
+                        topic_manager.topics = unsubscriber.unsubscribe(topic_manager.topics.clone());
                     }
                     TypeMessage::UnsubscriberAll(mut unsubscriber_all) => {
                         unsubscriber_all.unsubscribe_all(topic_manager.topics.clone())

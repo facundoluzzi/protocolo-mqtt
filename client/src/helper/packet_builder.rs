@@ -144,3 +144,7 @@ fn add_message_bytes(message: String, bytes: &mut Vec<u8>) {
         bytes.append(&mut message_in_bytes);
     }
 }
+
+pub fn build_bytes_for_disconnect() -> Vec<u8> {
+    vec![0xE0, 0x00]
+}

@@ -1,5 +1,6 @@
 use crate::integration::setup::ServerTest;
 
+use core::time;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
@@ -56,11 +57,11 @@ fn should_unsubscribe_correctly() {
 
 #[test]
 fn should_subscribe_receive_publish_and_unsubscribe() {
-    let server = ServerTest::start("0.0.0.0:1892".to_string());
-    let mut stream_subscriber = TcpStream::connect("0.0.0.0:1892".to_string()).unwrap();
-    let mut stream_publisher = TcpStream::connect("0.0.0.0:1892".to_string()).unwrap();
+    let server = ServerTest::start("0.0.0.0:1992".to_string());
+    let mut stream_subscriber = TcpStream::connect("0.0.0.0:1992".to_string()).unwrap();
+    let mut stream_publisher = TcpStream::connect("0.0.0.0:1992".to_string()).unwrap();
 
-    let mut data = vec![0; 1000];
+    let mut data = vec![0; 100];
 
     // CONNECT
     let connect_bytes_subscriber = [
@@ -99,6 +100,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     stream_subscriber.write(&subscribe_bytes).unwrap();
 
+    data = vec![0; 100];
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
             assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x00]);
@@ -110,20 +112,54 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     // PUBLISH
     let publish_bytes = [
-        0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0x30, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
         0x0D, // remaining length
         0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // topic name
         0x00, 0x0A, // packet identifier
-        0x00, 0x03, 0x61, 0x2F, 0x61, // payload
+        0x00, 0x03, 0x61, 0x2F, 0x62, // payload
     ];
 
     stream_publisher.write(&publish_bytes).unwrap();
 
+    let puback_bytes = [
+        0x40, //packet type puback
+        0x02,   //remainign length
+        0x00, 0x0A  //packet identifier
+    ];
+
+    data = vec![0; 100];
+    match stream_publisher.read(&mut data) {
+        Ok(size) => {
+            assert_eq!(data[0..size], puback_bytes);
+        }
+        _ => {
+            panic!();
+        }
+    }
+
+    data = vec![0; 100];
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
             let expected_packet = [
-                0x30, 0x0B, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x03, 0x61, 0x2F, 0x61,
+                0x30, 0x0B, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x03, 0x61, 0x2F, 0x62,
             ];
+            assert_eq!(data[0..size], expected_packet);
+        }
+        _ => {
+            panic!();
+        }
+    }
+
+    stream_subscriber.write(&puback_bytes).unwrap();
+
+    std::thread::sleep(time::Duration::from_secs(6));
+
+    data = vec![0; 100];
+
+    match stream_subscriber.read(&mut data) {
+        Ok(size) => {
+            let expected_packet = 
+                [0x38, 0x0B, 0x00 , 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x03, 0x61, 0x2F, 0x62];
             assert_eq!(data[0..size], expected_packet);
         }
         _ => {
@@ -140,6 +176,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     ];
     stream_subscriber.write(&unsubscribe_bytes).unwrap();
 
+    data = vec![0; 100];
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
             assert_eq!(data[0..size], [0xB0, 0x02, 0x00, 0x0A]);
@@ -149,7 +186,8 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
         }
     }
 
-    stream_publisher.write(&publish_bytes).unwrap();
+    // stream_publisher.write(&publish_bytes).unwrap();
+    data = vec![0; 100];
 
     match stream_subscriber.read(&mut data) {
         Ok(size) => {

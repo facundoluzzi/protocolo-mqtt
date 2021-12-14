@@ -32,7 +32,6 @@ impl Stream {
                 let action = message_received.0;
                 match action {
                     StreamAction::WriteStream => {
-                        println!("ESCRIBO LO MAS BIEN");
                         if let Some(message) = message_received.1 {
                             Stream::write(stream_to_write.try_clone().unwrap(), message);
                         } else {
@@ -40,7 +39,6 @@ impl Stream {
                         }
                     }
                     StreamAction::ReadStream => {
-                        println!("LEO LO MAS BIEN");
                         if let Some(sender) = message_received.2 {
                             let stread = stream_to_read.try_clone().unwrap();
                             let stwrite = stream_to_write.try_clone().unwrap();
@@ -79,6 +77,8 @@ impl Stream {
 
         while match stream.read(&mut data) {
             Ok(size) => {
+                println!("data: {:?}", data);
+                println!("size: {}", size);
                 if is_first_byte && size != 0 {
                     let (_readed_bytes, _packet_length) =
                         save_remaining_length(&data[1..size]).unwrap();
@@ -98,6 +98,9 @@ impl Stream {
 
                     total_data = Vec::new();
 
+                    false
+                } else if is_first_byte && size == 0 {
+                    sender.send(vec![]).unwrap();
                     false
                 } else {
                     true

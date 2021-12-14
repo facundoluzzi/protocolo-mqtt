@@ -559,10 +559,10 @@ fn should_publish_message_with_both_qos_with_same_user() {
 
 #[test]
 fn should_subscribe_qos0_and_publish_qos1() {
-    let server = ServerTest::start("0.0.0.0:2538".to_string());
+    let server = ServerTest::start("0.0.0.0:2539".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -656,6 +656,35 @@ fn should_subscribe_qos0_and_publish_qos1() {
                 data[0..size],
                 [0x30, 0x0A, 0x00, 0x03, 0x61, 0x2F, 0x62, 0x00, 0x03, 0x61, 0x2F, 0x61]
             );
+        }
+        _ => {
+            panic!();
+        }
+    }
+
+    server.shutdown().unwrap();
+}
+
+#[test]
+fn should_not_publish_if_client_is_not_connected() {
+    let server = ServerTest::start("0.0.0.0:2540".to_string());
+
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2540".to_string()).unwrap();
+
+    let mut data = vec![0; 100];
+
+    let publish_bytes = [
+        0x30, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0x0C, // remaining length
+        0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
+        0x00, 0x0A, // packet identifier
+        0x00, 0x03, 0x61, 0x2F, 0x61, // payload
+    ];
+    publisher_stream.write(&publish_bytes).unwrap();
+
+    match publisher_stream.read(&mut data) {
+        Ok(size) => {
+            assert_eq!(data[0..size], []);
         }
         _ => {
             panic!();

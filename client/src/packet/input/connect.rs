@@ -12,6 +12,11 @@ pub struct Connect {
     password: String,
     id_client: String,
     send_x: gtk::glib::Sender<ClientSender>,
+    last_will_message: String,
+    last_will_topic: String,
+    clean_session_is_active: bool,
+    qos_will_message_0: bool,
+    keep_alive: String,
 }
 
 impl Connect {
@@ -22,6 +27,11 @@ impl Connect {
         password: String,
         id_client: String,
         send_x: gtk::glib::Sender<ClientSender>,
+        last_will_message: String,
+        last_will_topic: String,
+        clean_session_is_active: bool,
+        qos_will_message_0: bool,
+        keep_alive: String,
     ) -> Connect {
         Connect {
             ip,
@@ -30,6 +40,11 @@ impl Connect {
             password,
             id_client,
             send_x,
+            last_will_message,
+            last_will_topic,
+            clean_session_is_active,
+            qos_will_message_0,
+            keep_alive,
         }
     }
 
@@ -61,15 +76,17 @@ impl Connect {
             .unwrap();
     }
 
-    fn add_client_id_bytes(&self, bytes: &mut Vec<u8>) {
+    fn add_client_id_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
         if !self.id_client.is_empty() {
             let id_length = self.id_client.len();
             let mut id_client_in_bytes = self.id_client.as_bytes().to_vec();
             bytes.push(0x00);
             bytes.push(id_length as u8);
             bytes.append(&mut id_client_in_bytes);
-        } else {
-            bytes.append(&mut vec![0x00, 0x02, 0x00, 0x00]);
+        }
+
+        if self.clean_session_is_active {
+            *flags |= 0b00000010;
         }
     }
 
@@ -95,6 +112,48 @@ impl Connect {
         }
     }
 
+    fn add_keep_alive_bytes(&self, bytes: &mut Vec<u8>) {
+        bytes.push(0x00);
+        if !self.keep_alive.is_empty() {
+            let keep_alive = match self.keep_alive.parse::<i32>() {
+                Ok(keep_alive) => keep_alive,
+                Err(_err) => 0,
+            };
+            let keep_alive_as_u8 = keep_alive as u8;
+            bytes.push(keep_alive_as_u8);
+        } else {
+            bytes.push(0x00);
+        }
+    }
+
+    fn add_will_topic_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
+        if !self.last_will_topic.is_empty() {
+            *flags |= 0b00000100;
+            let will_topic_length = self.last_will_topic.len();
+            let mut will_topic_in_bytes = self.last_will_topic.as_bytes().to_vec();
+            bytes.push(0x00);
+            bytes.push(will_topic_length as u8);
+            bytes.append(&mut will_topic_in_bytes);
+        }
+    }
+
+    fn add_will_message_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
+        if !self.last_will_message.is_empty() {
+            *flags |= 0b00000100;
+            let will_message_length = self.last_will_message.len();
+            let mut will_message_in_bytes = self.last_will_message.as_bytes().to_vec();
+            bytes.push(0x00);
+            bytes.push(will_message_length as u8);
+            bytes.append(&mut will_message_in_bytes);
+        }
+    }
+
+    fn change_flag_for_will_qos(&self, flags: &mut u8) {
+        if !self.last_will_message.is_empty() && !self.qos_will_message_0 {
+            *flags |= 0b00010000;
+        }
+    }
+
     fn build_bytes_for_connect(&self) -> Vec<u8> {
         let mut flags: u8 = 0x00;
         let mut bytes = vec![
@@ -103,11 +162,14 @@ impl Connect {
             0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // Variable Header
             0x04, // Protocol
             0x00, //Flags
-            0x00, 0x00, //Keep Alive
         ];
-        self.add_client_id_bytes(&mut bytes);
+        self.add_keep_alive_bytes(&mut bytes);
+        self.add_client_id_bytes(&mut flags, &mut bytes);
+        self.add_will_topic_bytes(&mut flags, &mut bytes);
+        self.add_will_message_bytes(&mut flags, &mut bytes);
         self.add_username_bytes(&mut flags, &mut bytes);
         self.add_password_bytes(&mut flags, &mut bytes);
+        self.change_flag_for_will_qos(&mut flags);
         bytes[8] = flags;
         let length = bytes.len();
         bytes.insert(1, (length - 1) as u8);

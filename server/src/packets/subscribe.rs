@@ -1,3 +1,4 @@
+use crate::packets::packet_manager::PacketManager;
 use crate::enums::topic_manager::subscriber::Subscriber;
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
@@ -22,6 +23,19 @@ pub struct Subscribe {
 }
 
 impl Subscribe {
+
+    pub fn process_message(bytes: &[u8], packet_manager: &PacketManager) -> Result<(), String> {
+        let mut subscribe = Subscribe::init(bytes)?;
+
+        let sender_topic_manager = packet_manager.get_sender_topic_manager();
+        let sender_user_manager = packet_manager.get_sender_user_manager();
+        let sender_stream = packet_manager.get_sender_stream();
+        let client_id = packet_manager.get_client_id();
+        let subscribe_topic_response = subscribe.subscribe_topic(sender_topic_manager, sender_user_manager, client_id)?;
+        subscribe_topic_response.send_response(sender_stream);
+        Ok(())
+    }
+
     pub fn init(bytes: &[u8]) -> Result<Subscribe, String> {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len)?;

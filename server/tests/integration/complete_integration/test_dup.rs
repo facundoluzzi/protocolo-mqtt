@@ -6,10 +6,10 @@ use std::net::TcpStream;
 
 #[test]
 fn should_receive_second_publish_with_dup() {
-    let server = ServerTest::start("0.0.0.0:2536".to_string());
+    let server = ServerTest::start("0.0.0.0:4545".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2536".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2536".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:4545".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:4545".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -117,10 +117,10 @@ fn should_receive_second_publish_with_dup() {
 }
 #[test]
 fn should_receive_third_publish_with_dup() {
-    let server = ServerTest::start("0.0.0.0:2534".to_string());
+    let server = ServerTest::start("0.0.0.0:4301".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2534".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2534".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:4301".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:4301".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -251,10 +251,10 @@ fn should_receive_third_publish_with_dup() {
 
 #[test]
 fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
-    let server = ServerTest::start("0.0.0.0:2532".to_string());
+    let server = ServerTest::start("0.0.0.0:2533".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2532".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2532".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2533".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2533".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -365,7 +365,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
 
 
     subscriber_stream.write(&puback_bytes).unwrap();
-    std::thread::sleep(time::Duration::from_secs(6));
+    std::thread::sleep(time::Duration::from_secs(10));
 
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
