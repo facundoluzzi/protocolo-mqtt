@@ -68,7 +68,6 @@ impl Topic {
 
     fn remove(&mut self, subscriber: String) {
         self.subscribers.remove(&subscriber);
-        println!("Eliminado :D: {}", self.subscribers.len());
     }
 
     fn publish_retained_message(
@@ -106,11 +105,6 @@ impl Topic {
                 new_packet.remove(index_to_delete);
                 new_packet[1] -= 2;
             }
-            println!(
-                "VIEJO: {:?}.... NUEVO: {:?}",
-                packet.len(),
-                new_packet.len()
-            );
             let action = UserManagerAction::PublishMessageUserManager(
                 PublishMessageUserManager::init(client_id.to_string(), new_packet.clone()),
             );
