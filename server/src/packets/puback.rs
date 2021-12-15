@@ -10,7 +10,6 @@ pub struct Puback {
 }
 
 impl Puback {
-
     pub fn process_message(bytes: &[u8], packet_manager: &PacketManager) -> Result<(), String> {
         if packet_manager.is_disconnected() {
             Err("Client is not connected".to_string())
@@ -32,8 +31,12 @@ impl Puback {
             packet_identifier: [packet_identifier_msb, packet_identifier_lsb],
         })
     }
-  
-    fn stop_publish(&self, client_id: String, sender_user_manager: Sender<UserManagerAction>) -> Result<(), String> {
+
+    fn stop_publish(
+        &self,
+        client_id: String,
+        sender_user_manager: Sender<UserManagerAction>,
+    ) -> Result<(), String> {
         let action = UserManagerAction::StopPublishUserManager(StopPublish::init(
             client_id,
             self.packet_identifier,

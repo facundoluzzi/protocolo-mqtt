@@ -110,7 +110,6 @@ impl Subscribe {
                 HasNoWildcard => self.process_topic_without_wildcard(topic, qos, packet_manager),
                 InvalidWildcard => self.return_codes.push(0x80),
             };
-            return;
         });
     }
 

@@ -780,7 +780,7 @@ fn should_publish_when_subscribe_has_invalid_topics() {
 
     let publish_bytes_qos_1_with_error = [
         0b00110010, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
-        0x0C, // remaining length
+        0x0C,       // remaining length
         0x00, 0x03, 0x61, 0x2F, 0x64, // topic name
         0x00, 0x0A, // packet identifier
         0x00, 0x03, 0x61, 0x2F, 0x61, // payload

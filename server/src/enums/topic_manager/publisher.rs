@@ -32,7 +32,12 @@ impl Publisher {
         }
     }
 
-    fn send_publish(&self, publish: PublishMessage, topic_name: String, mut topics: HashMap<String, Sender<TopicAction>>) -> HashMap<String, Sender<TopicAction>>{
+    fn send_publish(
+        &self,
+        publish: PublishMessage,
+        topic_name: String,
+        mut topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
         match topics.get(&topic_name) {
             Some(topic_sender) => {
                 println!("topic_name a: {}", topic_name);
@@ -63,7 +68,7 @@ impl Publisher {
             self.retained_message,
             self.message.to_string(),
         );
-       self.send_publish(publish, topic_name, topics)
+        self.send_publish(publish, topic_name, topics)
     }
 
     pub fn get_client_id(&self) -> String {
