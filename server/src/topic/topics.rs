@@ -41,16 +41,18 @@ impl Topic {
                         let qos = action.get_qos();
                         let message = action.get_message();
                         let retained_message = action.get_retained_message();
-                        if packet.is_empty() && retained_message {
-                            topic.retained_message = None;
-                        } else if retained_message && qos == 0 {
-                            let publish = PublishMessage::init(
-                                packet.clone(),
-                                qos,
-                                true,
-                                message.to_string(),
-                            );
-                            topic.retained_message = Some(publish);
+                        if retained_message {
+                            if packet.is_empty() {
+                                topic.retained_message = None;
+                            } else {
+                                let publish = PublishMessage::init(
+                                    packet.clone(),
+                                    qos,
+                                    true,
+                                    message.to_string(),
+                                );
+                                topic.retained_message = Some(publish);
+                            }
                         }
 
                         topic.publish_msg(packet, qos, message);
