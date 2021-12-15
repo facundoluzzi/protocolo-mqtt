@@ -2,6 +2,7 @@ pub mod connack;
 pub mod connect;
 pub mod default;
 pub mod pingreq;
+pub mod disconnect;
 pub mod puback;
 pub mod publish;
 pub mod suback;

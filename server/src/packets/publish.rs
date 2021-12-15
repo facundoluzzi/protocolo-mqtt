@@ -113,7 +113,7 @@ impl Publish {
     ) -> Result<Self, String> {
         let topic = self.topic.to_owned();
 
-        let publisher_prueba = Publisher::init(
+        let publisher = Publisher::init(
             client_id,
             topic,
             self.all_bytes.clone(),
@@ -122,23 +122,19 @@ impl Publish {
             self.payload.to_string(),
         );
 
-        if let Err(sender_err) = sender_topic_manager.send(TypeMessage::Publisher(publisher_prueba))
-        {
-            return Err(format!(
-                "Error sending to publisher_subscriber: {}",
-                sender_err
-            ));
+        if let Err(sender_err) = sender_topic_manager.send(TypeMessage::Publisher(publisher)) {
+            Err(format!("Error sending to pub_sub: {}", sender_err))
+        } else {
+            Ok(Publish {
+                _dup: self._dup,
+                qos: self.qos,
+                retain: self.retain,
+                remaining_length: self.remaining_length,
+                topic: self.topic.clone(),
+                packet_identifier: self.packet_identifier,
+                payload: self.payload.clone(),
+                all_bytes: self.all_bytes.clone(),
+            })
         }
-
-        Ok(Publish {
-            _dup: self._dup,
-            qos: self.qos,
-            retain: self.retain,
-            remaining_length: self.remaining_length,
-            topic: self.topic.clone(),
-            packet_identifier: self.packet_identifier,
-            payload: self.payload.clone(),
-            all_bytes: self.all_bytes.clone(),
-        })
     }
 }

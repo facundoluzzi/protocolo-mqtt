@@ -14,16 +14,6 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
         TcpStream::connect("0.0.0.0:1953".to_string()).unwrap();
     let mut stream_to_publish_message = TcpStream::connect("0.0.0.0:1953".to_string()).unwrap();
 
-    let subscribe_to_create_topic = [
-        0x10, // Packet Type
-        0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
-        0x04, // Protocol Name - SIEMPRE en 04 o falla
-        0x00, // Flags
-        0x00, 0x0B, // keep alive
-        0x00, 0x02, 0x62, 0x63, // Client Identifier
-    ];
-
     let subscribe_to_verify_retained_message = [
         0x10, // Packet Type
         0x0E, // Remaining Length
@@ -44,12 +34,13 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
         0x00, 0x02, 0x72, 0x61, // Client Identifier
     ];
 
-    stream_to_create_topic
-        .write(&subscribe_to_create_topic)
+    let mut data = vec![0; 100];
+
+    stream_to_publish_message
+        .write(&publisher_alteg_connect_bytes)
         .unwrap();
 
-    let mut data = vec![0; 100];
-    match stream_to_create_topic.read(&mut data) {
+    match stream_to_publish_message.read(&mut data) {
         Ok(size) => {
             assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
         }
@@ -62,21 +53,7 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
         .write(&subscribe_to_verify_retained_message)
         .unwrap();
 
-    let mut data = vec![0; 100];
     match stream_to_verify_retained_messages.read(&mut data) {
-        Ok(size) => {
-            assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
-        }
-        _ => {
-            panic!();
-        }
-    }
-
-    stream_to_publish_message
-        .write(&publisher_alteg_connect_bytes)
-        .unwrap();
-    data = vec![0; 100];
-    match stream_to_publish_message.read(&mut data) {
         Ok(size) => {
             assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
         }

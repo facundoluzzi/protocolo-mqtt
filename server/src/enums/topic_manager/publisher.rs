@@ -1,5 +1,6 @@
 use crate::enums::topic::publish_message::PublishMessage;
 use crate::enums::topic::topic_actions::TopicAction;
+use crate::topic::topics::Topic;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
@@ -31,19 +32,43 @@ impl Publisher {
         }
     }
 
-    pub fn publish(&self, topics: HashMap<String, Sender<TopicAction>>) {
+    fn send_publish(
+        &self,
+        publish: PublishMessage,
+        topic_name: String,
+        mut topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
+        match topics.get(&topic_name) {
+            Some(topic_sender) => {
+                println!("topic_name a: {}", topic_name);
+                topic_sender.send(TopicAction::Publish(publish)).unwrap();
+            }
+            None => {
+                println!("topic_name b: {}", topic_name);
+                if publish.get_retained_message() {
+                    println!("topic_name entro retained message true: {}", topic_name);
+                    let sender_topic = Topic::init(self.topic.to_owned());
+                    topics.insert(self.topic.to_owned(), sender_topic.clone());
+                    sender_topic.send(TopicAction::Publish(publish)).unwrap();
+                }
+            }
+        }
+        topics
+    }
+
+    pub fn publish(
+        &self,
+        topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
         let publish_packet = self.get_publish_packet();
         let topic_name = self.get_topic();
-        if let Some(topic_sender) = &topics.get(&topic_name) {
-            let publish = TopicAction::Publish(PublishMessage::init(
-                publish_packet,
-                self.qos,
-                self.retained_message,
-                self.message.to_string(),
-            ));
-
-            topic_sender.send(publish).unwrap();
-        }
+        let publish = PublishMessage::init(
+            publish_packet,
+            self.qos,
+            self.retained_message,
+            self.message.to_string(),
+        );
+        self.send_publish(publish, topic_name, topics)
     }
 
     pub fn get_client_id(&self) -> String {
