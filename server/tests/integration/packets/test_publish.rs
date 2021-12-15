@@ -559,10 +559,10 @@ fn should_publish_message_with_both_qos_with_same_user() {
 
 #[test]
 fn should_subscribe_qos0_and_publish_qos1() {
-    let server = ServerTest::start("0.0.0.0:2538".to_string());
+    let server = ServerTest::start("0.0.0.0:2539".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -667,10 +667,10 @@ fn should_subscribe_qos0_and_publish_qos1() {
 
 #[test]
 fn should_publish_when_subscribe_has_invalid_topics() {
-    let server = ServerTest::start("0.0.0.0:2539".to_string());
+    let server = ServerTest::start("0.0.0.0:2541".to_string());
 
-    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2539".to_string()).unwrap();
+    let mut subscriber_stream = TcpStream::connect("0.0.0.0:2541".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2541".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 
@@ -739,7 +739,7 @@ fn should_publish_when_subscribe_has_invalid_topics() {
 
     // PUBLICA con qos 1
     let publish_bytes_qos_1 = [
-        0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0x32, // tiene la información del packet type 0010, dup flag + qos flag + retain flag
         0x0C, // remaining length
         0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
         0x00, 0x0A, // packet identifier
@@ -771,10 +771,17 @@ fn should_publish_when_subscribe_has_invalid_topics() {
         }
     }
 
+    // let puback_bytes = [
+    //     0x40, //packet type puback
+    //     0x02, //remainign length
+    //     0x00, 0x0A, //packet identifier
+    // ];
+    // subscriber_stream.write(&puback_bytes).unwrap();
+
     let publish_bytes_qos_1_with_error = [
-        0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0b00110010, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
         0x0C, // remaining length
-        0x00, 0x03, 0x61, 0x2F, 0x63, // topic name
+        0x00, 0x03, 0x61, 0x2F, 0x64, // topic name
         0x00, 0x0A, // packet identifier
         0x00, 0x03, 0x61, 0x2F, 0x61, // payload
     ];
@@ -808,9 +815,9 @@ fn should_publish_when_subscribe_has_invalid_topics() {
 
 #[test]
 fn should_not_publish_if_client_is_not_connected() {
-    let server = ServerTest::start("0.0.0.0:2538".to_string());
+    let server = ServerTest::start("0.0.0.0:2540".to_string());
 
-    let mut publisher_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
+    let mut publisher_stream = TcpStream::connect("0.0.0.0:2540".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 

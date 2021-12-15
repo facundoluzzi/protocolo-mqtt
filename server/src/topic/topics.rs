@@ -68,6 +68,7 @@ impl Topic {
 
     fn remove(&mut self, subscriber: String) {
         self.subscribers.remove(&subscriber);
+        println!("Eliminado :D: {}", self.subscribers.len());
     }
 
     fn publish_retained_message(

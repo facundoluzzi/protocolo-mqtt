@@ -31,7 +31,7 @@ impl Connect {
 
             let connect = Connect::init(bytes, sender_stream.clone(), sender_user_manager.clone())?;
             packet_manager.set_client_id(connect.get_client_id());
-            connect.send_response(sender_stream.clone(), sender_user_manager.clone())?;
+            connect.send_response(sender_stream, sender_user_manager)?;
             Ok(())
         }
     }

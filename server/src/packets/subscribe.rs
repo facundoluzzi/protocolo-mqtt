@@ -102,6 +102,7 @@ impl Subscribe {
                 self.return_codes.push(0x80);
                 return;
             }
+
             match verify_wildcard::get_wilcard(topic.to_owned()) {
                 HasWildcard(wildcard) => {
                     self.process_topic_with_wildcard(topic, qos, Some(wildcard), packet_manager)

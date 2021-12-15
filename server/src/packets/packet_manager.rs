@@ -1,4 +1,5 @@
 use crate::enums::topic_manager::topic_message::TypeMessage;
+
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::logs::logger::Logger;
 use crate::packets::connect::Connect;
@@ -10,6 +11,8 @@ use crate::packets::subscribe::Subscribe;
 use crate::packets::unsubscribe::Unsubscribe;
 use crate::stream::stream_handler::StreamType;
 use std::sync::mpsc::Sender;
+
+use super::puback::Puback;
 
 pub struct PacketManager {
     client_id: String,
@@ -85,7 +88,7 @@ impl PacketManager {
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
         } else {
             self.connect();
             Ok(())
@@ -104,7 +107,7 @@ impl PacketManager {
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
         } else {
             Ok(())
         }
@@ -126,13 +129,13 @@ impl PacketManager {
         if let Err(err) = Subscribe::process_message(bytes, self) {
             let message_to_log = "Unexpected error subscribe publish packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
-            Disconnect::disconnect_user(
+            Disconnect::disconnect_ungracefully(
                 self.client_id.to_owned(),
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
         } else {
             Ok(())
         }
@@ -149,14 +152,14 @@ impl PacketManager {
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),
             );
-            Err(err.to_string())
+            Err(err)
         } else {
             Ok(())
         }
     }
 
     fn process_pingreq_message(&mut self) -> Result<(), String> {
-        if let Err(err) = pingreq::send_response(self.sender_stream.clone()) {
+        if let Err(err) = pingreq::send_response(self) {
             let message_to_log = "Unexpected error processing pingreq packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
             Disconnect::disconnect_user(
@@ -165,7 +168,23 @@ impl PacketManager {
                 self.sender_stream.clone(),
             );
             self.disconnect();
-            Err(err.to_string())
+            Err(err)
+        } else {
+            Ok(())
+        }
+    }
+
+    fn process_puback(&mut self, bytes: &[u8]) -> Result<(), String> {
+        if let Err(err) = Puback::process_message(bytes, self) {
+            let message_to_log = "Unexpected error processing pingreq packet:";
+            self.logger.info(format!("{}: {}", message_to_log, err));
+            Disconnect::disconnect_user(
+                self.client_id.to_owned(),
+                self.sender_user_manager.clone(),
+                self.sender_stream.clone(),
+            );
+            self.disconnect();
+            Err(err)
         } else {
             Ok(())
         }
@@ -181,6 +200,7 @@ impl PacketManager {
                 match packet_type {
                     1 => self.process_connect_message(bytes)?,
                     3 => self.process_publish_message(bytes)?,
+                    4 => self.process_puback(bytes)?,
                     8 => self.process_subscribe_message(bytes)?,
                     10 => self.process_unsubscribe_message(bytes)?,
                     12 => self.process_pingreq_message()?,
