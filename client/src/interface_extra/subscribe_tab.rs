@@ -92,6 +92,29 @@ impl SubscribeTab {
         });
     }
 
+    fn set_receiver_for_new_topics(
+        &self,
+        receiver_for_new_topics: gtk::glib::Receiver<(String, bool)>,
+        topic_list_label: gtk::Label,
+        sender_t: Sender<(String, bool)>,
+    ) {
+        receiver_for_new_topics.attach(None, move |(topic, qos)| {
+            let actual = topic_list_label.text();
+            let cloned_sender_t = sender_t.clone();
+            if qos {
+                topic_list_label.set_text(&(actual.to_string() + &format!("\n{},{}", topic, 0)));
+            } else {
+                topic_list_label.set_text(&(actual.to_string() + &format!("\n{},{}", topic, 1)));
+            }
+
+            if let Err(_err) = cloned_sender_t.send((topic, qos)) {
+                println!("Error mostrando nuevo topic");
+            }
+
+            glib::Continue(true)
+        });
+    }
+
     pub fn build(&self, builder: &gtk::Builder) {
         let input_topic_subscribe: gtk::Entry =
             build_entry_with_name(builder, "input_topic_subscribe");
@@ -144,22 +167,7 @@ impl SubscribeTab {
             qos_subscriber_0,
             sender_for_new_topics,
         );
-
-        receiver_for_new_topics.attach(None, move |(topic, qos)| {
-            let actual = topic_list_label.text();
-            let cloned_sender_t = sender_t.clone();
-            if qos {
-                topic_list_label.set_text(&(actual.to_string() + &format!("\n{},{}", topic, 0)));
-            } else {
-                topic_list_label.set_text(&(actual.to_string() + &format!("\n{},{}", topic, 1)));
-            }
-
-            if let Err(_err) = cloned_sender_t.send((topic, qos)) {
-                println!("Error mostrando nuevo topic");
-            }
-
-            glib::Continue(true)
-        });
+        self.set_receiver_for_new_topics(receiver_for_new_topics, topic_list_label, sender_t);
     }
 
     fn get_clone_sender_of_client(&self) -> Sender<InterfaceSender> {
