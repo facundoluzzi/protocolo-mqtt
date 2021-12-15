@@ -2,6 +2,8 @@ use crate::integration::setup::ServerTest;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpStream;
+use std::thread::sleep;
+use std::time::Duration;
 
 #[test]
 fn should_publish_message_with_qos_0_01() {
@@ -800,6 +802,7 @@ fn should_publish_when_subscribe_has_invalid_topics() {
         }
     }
 
+    sleep(Duration::from_secs(5));
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {

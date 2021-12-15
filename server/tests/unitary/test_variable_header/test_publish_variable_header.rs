@@ -6,10 +6,17 @@ mod tests {
     #[test]
     fn should_get_variable_header_in_publish_successfully() {
         let vec: &[u8] = &[0x00, 0x03, 0x41, 0x2F, 0x42, 0x00, 0x00];
-        let (topic, packet_identifier, length) = get_variable_header(vec).unwrap();
+        let (topic, packet_identifier, _) = get_variable_header(vec, 1).unwrap();
         assert_eq!(topic, "A/B".to_owned());
-        assert_eq!(packet_identifier, [0x00, 0x00]);
-        assert_eq!(length, 7);
+        assert_eq!(packet_identifier.unwrap(), [0x00, 0x00]);
+    }
+
+    #[test]
+    fn should_not_get_variable_header_in_publish_successfully() {
+        let vec: &[u8] = &[0x00, 0x03, 0x41, 0x2F, 0x42, 0x00, 0x00];
+        let (topic, packet_identifier, _) = get_variable_header(vec, 0).unwrap();
+        assert_eq!(topic, "A/B".to_owned());
+        assert_eq!(packet_identifier, None);
     }
 
     #[test]

@@ -90,8 +90,6 @@ impl Stream {
         let c: &[u8] = &message; // c: &[u8]
         if let Err(msg_error) = stream.write(c) {
             logger.info(format!("Error in sending response: {}", msg_error));
-        } else {
-            println!("Terminando de escribir los bytes: {:?}", c);
         }
     }
 
@@ -125,7 +123,6 @@ impl Stream {
                 if total_data.len() > packet_length + readed_bytes {
                     is_first_byte = true;
                     let bytes_to_process = &total_data[0..packet_length + readed_bytes + 1];
-                    println!("Bytes terminados de leer: {:?}", bytes_to_process);
                     sender.send(bytes_to_process.to_vec()).unwrap();
 
                     total_data = Vec::new();
