@@ -54,10 +54,14 @@ impl PublishAutoSend {
     }
 
     pub fn add(&mut self, packet_identifier: Vec<u8>, receive: Vec<u8>) {
-        let first_byte = receive[0] | 0b00001000;
-        let mut packet = vec![first_byte];
-        packet.append(&mut receive[1..receive.len()].to_vec());
-        self.publish_packets.insert(packet_identifier, packet);
+        let byte = receive[0];
+        let publish_qos_1 = byte & 0b00000010 > 0;
+        if publish_qos_1 {
+            let first_byte = byte | 0b00001000;
+            let mut packet = vec![first_byte];
+            packet.append(&mut receive[1..receive.len()].to_vec());
+            self.publish_packets.insert(packet_identifier, packet);
+        }
     }
 
     pub fn remove(&mut self, packet_identifier: Vec<u8>) {
