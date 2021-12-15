@@ -1,12 +1,16 @@
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::topic_manager::unsubscriber::Unsubscriber;
+use crate::enums::wildcard::wildcard_result::WildcardResult::{
+    HasNoWildcard, HasWildcard, InvalidWildcard,
+};
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
 use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
-
+use crate::wildcard::verify_wildcard;
+use crate::wildcard::wildcard_handler::Wildcard;
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
 
@@ -19,10 +23,8 @@ pub struct Unsubscribe {
 impl Unsubscribe {
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         let mut unsubscribe = Unsubscribe::init(bytes)?;
-        let sender_topic_manager = packet_manager.get_sender_topic_manager();
-        let client_id = packet_manager.get_client_id();
         let sender_stream = packet_manager.get_sender_stream();
-        unsubscribe = unsubscribe.unsubscribe_topic(sender_topic_manager, client_id)?;
+        unsubscribe = unsubscribe.unsubscribe_topic(packet_manager)?;
         unsubscribe.send_response(sender_stream)?;
         Ok(())
     }
@@ -46,29 +48,57 @@ impl Unsubscribe {
         Ok(unsubscribe)
     }
 
-    pub fn unsubscribe_topic(
+    fn send_unsubscribe_to_topic_manager(
         &mut self,
-        sender: Sender<TypeMessage>,
-        client_id: String,
-    ) -> Result<Self, String> {
+        topics: Vec<String>,
+        packet_manager: &PacketManager,
+    ) {
+        topics.into_iter().for_each(|topic| {
+            match verify_wildcard::get_wilcard(topic.to_owned()) {
+                HasWildcard(wildcard) => {
+                    self.process_topic_with_wildcard(topic, Some(wildcard), packet_manager)
+                }
+                HasNoWildcard => self.process_topic_without_wildcard(topic, packet_manager),
+                InvalidWildcard => {}
+            };
+        });
+    }
+
+    fn send_to_topic_manager(&self, packet_manager: &PacketManager, unsubscriber: Unsubscriber) {
+        let sender_topic_manager = packet_manager.get_sender_topic_manager();
+        if let Err(err) = sender_topic_manager.send(TypeMessage::Unsubscriber(unsubscriber)) {
+            println!("{:?}", err);
+        }
+    }
+
+    fn process_topic_with_wildcard(
+        &self,
+        topic: String,
+        wildcard: Option<Wildcard>,
+        packet_manager: &PacketManager,
+    ) {
+        let client_id = packet_manager.get_client_id();
+        let unsubscriber = Unsubscriber::init(client_id, topic, wildcard);
+        self.send_to_topic_manager(packet_manager, unsubscriber);
+    }
+
+    fn process_topic_without_wildcard(&self, topic: String, packet_manager: &PacketManager) {
+        let client_id = packet_manager.get_client_id();
+        let unsubscriber = Unsubscriber::init(client_id, topic, None);
+        self.send_to_topic_manager(packet_manager, unsubscriber);
+    }
+
+    pub fn unsubscribe_topic(&mut self, packet_manager: &PacketManager) -> Result<Self, String> {
         let mut acumulator: usize = 0;
+        let mut topics: Vec<String> = Vec::new();
 
         while self.payload.len() > acumulator {
-            let (topic, length) =
-                match UTF8::utf8_parser(&self.payload[acumulator..self.payload.len()]) {
-                    Ok((topic, length)) => (topic, length),
-                    Err(err_result) => {
-                        println!("{}", err_result);
-                        continue;
-                    }
-                };
+            let topic_bytes = &self.payload[acumulator..self.payload.len()];
+            let (topic, length) = UTF8::utf8_parser(topic_bytes)?;
+            topics.push(topic);
             acumulator += length;
-            let unsubscriber = Unsubscriber::init(client_id.to_string(), topic.to_string());
-
-            if let Err(sender_err) = sender.send(TypeMessage::Unsubscriber(unsubscriber)) {
-                println!("Error sending to publisher_subscriber: {}", sender_err);
-            }
         }
+        self.send_unsubscribe_to_topic_manager(topics, packet_manager);
 
         let unsubscribe = Unsubscribe {
             remaining_length: self.remaining_length,
