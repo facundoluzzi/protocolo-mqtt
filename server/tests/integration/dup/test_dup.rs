@@ -59,7 +59,7 @@ fn should_receive_second_publish_with_dup() {
         0x82, // packet type
         0x08, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x03, 0x61, 0x2F, 0x62, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x03, 0x61, 0x2F, 0x62, 0x01, // payload MQTT como mensaje + qos
     ];
 
     subscriber_stream.write(&subscribe_bytes).unwrap();
@@ -67,7 +67,7 @@ fn should_receive_second_publish_with_dup() {
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x00]);
+            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
         }
         _ => {
             panic!();
@@ -75,7 +75,7 @@ fn should_receive_second_publish_with_dup() {
     }
 
     let publish_bytes = [
-        0x30, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
         0x0C, // remaining length
         0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
         0x00, 0x0A, // packet identifier
@@ -86,7 +86,14 @@ fn should_receive_second_publish_with_dup() {
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], publish_bytes);
+            let expected_bytes = [
+                0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                0x0C, // remaining length
+                0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
+                0x00, 0x0A, // packet identifier
+                0x00, 0x03, 0x61, 0x2F, 0x61,
+            ]; // payload];
+            assert_eq!(data[0..size], expected_bytes);
         }
         _ => {
             panic!();
@@ -100,7 +107,7 @@ fn should_receive_second_publish_with_dup() {
             assert_eq!(
                 data[0..size],
                 [
-                    0b00111000, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                    0b00111010, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
                     0x0C,       // remaining length
                     0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                     0x00, 0x0A, // packet identifier
@@ -170,7 +177,7 @@ fn should_receive_third_publish_with_dup() {
         0x82, // packet type
         0x08, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x03, 0x61, 0x2F, 0x62, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x03, 0x61, 0x2F, 0x62, 0x01, // payload MQTT como mensaje + qos
     ];
 
     subscriber_stream.write(&subscribe_bytes).unwrap();
@@ -178,7 +185,7 @@ fn should_receive_third_publish_with_dup() {
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x00]);
+            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
         }
         _ => {
             panic!();
@@ -186,7 +193,7 @@ fn should_receive_third_publish_with_dup() {
     }
 
     let publish_bytes = [
-        0x30, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
         0x0C, // remaining length
         0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
         0x00, 0x0A, // packet identifier
@@ -197,7 +204,14 @@ fn should_receive_third_publish_with_dup() {
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], publish_bytes);
+            let expected_bytes = [
+                0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                0x0C, // remaining length
+                0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
+                0x00, 0x0A, // packet identifier
+                0x00, 0x03, 0x61, 0x2F, 0x61, // payload //
+            ];
+            assert_eq!(data[0..size], expected_bytes);
         }
         _ => {
             panic!();
@@ -211,7 +225,7 @@ fn should_receive_third_publish_with_dup() {
             assert_eq!(
                 data[0..size],
                 [
-                    0b00111000, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                    0b00111010, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
                     0x0C,       // remaining length
                     0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                     0x00, 0x0A, // packet identifier
@@ -231,7 +245,7 @@ fn should_receive_third_publish_with_dup() {
             assert_eq!(
                 data[0..size],
                 [
-                    0b00111000, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                    0b00111010, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
                     0x0C,       // remaining length
                     0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                     0x00, 0x0A, // packet identifier
@@ -302,7 +316,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
         0x82, // packet type
         0x08, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x03, 0x61, 0x2F, 0x62, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x03, 0x61, 0x2F, 0x62, 0x01, // payload MQTT como mensaje + qos
     ];
 
     subscriber_stream.write(&subscribe_bytes).unwrap();
@@ -310,7 +324,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x00]);
+            assert_eq!(data[0..size], [0x90, 0x03, 0x00, 0x0A, 0x01]);
         }
         _ => {
             panic!();
@@ -318,7 +332,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     }
 
     let publish_bytes = [
-        0x30, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+        0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
         0x0C, // remaining length
         0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
         0x00, 0x0A, // packet identifier
@@ -329,7 +343,14 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     data = vec![0; 100];
     match subscriber_stream.read(&mut data) {
         Ok(size) => {
-            assert_eq!(data[0..size], publish_bytes);
+            let expected_bytes = [
+                0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                0x0C, // remaining length
+                0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
+                0x00, 0x0A, // packet identifier
+                0x00, 0x03, 0x61, 0x2F, 0x61, // payload
+            ];
+            assert_eq!(data[0..size], expected_bytes);
         }
         _ => {
             panic!();
@@ -343,7 +364,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
             assert_eq!(
                 data[0..size],
                 [
-                    0b00111000, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
+                    0b00111010, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
                     0x0C,       // remaining length
                     0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                     0x00, 0x0A, // packet identifier
