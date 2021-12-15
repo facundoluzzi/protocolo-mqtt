@@ -8,8 +8,8 @@ use std::thread;
 
 #[test]
 fn should_unsubscribe_correctly() {
-    let server = ServerTest::start("0.0.0.0:1889".to_string());
-    let mut stream = TcpStream::connect("0.0.0.0:1889".to_string()).unwrap();
+    let server = ServerTest::start("0.0.0.0:2010".to_string());
+    let mut stream = TcpStream::connect("0.0.0.0:2010".to_string()).unwrap();
 
     let connect_bytes = [
         0x10, // packet type
@@ -58,9 +58,9 @@ fn should_unsubscribe_correctly() {
 
 #[test]
 fn should_subscribe_receive_publish_and_unsubscribe() {
-    let server = ServerTest::start("0.0.0.0:1992".to_string());
-    let mut stream_subscriber = TcpStream::connect("0.0.0.0:1992".to_string()).unwrap();
-    let mut stream_publisher = TcpStream::connect("0.0.0.0:1992".to_string()).unwrap();
+    let server = ServerTest::start("0.0.0.0:2011".to_string());
+    let mut stream_subscriber = TcpStream::connect("0.0.0.0:2011".to_string()).unwrap();
+    let mut stream_publisher = TcpStream::connect("0.0.0.0:2011".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 

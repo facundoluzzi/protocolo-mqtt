@@ -61,8 +61,8 @@ fn should_connect_and_cant_subscribe_with_keep_alive() {
 
 #[test]
 fn should_send_pingreq_and_response_ok_with_keep_alive() {
-    let server = ServerTest::start("0.0.0.0:1897".to_string());
-    let mut stream = TcpStream::connect("0.0.0.0:1897".to_string()).unwrap();
+    let server = ServerTest::start("0.0.0.0:1898".to_string());
+    let mut stream = TcpStream::connect("0.0.0.0:1898".to_string()).unwrap();
 
     let connect_bytes = [
         0x10, // packet type
@@ -144,8 +144,8 @@ fn should_send_pingreq_and_response_ok_with_keep_alive() {
 
 #[test]
 fn should_connect_and_can_subscribe_with_null_keep_alive() {
-    let server = ServerTest::start("0.0.0.0:1897".to_string());
-    let mut stream = TcpStream::connect("0.0.0.0:1897".to_string()).unwrap();
+    let server = ServerTest::start("0.0.0.0:1899".to_string());
+    let mut stream = TcpStream::connect("0.0.0.0:1899".to_string()).unwrap();
 
     let connect_bytes = [
         0x10, // packet type

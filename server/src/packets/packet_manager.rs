@@ -159,7 +159,7 @@ impl PacketManager {
     }
 
     fn process_pingreq_message(&mut self) -> Result<(), String> {
-        if let Err(err) = pingreq::send_response(self.sender_stream.clone()) {
+        if let Err(err) = pingreq::send_response(self) {
             let message_to_log = "Unexpected error processing pingreq packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
             Disconnect::disconnect_user(
@@ -174,9 +174,20 @@ impl PacketManager {
         }
     }
 
-    fn process_puback(&self, bytes: &[u8]) {
-        Puback::init(bytes)
-            .stop_publish(self.client_id.to_owned(), self.sender_user_manager.clone());
+    fn process_puback(&mut self, bytes: &[u8]) -> Result<(), String> {
+        if let Err(err) = Puback::process_message(bytes, self) {
+            let message_to_log = "Unexpected error processing pingreq packet:";
+            self.logger.info(format!("{}: {}", message_to_log, err));
+            Disconnect::disconnect_user(
+                self.client_id.to_owned(),
+                self.sender_user_manager.clone(),
+                self.sender_stream.clone(),
+            );
+            self.disconnect();
+            Err(err)
+        } else {
+            Ok(())
+        }
     }
 
     pub fn process_message(&mut self, bytes: &[u8]) -> Result<(), String> {
@@ -189,7 +200,7 @@ impl PacketManager {
                 match packet_type {
                     1 => self.process_connect_message(bytes)?,
                     3 => self.process_publish_message(bytes)?,
-                    4 => self.process_puback(bytes),
+                    4 => self.process_puback(bytes)?,
                     8 => self.process_subscribe_message(bytes)?,
                     10 => self.process_unsubscribe_message(bytes)?,
                     12 => self.process_pingreq_message()?,

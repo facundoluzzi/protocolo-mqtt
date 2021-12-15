@@ -39,7 +39,7 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
     stream_to_publish_message
         .write(&publisher_alteg_connect_bytes)
         .unwrap();
-    data = vec![0; 100];
+
     match stream_to_publish_message.read(&mut data) {
         Ok(size) => {
             assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);

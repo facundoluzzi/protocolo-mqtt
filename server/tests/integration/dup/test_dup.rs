@@ -379,7 +379,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     let puback_bytes = [
         0x40, //packet type puback
         0x02, //remainign length
-        0x00, 0x0A, //packet idezntifier
+        0x00, 0x0A, //packet identifier
     ];
 
     subscriber_stream.write(&puback_bytes).unwrap();
