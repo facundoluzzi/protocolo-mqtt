@@ -63,7 +63,6 @@ impl Unsubscribe {
                     }
                 };
             acumulator += length;
-
             let unsubscriber = Unsubscriber::init(client_id.to_string(), topic.to_string());
 
             if let Err(sender_err) = sender.send(TypeMessage::Unsubscriber(unsubscriber)) {

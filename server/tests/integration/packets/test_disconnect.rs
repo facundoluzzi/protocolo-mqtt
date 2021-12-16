@@ -48,8 +48,8 @@ mod tests {
 
     #[test]
     pub fn disconnect_and_reconnect() {
-        let server = ServerTest::start("0.0.0.0:1893".to_string());
-        let mut stream = TcpStream::connect("0.0.0.0:1893".to_string()).unwrap();
+        let server = ServerTest::start("0.0.0.0:1894".to_string());
+        let mut stream = TcpStream::connect("0.0.0.0:1894".to_string()).unwrap();
         let connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
@@ -84,7 +84,7 @@ mod tests {
             }
         }
 
-        stream = TcpStream::connect("0.0.0.0:1893".to_string()).unwrap();
+        stream = TcpStream::connect("0.0.0.0:1894".to_string()).unwrap();
         stream.write(&connect_bytes).unwrap();
 
         data = vec![0; 100];
