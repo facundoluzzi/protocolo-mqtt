@@ -8,10 +8,10 @@ use gtk::prelude::*;
 use std::str::from_utf8;
 use std::sync::mpsc::Sender;
 
-use client::interface_extra::connect_tab::ConnectTab;
 use client::interface_extra::object_builder::build_label_with_name;
-use client::interface_extra::publish_tab::PublishTab;
-use client::interface_extra::subscribe_tab::SubscribeTab;
+use client::interface_extra::tabs::connect_tab::ConnectTab;
+use client::interface_extra::tabs::publish_tab::PublishTab;
+use client::interface_extra::tabs::subscribe_tab::SubscribeTab;
 
 struct AppUI {
     connect_tab: ConnectTab,

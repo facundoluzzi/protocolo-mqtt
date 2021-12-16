@@ -55,7 +55,6 @@ impl ConnectTab {
         entry_vec: Vec<gtk::Entry>,
         clean_session_checkbox: gtk::CheckButton,
         qos_will_message_0: gtk::RadioButton,
-        tx_for_error_connection: gtk::glib::Sender<ClientSender>,
         tx_for_connection: gtk::glib::Sender<ClientSender>,
         sender_connect: Sender<InterfaceSender>,
     ) {
@@ -70,6 +69,7 @@ impl ConnectTab {
             let clean_session_is_active = clean_session_checkbox.is_active();
             let qos_will_message_is_0 = qos_will_message_0.is_active();
             let keep_alive = entry_vec[7].text().to_string();
+            let tx_for_error_connection = tx_for_connection.clone();
 
             if id_client.is_empty() && !clean_session_is_active {
                 let connect_error = ConnectErrorResponse::init(
@@ -83,14 +83,16 @@ impl ConnectTab {
             }
 
             let connection = Connect::init(
-                ip,
-                port,
-                user,
-                password,
-                id_client,
+                vec![
+                    ip,
+                    port,
+                    user,
+                    password,
+                    id_client,
+                    last_will_message,
+                    last_will_topic,
+                ],
                 tx_for_connection.clone(),
-                last_will_message,
-                last_will_topic,
                 clean_session_is_active,
                 qos_will_message_is_0,
                 keep_alive,
@@ -125,7 +127,6 @@ impl ConnectTab {
         let sender_connect = self.get_clone_sender_of_client();
         let sender_disconnect = self.get_clone_sender_of_client();
 
-        let tx_for_error_connection = self.get_clone_sender_for_client();
         let tx_for_connection = self.get_clone_sender_for_client();
         let tx_for_disconnection = self.get_clone_sender_for_client();
 
@@ -148,7 +149,6 @@ impl ConnectTab {
             ],
             clean_session_checkbox,
             qos_will_message_0,
-            tx_for_error_connection,
             tx_for_connection,
             sender_connect,
         );
