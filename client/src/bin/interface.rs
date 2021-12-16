@@ -2,6 +2,7 @@ extern crate gtk;
 use client::client_for_interface::Client;
 use client::packet::input::connect::Connect;
 use client::packet::input::disconnect::Disconnect;
+use client::packet::input::pingreq::Pingreq;
 use client::packet::input::publish::Publish;
 use client::packet::input::subscribe::Subscribe;
 use client::packet::input::unsubscribe::Unsubscribe;
@@ -10,6 +11,7 @@ use client::packet::output::disconnect_response::DisconnectResponse;
 use client::packet::sender_type::ClientSender;
 use client::packet::sender_type::InterfaceSender;
 use std::str::from_utf8;
+use std::time;
 
 use gtk::glib;
 use gtk::prelude::*;
@@ -136,7 +138,8 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let sender_subscribe = client_sender.clone();
     let sender_unsubscribe = client_sender.clone();
     let sender_disconnect = client_sender.clone();
-    let sender_unsubscribe = client_sender;
+    let sender_unsubscribe = client_sender.clone();
+    let sender_for_ping = client_sender;
 
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
@@ -179,11 +182,11 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
     let tx_for_error_connection = tx_for_connection.clone();
 
-    let cloned_tx_for_connect = tx_for_connection.clone();
     let cloned_tx_for_disconnect = tx_for_connection.clone();
 
     let (sender_for_new_topics, receiver_for_new_topics) =
         glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
 
     let list_of_topics_to_suscribe = Vec::new();
     let data = Arc::new(Mutex::new(list_of_topics_to_suscribe));
@@ -233,6 +236,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         let clean_session_is_active = clean_session_checkbox.is_active();
         let qos_will_message_is_0 = qos_will_message_0.is_active();
         let keep_alive = keep_alive_input.text().to_string();
+        let sender_for_ping_cloned = sender_for_ping.clone();
 
         println!("1");
         if id_client.is_empty() && !clean_session_is_active {
@@ -257,12 +261,30 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
             last_will_topic,
             clean_session_is_active,
             qos_will_message_is_0,
-            keep_alive,
+            keep_alive.clone(),
         );
 
         sender_connect
             .send(InterfaceSender::Connect(connection))
             .unwrap();
+        
+        if !keep_alive.is_empty() {
+            let keep_alive_value = match keep_alive.parse::<u64>() {
+                Ok(keep_alive) => keep_alive,
+                Err(_err) => return,
+            };
+            let pingreq = Pingreq::init();
+            sender_for_ping_cloned
+                    .send(InterfaceSender::Pingreq(pingreq))
+                    .unwrap();
+            thread::spawn(move || loop {
+                thread::sleep(time::Duration::from_secs(keep_alive_value));
+                let pingreq = Pingreq::init();
+                sender_for_ping_cloned
+                    .send(InterfaceSender::Pingreq(pingreq))
+                    .unwrap();
+            });
+        }    
         println!("4");
     });
 

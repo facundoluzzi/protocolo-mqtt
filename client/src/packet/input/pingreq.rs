@@ -3,13 +3,11 @@ use std::sync::mpsc::Sender;
 use crate::helper::stream::stream_handler::StreamAction::WriteStream;
 use crate::helper::stream::stream_handler::StreamType;
 
-pub struct Pingreq {
-    interval: i32,
-}
+pub struct Pingreq {}
 
 impl Pingreq {
-    pub fn init(interval: i32) -> Pingreq {
-        Pingreq { interval }
+    pub fn init() -> Pingreq {
+        Pingreq {}
     }
 
     pub fn send_pingreq(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
@@ -19,9 +17,5 @@ impl Pingreq {
             Ok(_result_ok) => Ok(()),
             Err(err) => Err(err.to_string()),
         }
-    }
-
-    pub fn get_interval(&self) -> i32 {
-        self.interval
     }
 }

@@ -12,6 +12,7 @@ use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::thread;
+use std::thread::JoinHandle;
 use std::time::Duration;
 
 pub struct Client {
@@ -81,9 +82,6 @@ impl Client {
                         if let Ok(sender) = sender_stream {
                             client.sender_stream = Some(sender.clone());
 
-                            if !connect.keep_alive_is_empty() {
-                                Client::start_to_send_pingreq(&connect, sender.clone());
-                            }
                             Client::start_to_read(sender.clone(), connect.get_gtk_sender());
                         }
                     }
@@ -146,6 +144,19 @@ impl Client {
                             println!("Unexpected error");
                         }
                     },
+                    InterfaceSender::Pingreq(pingreq) => match client.sender_stream.clone() {
+                        Some(sender_stream) => match pingreq.send_pingreq(sender_stream.clone()) {
+                            Ok(_result_ok) => {
+                                println!("Ok");
+                            }
+                            Err(err) => {
+                                println!("err: {}", err);
+                            }
+                        },
+                        None => {
+                            println!("Unexpected error");
+                        }
+                    },
                 };
             }
         });
@@ -203,18 +214,18 @@ impl Client {
         });
     }
 
-    fn start_to_send_pingreq(connect: &Connect, sender: SenderForServer) {
-        let pingreq = Pingreq::init(connect.get_keep_alive());
-        thread::spawn(move || loop {
-            thread::sleep(Duration::from_secs(pingreq.get_interval() as u64));
-            match pingreq.send_pingreq(sender.clone()) {
-                Ok(_result) => {
-                    println!("Mando pingreq");
-                }
-                Err(err) => {
-                    println!("err: {}", err);
-                }
-            }
-        });
-    }
+    // fn start_to_send_pingreq(connect: &Connect, sender: SenderForServer) {
+    //     let pingreq = Pingreq::init(connect.get_keep_alive());
+    //     thread::spawn(move || loop {
+    //         thread::sleep(Duration::from_secs(pingreq.get_interval() as u64));
+    //         match pingreq.send_pingreq(sender.clone()) {
+    //         Ok(_result) => {
+    //             println!("Mando pingreq");
+    //         }
+    //         Err(err) => {
+    //             println!("err: {}", err);
+    //             }
+    //         }
+    //     });
+    // }
 }
