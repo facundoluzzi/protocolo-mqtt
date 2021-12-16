@@ -24,7 +24,7 @@ impl Subscribe {
     pub fn process_message(bytes: &[u8], packet_manager: &PacketManager) -> Result<(), String> {
         let mut subscribe = Subscribe::init(bytes)?;
         let subscribe_topic_response = subscribe.subscribe_topic(packet_manager)?;
-        subscribe_topic_response.send_response(packet_manager)?; 
+        subscribe_topic_response.send_response(packet_manager)?;
         Ok(())
     }
 
