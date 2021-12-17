@@ -6,14 +6,8 @@ use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
 pub struct Connect {
-    ip: String,
-    port: String,
-    user: String,
-    password: String,
-    id_client: String,
+    list_of_inputs: Vec<String>,
     send_x: gtk::glib::Sender<ClientSender>,
-    last_will_message: String,
-    last_will_topic: String,
     clean_session_is_active: bool,
     qos_will_message_0: bool,
     keep_alive: String,
@@ -21,27 +15,15 @@ pub struct Connect {
 
 impl Connect {
     pub fn init(
-        ip: String,
-        port: String,
-        user: String,
-        password: String,
-        id_client: String,
+        list_of_inputs: Vec<String>,
         send_x: gtk::glib::Sender<ClientSender>,
-        last_will_message: String,
-        last_will_topic: String,
         clean_session_is_active: bool,
         qos_will_message_0: bool,
         keep_alive: String,
     ) -> Connect {
         Connect {
-            ip,
-            port,
-            user,
-            password,
-            id_client,
+            list_of_inputs,
             send_x,
-            last_will_message,
-            last_will_topic,
             clean_session_is_active,
             qos_will_message_0,
             keep_alive,
@@ -49,7 +31,7 @@ impl Connect {
     }
 
     pub fn connect_to_server(&self) -> Result<Sender<StreamType>, String> {
-        let address = format!("{}:{}", self.ip, self.port);
+        let address = format!("{}:{}", self.list_of_inputs[0], self.list_of_inputs[1]);
         match TcpStream::connect(address) {
             Ok(stream) => {
                 let sender_stream = Stream::init(stream);
@@ -88,9 +70,9 @@ impl Connect {
     }
 
     fn add_client_id_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
-        if !self.id_client.is_empty() {
-            let id_length = self.id_client.len();
-            let mut id_client_in_bytes = self.id_client.as_bytes().to_vec();
+        if !self.list_of_inputs[4].is_empty() {
+            let id_length = self.list_of_inputs[4].len();
+            let mut id_client_in_bytes = self.list_of_inputs[4].as_bytes().to_vec();
             bytes.push(0x00);
             bytes.push(id_length as u8);
             bytes.append(&mut id_client_in_bytes);
@@ -102,10 +84,10 @@ impl Connect {
     }
 
     fn add_password_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
-        if !self.password.is_empty() {
+        if !self.list_of_inputs[3].is_empty() {
             *flags |= 0b01000000;
-            let password_length = self.password.len();
-            let mut password_in_bytes = self.password.as_bytes().to_vec();
+            let password_length = self.list_of_inputs[3].len();
+            let mut password_in_bytes = self.list_of_inputs[3].as_bytes().to_vec();
             bytes.push(0x00);
             bytes.push(password_length as u8);
             bytes.append(&mut password_in_bytes);
@@ -113,10 +95,10 @@ impl Connect {
     }
 
     fn add_username_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
-        if !self.user.is_empty() {
+        if !self.list_of_inputs[2].is_empty() {
             *flags |= 0b10000000;
-            let user_length = self.user.len();
-            let mut user_in_bytes = self.user.as_bytes().to_vec();
+            let user_length = self.list_of_inputs[2].len();
+            let mut user_in_bytes = self.list_of_inputs[2].as_bytes().to_vec();
             bytes.push(0x00);
             bytes.push(user_length as u8);
             bytes.append(&mut user_in_bytes);
@@ -135,10 +117,10 @@ impl Connect {
     }
 
     fn add_will_topic_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
-        if !self.last_will_topic.is_empty() {
+        if !self.list_of_inputs[6].is_empty() {
             *flags |= 0b00000100;
-            let will_topic_length = self.last_will_topic.len();
-            let mut will_topic_in_bytes = self.last_will_topic.as_bytes().to_vec();
+            let will_topic_length = self.list_of_inputs[6].len();
+            let mut will_topic_in_bytes = self.list_of_inputs[6].as_bytes().to_vec();
             bytes.push(0x00);
             bytes.push(will_topic_length as u8);
             bytes.append(&mut will_topic_in_bytes);
@@ -146,10 +128,10 @@ impl Connect {
     }
 
     fn add_will_message_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {
-        if !self.last_will_message.is_empty() {
+        if !self.list_of_inputs[5].is_empty() {
             *flags |= 0b00000100;
-            let will_message_length = self.last_will_message.len();
-            let mut will_message_in_bytes = self.last_will_message.as_bytes().to_vec();
+            let will_message_length = self.list_of_inputs[5].len();
+            let mut will_message_in_bytes = self.list_of_inputs[5].as_bytes().to_vec();
             bytes.push(0x00);
             bytes.push(will_message_length as u8);
             bytes.append(&mut will_message_in_bytes);
@@ -157,7 +139,7 @@ impl Connect {
     }
 
     fn change_flag_for_will_qos(&self, flags: &mut u8) {
-        if !self.last_will_message.is_empty() && !self.qos_will_message_0 {
+        if !self.list_of_inputs[5].is_empty() && !self.qos_will_message_0 {
             *flags |= 0b00010000;
         }
     }

@@ -7,7 +7,6 @@ use crate::variable_header::publish_variable_header::get_variable_header;
 use crate::{
     helper::publish_autosend::PublishAutoSend, stream::stream_handler::StreamAction::WriteStream,
 };
-use std::convert::TryInto;
 use std::sync::mpsc::{self, Receiver, Sender};
 
 pub enum PublisherSubscriberAction {
@@ -34,16 +33,20 @@ impl PublisherWriter {
         self.socket = None;
     }
 
+    /**
+     * esto se usa solamente en qos 1, por lo cual si no tiene packet id, lanza panic.
+     */
     fn get_packet_identifier(&self, bytes: &[u8]) -> Vec<u8> {
         let (readed_index, _): (usize, usize) =
             save_remaining_length(&bytes[1..bytes.len()]).unwrap();
         let init_variable_header = 1 + readed_index;
         let variable_header = &bytes[init_variable_header..bytes.len()];
-        let (_, packet_id, _) = get_variable_header(variable_header).unwrap();
-
-        packet_id[0..2]
-            .try_into()
-            .expect("slice with incorrect length")
+        let (_, packet_id, _) = get_variable_header(variable_header, 1).unwrap();
+        if let Some(packet) = packet_id {
+            packet.to_vec()
+        } else {
+            panic!("Unexpected error: unnecessary packet identifier in qos 1");
+        }
     }
 
     pub fn init(socket: Sender<StreamType>) -> Sender<ChannelPublisherWriter> {

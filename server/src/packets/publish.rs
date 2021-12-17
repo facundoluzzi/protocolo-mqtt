@@ -5,6 +5,7 @@ use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
 use crate::variable_header::publish_variable_header::get_variable_header;
+use std::str::from_utf8;
 
 use std::sync::mpsc::Sender;
 
@@ -14,7 +15,7 @@ pub struct Publish {
     retain: u8,
     remaining_length: usize,
     topic: String,
-    packet_identifier: [u8; 2],
+    packet_identifier: Option<[u8; 2]>,
     payload: String,
     all_bytes: Vec<u8>,
 }
@@ -55,11 +56,20 @@ impl Publish {
 
         let init_variable_header = 1 + readed_index;
         let variable_header = &bytes[init_variable_header..bytes.len()];
-        let (topic, packet_id, length) = get_variable_header(variable_header)?;
+        let (topic, packet_id, length) = get_variable_header(variable_header, qos_flag)?;
 
-        let packet_identifier = [packet_id[0], packet_id[1]];
-        let payload_to_be_parsed =
-            std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()]);
+        let (payload_to_be_parsed, packet_id) = if let Some(packet) = packet_id {
+            (
+                from_utf8(&bytes[init_variable_header + length..bytes.len()]),
+                Some([packet[0], packet[1]]),
+            )
+        } else {
+            (
+                from_utf8(&bytes[init_variable_header + 2..bytes.len()]),
+                None,
+            )
+        };
+
         let payload = if let Ok(parsed_payload) = payload_to_be_parsed {
             parsed_payload.to_string()
         } else {
@@ -72,7 +82,7 @@ impl Publish {
             qos: qos_flag,
             remaining_length,
             topic,
-            packet_identifier,
+            packet_identifier: packet_id,
             payload,
             all_bytes: bytes.to_vec(),
         })
@@ -86,16 +96,16 @@ impl Publish {
         match self.qos {
             0x00 => Ok(()),
             0x01 => {
-                let puback_response = [
-                    0x40,
-                    0x02,
-                    self.packet_identifier[0],
-                    self.packet_identifier[1],
-                ];
+                let mut puback_response = vec![0x40, 0x02];
+                let packet_id = if let Some(packet_id) = self.packet_identifier {
+                    [packet_id[0], packet_id[1]]
+                } else {
+                    return Err(format!("Error: packet identifier required"));
+                };
+                puback_response.append(&mut packet_id.to_vec());
 
                 let sender_stream_result =
-                    stream.send((WriteStream, Some(puback_response.to_vec()), None, None));
-
+                    stream.send((WriteStream, Some(puback_response), None, None));
                 if let Err(msg_error) = sender_stream_result {
                     Err(format!("Error in sending response: {}", msg_error))
                 } else {

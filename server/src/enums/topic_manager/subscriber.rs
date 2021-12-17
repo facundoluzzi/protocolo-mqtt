@@ -37,7 +37,7 @@ impl Subscriber {
         topics: HashMap<String, Sender<TopicAction>>,
     ) -> HashMap<String, Sender<TopicAction>> {
         match &self.wildcard {
-            Some(wildcard) => self.subscribe_with_wilcard(wildcard.clone(), topics),
+            Some(wildcard) => self.subscribe_with_wildcard(wildcard.clone(), topics),
             None => self.subscribe_without_wilcard(topics),
         }
     }
@@ -70,13 +70,13 @@ impl Subscriber {
         topics
     }
 
-    pub fn subscribe_with_wilcard(
+    pub fn subscribe_with_wildcard(
         &self,
-        wilcard: Wildcard,
+        wildcard: Wildcard,
         topics: HashMap<String, Sender<TopicAction>>,
     ) -> HashMap<String, Sender<TopicAction>> {
         for (topic_name, sender_topic) in &topics {
-            if wilcard.verify_topic(topic_name.to_owned()) {
+            if wildcard.verify_topic(topic_name.to_owned()) {
                 let add_topic = TopicAction::Add(AddTopic::init(
                     self.client_id.to_owned(),
                     self.sender_user_manager.clone(),
