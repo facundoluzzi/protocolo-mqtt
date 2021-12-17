@@ -1,43 +1,22 @@
 use crate::helper::stream::stream_handler::StreamAction::ReadStream;
 use crate::helper::stream::stream_handler::StreamType;
+use crate::packet::input::connect::Connect;
+use crate::packet::input::pingreq::Pingreq;
 use crate::packet::packet_manager::PacketManager;
 use crate::packet::sender_type::ClientSender;
 use crate::packet::sender_type::InterfaceSender;
+use crate::types::SenderForServer;
 
-use std::net::TcpStream;
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
+use std::sync::mpsc::SendError;
 use std::sync::mpsc::Sender;
 use std::thread;
+use std::time::Duration;
 
 pub struct Client {
-    stream: Option<TcpStream>,
-    sender: Option<Sender<(usize, Vec<String>)>>,
     sender_stream: Option<Sender<StreamType>>,
-}
-
-impl Clone for Client {
-    fn clone(&self) -> Self {
-        if let Some(stream) = &self.stream {
-            if let Ok(stream) = stream.try_clone() {
-                return Client {
-                    stream: Some(stream),
-                    sender: self.sender.clone(),
-                    sender_stream: None,
-                };
-            }
-            return Client {
-                stream: None,
-                sender: None,
-                sender_stream: None,
-            };
-        }
-        Client {
-            stream: None,
-            sender: None,
-            sender_stream: None,
-        }
-    }
+    signal_sender: Option<Sender<bool>>,
 }
 
 pub enum ClientAction {
@@ -64,9 +43,8 @@ impl Client {
             mpsc::channel();
 
         let mut client = Client {
-            stream: None,
-            sender: None,
             sender_stream: None,
+            signal_sender: None,
         };
 
         thread::spawn(move || {
@@ -76,6 +54,17 @@ impl Client {
                         let sender_stream = connect.connect_to_server();
                         if let Ok(sender) = sender_stream {
                             client.sender_stream = Some(sender.clone());
+
+                            let (sender_for_ping, receiver_for_ping) = mpsc::channel::<bool>();
+
+                            if !connect.keep_alive_is_empty() {
+                                client.signal_sender = Some(sender_for_ping.clone());
+                                Client::start_to_send_pingreq(
+                                    &connect,
+                                    sender.clone(),
+                                    receiver_for_ping,
+                                );
+                            }
                             Client::start_to_read(sender.clone(), connect.get_gtk_sender());
                         }
                     }
@@ -127,6 +116,13 @@ impl Client {
                         Some(sender_stream) => {
                             match disconnect.send_disconnect(sender_stream.clone()) {
                                 Ok(_result_ok) => {
+                                    if let Some(signal_sender) = client.signal_sender.clone() {
+                                        if let Err(err) = signal_sender.send(false) {
+                                            println!("{}", err);
+                                        } else {
+                                            client.signal_sender = None;
+                                        }
+                                    }
                                     println!("Ok");
                                 }
                                 Err(err) => {
@@ -138,19 +134,22 @@ impl Client {
                             println!("Unexpected error");
                         }
                     },
-                };
+                }
             }
         });
 
         event_sender
     }
 
-    fn process_packet(bytes: &[u8], sender: gtk::glib::Sender<ClientSender>) -> Result<(), String> {
+    fn process_packet(
+        bytes: &[u8],
+        sender: gtk::glib::Sender<ClientSender>,
+    ) -> Result<(), SendError<ClientSender>> {
         let packet_manager = PacketManager::new();
         let response = packet_manager.process_message(bytes);
 
         if let Some(client_sender) = response {
-            sender.send(client_sender).unwrap();
+            sender.send(client_sender)?;
         };
 
         Ok(())
@@ -184,6 +183,29 @@ impl Client {
                         println!("err: {}", err);
                         break;
                     }
+                }
+            }
+        });
+    }
+
+    fn start_to_send_pingreq(
+        connect: &Connect,
+        sender: SenderForServer,
+        receiver_for_ping: Receiver<bool>,
+    ) {
+        let pingreq = Pingreq::init(connect.get_keep_alive());
+        thread::spawn(move || loop {
+            thread::sleep(Duration::from_secs(pingreq.get_interval() as u64));
+            let keep_sending = receiver_for_ping.try_recv();
+            if keep_sending.is_ok() {
+                return;
+            }
+            match pingreq.send_pingreq(sender.clone()) {
+                Ok(_result) => {
+                    println!("Mando pingreq");
+                }
+                Err(err) => {
+                    println!("err: {}", err);
                 }
             }
         });

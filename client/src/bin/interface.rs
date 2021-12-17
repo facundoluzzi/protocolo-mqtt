@@ -2,10 +2,11 @@ extern crate gtk;
 use client::client_for_interface::Client;
 use client::packet::sender_type::ClientSender;
 use client::packet::sender_type::InterfaceSender;
+use std::str::from_utf8;
+
 use gtk::glib;
 use gtk::prelude::*;
 
-use std::str::from_utf8;
 use std::sync::mpsc::Sender;
 
 use client::interface_extra::object_builder::build_label_with_name;
@@ -74,6 +75,7 @@ impl AppUI {
                     let error_response = connect.get_response();
                     result_for_connect.set_text(&error_response);
                 }
+                ClientSender::Pingresp(_pingresp) => {}
                 ClientSender::Default(_default) => {}
             }
             glib::Continue(true)

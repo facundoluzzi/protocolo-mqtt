@@ -51,6 +51,17 @@ impl Connect {
         self.send_x.clone()
     }
 
+    pub fn keep_alive_is_empty(&self) -> bool {
+        self.keep_alive.is_empty() || self.get_keep_alive() == 0
+    }
+
+    pub fn get_keep_alive(&self) -> i32 {
+        match self.keep_alive.parse::<i32>() {
+            Ok(keep_alive) => keep_alive,
+            Err(_err) => 0,
+        }
+    }
+
     fn send_connect(&self, sender_stream: Sender<StreamType>) {
         let connect_bytes = self.build_bytes_for_connect();
         sender_stream
@@ -96,11 +107,8 @@ impl Connect {
 
     fn add_keep_alive_bytes(&self, bytes: &mut Vec<u8>) {
         bytes.push(0x00);
-        if !self.keep_alive.is_empty() {
-            let keep_alive = match self.keep_alive.parse::<i32>() {
-                Ok(keep_alive) => keep_alive,
-                Err(_err) => 0,
-            };
+        if !self.keep_alive_is_empty() {
+            let keep_alive = self.get_keep_alive();
             let keep_alive_as_u8 = keep_alive as u8;
             bytes.push(keep_alive_as_u8);
         } else {

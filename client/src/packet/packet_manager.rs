@@ -12,6 +12,8 @@ use crate::packet::output::suback_response::SubackResponse;
 use crate::packet::output::unsuback_response::UnsubackResponse;
 use crate::packet::sender_type::ClientSender;
 
+use super::output::pingresp_response::PingrespResponse;
+
 pub enum ResponsePacket {
     Connack,
     Suback,
@@ -81,6 +83,7 @@ impl PacketManager {
         match first_byte {
             Some(first_byte_ok) => {
                 let packet_type = PacketManager::get_control_packet_type(*first_byte_ok);
+                println!("{}", packet_type);
 
                 match packet_type {
                     2 => {
@@ -122,6 +125,10 @@ impl PacketManager {
                             UnsubackResponse::init("Unsubscribe realizado".to_string());
                         Some(ClientSender::Unsuback(unsuback_response))
                     }
+                    14 => {
+                        let pingresp_response = PingrespResponse::init();
+                        Some(ClientSender::Pingresp(pingresp_response))
+                    }
                     _ => {
                         default::Default::init(bytes);
                         let default_response =
@@ -136,43 +143,5 @@ impl PacketManager {
                 Some(ClientSender::Default(default_response))
             }
         }
-
-        // match packet_received.get_type() {
-        //     ResponsePacket::Connack => {
-        //         let response_code = packet_received.get_status_code();
-        //         let text_response = packet_received.status_for_code(response_code);
-
-        //         // // let (sender_to_get_message, receiver_to_get_message) = mpsc::channel::<Vec<u8>>();
-
-        //         // // sender_stream.send((ReadStream, None, Some(sender_to_get_message))).unwrap();
-
-        //         // // let message = receiver_to_get_message.recv().unwrap();
-
-        //         // // receive_responses_from_broker(message);
-
-        //         // let connack_code_received = rx.recv().unwrap();
-        //         // let response = self.check_connack_code(connack_code_received);
-        //         // let code = packet_received.get_status_code();
-        //         // channel_producer.send(code).unwrap();
-        //         Ok(())
-        //     }
-        //     ResponsePacket::Suback => {
-        //         // let code = packet_received.get_status_code();
-        //         // channel_producer.send(code).unwrap();
-        //         Ok(())
-        //     }
-        //     ResponsePacket::Puback => {
-        //         // let code = packet_received.get_status_code();
-        //         // channel_producer.send(code).unwrap();
-        //         Ok(())
-        //     }
-        //     // ResponsePacket::Publish => {
-        //     //     // channel_producer.send(data).unwrap();
-        //     // }
-        //     _ => {
-        //         println!("Received Default");
-        //         Ok(())
-        //     }
-        // }
     }
 }
