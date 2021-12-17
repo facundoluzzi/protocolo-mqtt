@@ -52,7 +52,7 @@ impl Connect {
     }
 
     pub fn keep_alive_is_empty(&self) -> bool {
-        self.keep_alive.is_empty()
+        self.keep_alive.is_empty() || self.get_keep_alive() == 0
     }
 
     pub fn get_keep_alive(&self) -> i32 {

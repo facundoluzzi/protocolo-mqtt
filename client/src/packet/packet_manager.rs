@@ -143,6 +143,5 @@ impl PacketManager {
                 Some(ClientSender::Default(default_response))
             }
         }
-
     }
 }
