@@ -75,9 +75,7 @@ impl AppUI {
                     let error_response = connect.get_response();
                     result_for_connect.set_text(&error_response);
                 }
-                ClientSender::Pingresp(pingresp) => {
-                    println!("llego pingresp");
-                }
+                ClientSender::Pingresp(_pingresp) => {}
                 ClientSender::Default(_default) => {}
             }
             glib::Continue(true)

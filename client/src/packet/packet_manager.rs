@@ -127,7 +127,6 @@ impl PacketManager {
                     }
                     14 => {
                         let pingresp_response = PingrespResponse::init();
-                        println!("Pingresp recibido");
                         Some(ClientSender::Pingresp(pingresp_response))
                     }
                     _ => {
@@ -145,42 +144,5 @@ impl PacketManager {
             }
         }
 
-        // match packet_received.get_type() {
-        //     ResponsePacket::Connack => {
-        //         let response_code = packet_received.get_status_code();
-        //         let text_response = packet_received.status_for_code(response_code);
-
-        //         // // let (sender_to_get_message, receiver_to_get_message) = mpsc::channel::<Vec<u8>>();
-
-        //         // // sender_stream.send((ReadStream, None, Some(sender_to_get_message))).unwrap();
-
-        //         // // let message = receiver_to_get_message.recv().unwrap();
-
-        //         // // receive_responses_from_broker(message);
-
-        //         // let connack_code_received = rx.recv().unwrap();
-        //         // let response = self.check_connack_code(connack_code_received);
-        //         // let code = packet_received.get_status_code();
-        //         // channel_producer.send(code).unwrap();
-        //         Ok(())
-        //     }
-        //     ResponsePacket::Suback => {
-        //         // let code = packet_received.get_status_code();
-        //         // channel_producer.send(code).unwrap();
-        //         Ok(())
-        //     }
-        //     ResponsePacket::Puback => {
-        //         // let code = packet_received.get_status_code();
-        //         // channel_producer.send(code).unwrap();
-        //         Ok(())
-        //     }
-        //     // ResponsePacket::Publish => {
-        //     //     // channel_producer.send(data).unwrap();
-        //     // }
-        //     _ => {
-        //         println!("Received Default");
-        //         Ok(())
-        //     }
-        // }
     }
 }
