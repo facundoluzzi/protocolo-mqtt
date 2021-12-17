@@ -92,7 +92,6 @@ impl Connect {
 
         if connect.status_code != 0x00 {
             // TODO: Cortar la conexión
-            Ok(connect)
         } else {
             let action: UserManagerAction;
             if will_flag {
@@ -122,8 +121,8 @@ impl Connect {
                     println!("err: {}", err);
                 }
             };
-            Ok(connect)
         }
+        Ok(connect)
     }
 
     pub fn send_response(
