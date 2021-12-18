@@ -11,6 +11,8 @@ use crate::stream::stream_handler::StreamType;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 use crate::wildcard::verify_wildcard;
 use crate::wildcard::wildcard_handler::Wildcard;
+use crate::helper::validate_payload::check_payload;
+use crate::helper::validate_reserved_bytes::check_reserved_bytes;
 use std::convert::TryInto;
 use std::sync::mpsc::Sender;
 
@@ -30,13 +32,14 @@ impl Unsubscribe {
     }
 
     pub fn init(bytes: &[u8]) -> Result<Unsubscribe, String> {
+        check_reserved_bytes(bytes[0])?;
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
         let init_variable_header = 1 + readed_index;
         let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()])?;
         let (packet_identifier_rec, length) = variable_header;
 
-        let payload = &bytes[init_variable_header + length..bytes.len()];
+        let payload = check_payload(&bytes[init_variable_header + length..bytes.len()])?;
         let packet_identifier = packet_identifier_rec[0..2]
             .try_into()
             .expect("slice with incorrect length");

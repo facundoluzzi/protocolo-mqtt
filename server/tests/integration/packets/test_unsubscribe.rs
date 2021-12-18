@@ -14,7 +14,7 @@ fn should_unsubscribe_correctly() {
     let connect_bytes = [
         0x10, // packet type
         0x10, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -27,20 +27,20 @@ fn should_unsubscribe_correctly() {
     stream.read(&mut data).unwrap();
 
     let subscribe_bytes = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, // payload MQTT como mensaje + qos
     ];
     stream.write(&subscribe_bytes).unwrap();
 
     stream.read(&mut data).unwrap();
 
     let unsubscribe_bytes = [
-        0xA0, // packet type
+        0xA2, // packet type
         0x08, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // payload MQTT como mensaje
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // payload MQTT como mensaje
     ];
     stream.write(&unsubscribe_bytes).unwrap();
 
@@ -68,7 +68,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     let connect_bytes_subscriber = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -78,7 +78,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     let connect_bytes_publisher = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -93,10 +93,10 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     // SUBSCRIBE
     let subscribe_bytes = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x01, // payload MQTT como mensaje
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x01, // payload MQTT como mensaje
     ];
 
     stream_subscriber.write(&subscribe_bytes).unwrap();
@@ -115,7 +115,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     let publish_bytes = [
         0x32, // tiene la información del packet type 0011, dup flag + qos flag + retain flag
         0x0D, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // topic name
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // topic name
         0x00, 0x0A, // packet identifier
         0x00, 0x03, 0x61, 0x2F, 0x62, // payload
     ];
@@ -144,7 +144,7 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
     match stream_subscriber.read(&mut data) {
         Ok(size) => {
             let expected_packet = [
-                0x32, 0x0D, 0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, 0x0A, 0x00, 0x03, 0x61, 0x2F,
+                0x32, 0x0D, 0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, 0x0A, 0x00, 0x03, 0x61, 0x2F,
                 0x62,
             ];
             assert_eq!(data[0..size], expected_packet);
@@ -158,10 +158,10 @@ fn should_subscribe_receive_publish_and_unsubscribe() {
 
     //UNSUBSCRIBE
     let unsubscribe_bytes = [
-        0xA0, // packet type
+        0xA2, // packet type
         0x08, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // payload MQTT como mensaje
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // payload MQTT como mensaje
     ];
 
     thread::sleep(time::Duration::from_millis(100));

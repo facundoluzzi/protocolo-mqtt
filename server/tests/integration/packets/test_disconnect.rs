@@ -12,7 +12,7 @@ mod tests {
         let connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -53,7 +53,7 @@ mod tests {
         let connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -98,10 +98,10 @@ mod tests {
         }
 
         let subscribe_bytes = [
-            0x80, // packet type
+            0x82, // packet type
             0x09, // remaining length
             0x00, 0x0A, // variable header, en particular packet identifier
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, // payload MQTT como mensaje + qos
         ];
 
         stream.write(&subscribe_bytes).unwrap();
