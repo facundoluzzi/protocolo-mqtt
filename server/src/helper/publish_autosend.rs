@@ -27,7 +27,9 @@ impl PublishAutoSend {
                             .add(operation.get_packet_identifier(), operation.get_publish());
                     }
                     AutoSendAction::Remove(operation) => {
+                        println!("Largo antes:{:?}", publish_autosend.publish_packets.len());
                         publish_autosend.remove(operation.get_packet_identifier());
+                        println!("Largo despues:{:?}", publish_autosend.publish_packets.len());
                     }
                     AutoSendAction::PublishAll(_) => {
                         for publish in publish_autosend.publish_packets.clone() {
@@ -65,6 +67,8 @@ impl PublishAutoSend {
     }
 
     pub fn remove(&mut self, packet_identifier: Vec<u8>) {
+        println!("{:?}", self.publish_packets);
         self.publish_packets.remove(&packet_identifier);
+        println!("{:?}", self.publish_packets);
     }
 }

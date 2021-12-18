@@ -454,9 +454,9 @@ fn should_publish_message_with_both_qos() {
 
 #[test]
 fn should_publish_message_with_both_qos_with_same_user() {
-    let server = ServerTest::start("0.0.0.0:2538".to_string());
+    let server = ServerTest::start("0.0.0.0:2832".to_string());
 
-    let mut publisher_subscriber_stream = TcpStream::connect("0.0.0.0:2538".to_string()).unwrap();
+    let mut publisher_subscriber_stream = TcpStream::connect("0.0.0.0:2832".to_string()).unwrap();
 
     let mut data = vec![0; 100];
 

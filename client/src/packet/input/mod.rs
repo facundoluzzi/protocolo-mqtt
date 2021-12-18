@@ -4,6 +4,7 @@ pub mod default;
 pub mod disconnect;
 pub mod pingreq;
 pub mod puback;
+pub mod puback_to_send;
 pub mod publish;
 pub mod suback;
 pub mod subscribe;

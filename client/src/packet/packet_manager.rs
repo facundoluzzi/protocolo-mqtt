@@ -1,5 +1,5 @@
 use crate::helper::remaining_length::save_remaining_length;
-use crate::helper::utf8_parser::UTF8;
+use crate::helper::variable_header::get_variable_header;
 use crate::packet::input::connack::Connack;
 use crate::packet::input::default;
 use crate::packet::input::puback::Puback;
@@ -11,6 +11,7 @@ use crate::packet::output::publish_response::PublishResponse;
 use crate::packet::output::suback_response::SubackResponse;
 use crate::packet::output::unsuback_response::UnsubackResponse;
 use crate::packet::sender_type::ClientSender;
+use crate::types::PublishPacket;
 
 use super::output::pingresp_response::PingrespResponse;
 
@@ -47,34 +48,40 @@ impl PacketManager {
         self.client_id = client_id;
     }
 
-    pub fn process_publish(&self, bytes: &[u8]) -> Result<(String, String), String> {
+    pub fn process_publish(&self, bytes: &[u8]) -> PublishPacket {
         let qos_flag = (0x06 & bytes[0]) >> 1;
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, _remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
 
         let init_variable_header = 1 + readed_index;
+        let variable_header = &bytes[init_variable_header..bytes.len()];
+        let (topic, packet_identifier, length) = get_variable_header(variable_header, qos_flag)?;
 
-        let variable_header_response =
-            match UTF8::utf8_parser(&bytes[init_variable_header..bytes.len()]) {
-                Ok((parsed_topic, readed_bytes)) => {
-                    let packet_identifier = &bytes[readed_bytes..readed_bytes + 2];
-                    Ok((parsed_topic, packet_identifier, readed_bytes + 2))
-                }
-                Err(err) => Err(err),
-            }?;
+        let response =
+            std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()]).expect("err");
+        println!("RESPONSE {:?}", response);
+        Ok((topic, response.to_string(), qos_flag, packet_identifier))
 
-        let (topic, _packet_identifier, length) = variable_header_response;
-
-        if qos_flag == 0x00 {
-            let response = std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()])
-                .expect("err");
-            Ok((topic, response.to_string()))
-        } else {
-            let response =
-                std::str::from_utf8(&bytes[init_variable_header + 2 + length..bytes.len()])
-                    .expect("err");
-            Ok((topic, response.to_string()))
-        }
+        // if qos_flag == 0x00 {
+        //     let response = std::str::from_utf8(&bytes[init_variable_header + length..bytes.len()])
+        //         .expect("err");
+        //     Ok((
+        //         topic,
+        //         response.to_string(),
+        //         qos_flag,
+        //         None,
+        //     ))
+        // } else {
+        //     let response =
+        //         std::str::from_utf8(&bytes[init_variable_header + 2 + length..bytes.len()])
+        //             .expect("err");
+        //     Ok((
+        //         topic,
+        //         response.to_string(),
+        //         qos_flag,
+        //         packet_identifier,
+        //     ))
+        // }
     }
 
     pub fn process_message(&self, bytes: &[u8]) -> Option<ClientSender> {
@@ -96,8 +103,9 @@ impl PacketManager {
                         Some(ClientSender::Connack(connack_response))
                     }
                     3 => match self.process_publish(bytes) {
-                        Ok((topic, message)) => {
-                            let publish_response = PublishResponse::init(topic, message);
+                        Ok((topic, message, qos, packet_identifier)) => {
+                            let publish_response =
+                                PublishResponse::init(topic, message, qos, packet_identifier);
                             Some(ClientSender::Publish(publish_response))
                         }
                         Err(err) => {
