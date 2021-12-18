@@ -1,5 +1,6 @@
 use crate::packet::input::connect::Connect;
 use crate::packet::input::disconnect::Disconnect;
+use crate::packet::input::puback_to_send::PubackToSend;
 use crate::packet::input::publish::Publish;
 use crate::packet::input::subscribe::Subscribe;
 use crate::packet::input::unsubscribe::Unsubscribe;
@@ -20,6 +21,7 @@ pub enum InterfaceSender {
     Subscribe(Subscribe),
     Unsubscribe(Unsubscribe),
     Disconnect(Disconnect),
+    PubackToSend(PubackToSend),
 }
 
 pub enum ClientSender {

@@ -134,6 +134,18 @@ impl Client {
                             println!("Unexpected error");
                         }
                     },
+                    InterfaceSender::PubackToSend(puback_to_send) => {
+                        match client.sender_stream.clone() {
+                            Some(sender_stream) => {
+                                if puback_to_send.send_puback(sender_stream.clone()).is_err() {
+                                    println!("Error sending PUBACK")
+                                };
+                            }
+                            None => {
+                                println!("Unexpected error");
+                            }
+                        }
+                    }
                 }
             }
         });

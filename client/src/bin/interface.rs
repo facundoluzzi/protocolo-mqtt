@@ -1,5 +1,6 @@
 extern crate gtk;
 use client::client_for_interface::Client;
+use client::packet::input::puback_to_send::PubackToSend;
 use client::packet::sender_type::ClientSender;
 use client::packet::sender_type::InterfaceSender;
 use std::str::from_utf8;
@@ -36,6 +37,7 @@ impl AppUI {
         result_for_publish: gtk::Label,
         result_suback_unsuback: gtk::Label,
         messages_received_label: gtk::Label,
+        sender_stream: Sender<InterfaceSender>,
     ) {
         rc.attach(None, move |client_sender| {
             match client_sender {
@@ -62,6 +64,13 @@ impl AppUI {
                     };
                     messages_received_label
                         .set_text(&(messages_received_label.text().to_string() + result + "\n"));
+
+                    if publish.get_qos() == 0x01 {
+                        let puback = PubackToSend::init(publish.get_packet_identifier());
+                        if let Err(err) = sender_stream.send(InterfaceSender::PubackToSend(puback)) {
+                            println!("Error mandando puback al broker {}", err);
+                        }
+                    }
                 }
                 ClientSender::Unsuback(unsuback) => {
                     let response = unsuback.get_response();
@@ -102,7 +111,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
 
     let connect_tab = ConnectTab::new(client_sender.clone(), tx_for_connection);
     let subscribe_tab = SubscribeTab::new(client_sender.clone());
-    let publish_tab = PublishTab::new(client_sender);
+    let publish_tab = PublishTab::new(client_sender.clone());
 
     let app_window = AppUI::new(connect_tab, subscribe_tab, publish_tab);
     app_window.connect_tab.build(&builder);
@@ -114,6 +123,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         result_label_1,
         result_label_2,
         messages_received_label,
+        client_sender,
     );
 
     window.set_application(Some(app));
