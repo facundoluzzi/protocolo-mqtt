@@ -1,6 +1,7 @@
 use crate::authentication::main::is_authenticated;
 use crate::helper::file_handler::get_lines_as_key_values;
 
+/// contiene los diferentes codigos de respuesta. Validos y no validos.
 #[derive(Clone, Copy)]
 pub enum ReturnCode {
     Success,
@@ -9,17 +10,20 @@ pub enum ReturnCode {
     NotAuthorized,
 }
 
+/// contiene el enum ReturnCode
 pub struct ConnectReturnCode {
     status_code: ReturnCode,
 }
 
 impl ConnectReturnCode {
+    /// Constructor del struct
     pub fn init() -> Self {
         ConnectReturnCode {
             status_code: ReturnCode::Success,
         }
     }
 
+    /// Valida la version del protocolo si no hay un error previo
     pub fn check_protocol_level(&mut self, protocol_level: u8) -> ConnectReturnCode {
         self.status_code = match self.status_code {
             ReturnCode::Success => {
@@ -36,6 +40,7 @@ impl ConnectReturnCode {
         }
     }
 
+    /// Valida el client id si no hay un error previo
     pub fn check_client_identifier(&self, _client_id: u8) -> ConnectReturnCode {
         // TODO: implementar esto
         ConnectReturnCode {
@@ -43,13 +48,7 @@ impl ConnectReturnCode {
         }
     }
 
-    pub fn check_server_unavailable(&self) -> ConnectReturnCode {
-        // TODO: implementar esto
-        ConnectReturnCode {
-            status_code: self.status_code,
-        }
-    }
-
+    /// Valida que el usuario no sea vacío, si no hay un error previo
     pub fn check_malformed_username(&mut self, username: String) -> ConnectReturnCode {
         self.status_code = match self.status_code {
             ReturnCode::Success => {
@@ -66,6 +65,7 @@ impl ConnectReturnCode {
         }
     }
 
+    /// Valida el formato de la password, si no hay un error previo
     pub fn check_malformed_password(&mut self, password: String) -> ConnectReturnCode {
         self.status_code = match self.status_code {
             ReturnCode::Success => {
@@ -82,6 +82,7 @@ impl ConnectReturnCode {
         }
     }
 
+    /// Valida la autenticación, si no hay un error previo
     pub fn check_authentication(
         &mut self,
         username: Option<String>,
@@ -108,6 +109,7 @@ impl ConnectReturnCode {
         }
     }
 
+    /// Devuelve el primer error capturado o 0x00 si no hubo errores
     pub fn apply_validations(self) -> u8 {
         match self.status_code {
             ReturnCode::Success => 0x00,

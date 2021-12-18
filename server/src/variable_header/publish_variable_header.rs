@@ -1,7 +1,6 @@
 use crate::helper::utf8_parser::UTF8;
-/**
- * https://docs.solace.com/PubSub-Basics/SMF-Topics.htm
- */
+
+/// Devuelve el variable header del publish
 pub fn get_variable_header(
     bytes: &[u8],
     qos: u8,
@@ -23,6 +22,7 @@ pub fn get_variable_header(
     }
 }
 
+/// Verifica que el publish no contenga wildcards
 pub fn verify_publish_wilcard(topic: String) -> bool {
     let chars: Vec<char> = topic.chars().collect();
 

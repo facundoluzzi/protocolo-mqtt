@@ -4,6 +4,7 @@ use crate::topic::topics::Topic;
 use std::collections::HashMap;
 use std::sync::mpsc::Sender;
 
+/// Contiene toda la información necesaria para publicar en cualquier caso.
 pub struct Publisher {
     client_id: String,
     topic: String,
@@ -14,6 +15,7 @@ pub struct Publisher {
 }
 
 impl Publisher {
+    /// Constructor del struct
     pub fn init(
         client_id: String,
         topic: String,
@@ -56,6 +58,7 @@ impl Publisher {
         topics
     }
 
+    /// Selecciona el topico y publica. Si el topic no existe pero tiene retained message, crea el topico y publica
     pub fn publish(
         &self,
         topics: HashMap<String, Sender<TopicAction>>,
@@ -71,18 +74,22 @@ impl Publisher {
         self.send_publish(publish, topic_name, topics)
     }
 
+    /// Obtiene el client id
     pub fn get_client_id(&self) -> String {
         self.client_id.to_string()
     }
 
+    /// Obtiene el topic
     pub fn get_topic(&self) -> String {
         self.topic.to_string()
     }
 
+    /// Obtiene el paquete publish completo
     pub fn get_publish_packet(&self) -> Vec<u8> {
         self.publish.clone()
     }
 
+    /// Obtiene el mensaje
     pub fn get_message(&self) -> String {
         self.message.to_string()
     }

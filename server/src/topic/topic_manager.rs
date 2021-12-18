@@ -6,36 +6,31 @@ use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
+/// Contiene un hash map de topicos
 pub struct TopicManager {
-    publisher_subscriber_sender: Sender<TypeMessage>,
     topics: HashMap<String, Sender<TopicAction>>,
 }
 
 impl Clone for TopicManager {
     fn clone(&self) -> Self {
-        let publisher_subscriber_sender = self.publisher_subscriber_sender.clone();
         Self {
-            publisher_subscriber_sender,
             topics: self.topics.clone(),
         }
     }
 }
 
 impl TopicManager {
+    /// Lanza un thread para quedarse escuchando por eventos.
+    /// Los eventos pueden ser Publisher, Subscriber, Unsubscriber, UnsubscriberAll
     pub fn init() -> Sender<TypeMessage> {
         let (publisher_subscriber_sender, event_receiver): (
             Sender<TypeMessage>,
             Receiver<TypeMessage>,
         ) = mpsc::channel();
-        let sender_to_return = publisher_subscriber_sender.clone();
-
         let topics: HashMap<String, Sender<TopicAction>> = HashMap::new();
-        let topic_manager = TopicManager {
-            publisher_subscriber_sender,
-            topics,
-        };
+        let topic_manager = TopicManager { topics };
         topic_manager.throw_thread_to_listen_events(event_receiver);
-        sender_to_return
+        publisher_subscriber_sender
     }
 
     fn throw_thread_to_listen_events(mut self, event_receiver: Receiver<TypeMessage>) {

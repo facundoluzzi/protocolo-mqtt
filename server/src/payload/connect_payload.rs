@@ -100,6 +100,7 @@ impl ConnectPayload {
         return_code.check_authentication(username, password)
     }
 
+    /// procesa el payload del connect y genera un struct con la información del mismo teniendo en cuenta los flags recibidos
     pub fn init(
         flags: &ConnectFlags,
         remaining_bytes: &[u8],
@@ -127,22 +128,27 @@ impl ConnectPayload {
         Ok((new_connect_payload, return_code))
     }
 
+    /// Devuelve el nombre de usuario
     pub fn get_username(&self) -> Option<&String> {
         self.username.as_ref()
     }
 
+    /// Devuelve la password del usuario
     pub fn get_password(&self) -> Option<&String> {
         self.password.as_ref()
     }
 
+    /// Devuelve el client id
     pub fn get_client_id(&self) -> String {
         self.client_identifier.to_owned()
     }
 
+    /// Devuelve el will topic
     pub fn get_will_topic(&self) -> Option<String> {
         self.will_topic.to_owned()
     }
 
+    /// Devuelve el will message
     pub fn get_will_message(&self) -> Option<String> {
         self.will_message.to_owned()
     }

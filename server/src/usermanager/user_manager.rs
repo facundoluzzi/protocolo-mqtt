@@ -24,6 +24,8 @@ pub struct UserManager {
 }
 
 impl UserManager {
+    /// Constructor del struct. Lanza un thread para quedarse escuchando por eventos.
+    /// Los eventos pueden ser AddUserManager, DisconnectUserManager, PublishMessageUserManager, StopToPublishUserManager
     pub fn init(sender_topic_manager: Sender<TypeMessage>) -> Sender<UserManagerAction> {
         let (sender_user_manager, receiver_user_manager): (
             Sender<UserManagerAction>,
@@ -120,6 +122,21 @@ impl UserManager {
             .insert(client_id, (publisher_writer, clean_session, publish_packet));
     }
 
+    fn generate_publish_bytes(first_b: u8, topic_b: &[u8], payload: &[u8]) -> Vec<u8> {
+        let remaining_length = (6 + payload.len() + topic_b.len()) as u8;
+        let mut publish: Vec<u8> = vec![first_b, remaining_length, 0x00, topic_b.len() as u8];
+        for topic in topic_b {
+            publish.push(*topic);
+        }
+        let bytes_to_concat = [0x00, 0x0A, 0x00, payload.len() as u8];
+        publish = [publish.to_vec(), bytes_to_concat.to_vec()].concat();
+        for message in payload {
+            publish.push(*message);
+        }
+
+        publish
+    }
+
     fn generate_will_publish(
         &mut self,
         topic: String,
@@ -133,24 +150,12 @@ impl UserManager {
         }
         let topic_bytes = topic.as_bytes();
         let payload = message.as_bytes();
-        let remaining_length = (6 + payload.len() + topic_bytes.len()) as u8;
-        let mut publish: Vec<u8> = vec![
-            publish_bytes,
-            remaining_length,
-            0x00,
-            topic_bytes.len() as u8,
-        ];
-        for topic in topic_bytes {
-            publish.push(*topic);
+        let publish = UserManager::generate_publish_bytes(publish_bytes, topic_bytes, payload);
+        if let Ok(packet) = Publish::init(&publish) {
+            packet
+        } else {
+            panic!("Unexpected error: publish packet couldn't be created");
         }
-        publish.push(0x00); // Packet Identifier
-        publish.push(0x0A);
-        publish.push(0x00);
-        publish.push(payload.len() as u8);
-        for message in payload {
-            publish.push(*message);
-        }
-        Publish::init(&publish).unwrap()
     }
 
     fn find_user(&self, client_id: String) -> Option<Sender<ChannelPublisherWriter>> {

@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use std::sync::mpsc::Sender;
 
+/// Configura el keep alive
 pub fn init(time: u64, sender: Sender<StreamType>) -> Result<(), String> {
     match sender.send((
         SetKeepAliveStream,

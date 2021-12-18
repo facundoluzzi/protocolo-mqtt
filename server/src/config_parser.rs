@@ -2,6 +2,7 @@ use crate::helper::file_handler::get_lines_as_key_values;
 use std::collections::HashMap;
 use std::env;
 
+/// Contiene un hashmap de configuraciones
 pub struct ServerConfigs {
     configurations: HashMap<String, String>,
 }
@@ -19,6 +20,7 @@ impl ServerConfigs {
         }
     }
 
+    /// Lee la configuración en base a los argumentos del path
     pub fn read_config_path_from_cli() -> String {
         let args: Vec<String> = env::args().collect();
         if args.len() <= 1 {
@@ -28,6 +30,7 @@ impl ServerConfigs {
         args[1].to_string()
     }
 
+    /// Recibe un path y carga la configuración
     pub fn obtain_configurations(path: String) -> ServerConfigs {
         let mut server_configs = ServerConfigs::new();
         server_configs.charge_configurations_from_path_file(path);
@@ -38,6 +41,7 @@ impl ServerConfigs {
         self.configurations = get_lines_as_key_values(path);
     }
 
+    /// Recibe un nombre de configuración y obtiene el valor asociado
     pub fn get_conf_named(&self, conf_name: String) -> String {
         match self.configurations.get(&conf_name) {
             Some(config_value) => config_value.to_string(),
@@ -48,18 +52,10 @@ impl ServerConfigs {
         }
     }
 
+    /// Devuelve las keys de la configuración cargada
     pub fn get_config_names(&self) -> Vec<String> {
         let keys = self.configurations.keys().map(|x| x.to_string()).collect();
         keys
-    }
-
-    pub fn get_config_values(&self) -> Vec<String> {
-        let values = self
-            .configurations
-            .values()
-            .map(|x| x.to_string())
-            .collect();
-        values
     }
 }
 
@@ -109,22 +105,6 @@ mod test_config_parser {
             assert!(!key.starts_with(" "));
         }
         fs::remove_file("testParser2.conf").unwrap_or(());
-    }
-
-    #[test]
-    fn configurations_values_are_correct() {
-        create_test_config_file("testParser3.conf".to_string()).unwrap();
-        let expected_values = vec![
-            "1".to_string(),
-            "2".to_string(),
-            "3".to_string(),
-            "4".to_string(),
-        ];
-        let configs = ServerConfigs::obtain_configurations("testParser3.conf".to_string());
-        let mut values = configs.get_config_values();
-        values.sort();
-        assert_eq!(expected_values, values);
-        fs::remove_file("testParser3.conf").unwrap_or(());
     }
 
     #[test]

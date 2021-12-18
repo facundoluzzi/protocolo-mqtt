@@ -10,6 +10,7 @@ use crate::enums::publish_autosend::publish_all_autosend::PublishAllAutoSend;
 
 type SenderPublishAutoSend = (Sender<AutoSendAction>, Receiver<AutoSendAction>);
 
+/// Contiene publish_packets guardados
 pub struct PublishAutoSend {
     publish_packets: HashMap<Vec<u8>, Vec<u8>>,
 }
@@ -47,6 +48,9 @@ impl PublishAutoSend {
         });
     }
 
+    /// Recibe un sender de publisher writer. Reprocesa los publish cada 5 segundos
+    /// lanza un thread que se queda escuchando por eventos y otro thread
+    /// para poder cortar el envío constante de paquetes.
     pub fn init(sender_publisher_writer: Sender<ChannelPublisherWriter>) -> Sender<AutoSendAction> {
         let (sender, receiver): SenderPublishAutoSend = mpsc::channel();
         let publish_autosend = PublishAutoSend {
@@ -57,6 +61,7 @@ impl PublishAutoSend {
         sender
     }
 
+    /// Agrega un paquete publish para enviar cada 5 segundos, si tiene qos 1
     pub fn add(&mut self, packet_identifier: Vec<u8>, receive: Vec<u8>) {
         let byte = receive[0];
         let publish_qos_1 = byte & 0b00000010 > 0;
@@ -68,12 +73,13 @@ impl PublishAutoSend {
         }
     }
 
+    /// Remueve un paquete con el packet id, para que el paquete deje de ser enviado.
+    /// Esto sucede cuando el broker recibe un puback
     pub fn remove(&mut self, packet_identifier: Vec<u8>) {
-        println!("{:?}", self.publish_packets);
         self.publish_packets.remove(&packet_identifier);
-        println!("{:?}", self.publish_packets);
     }
 
+    /// publica a todos los mensajes guardados
     pub fn publish_all(&mut self, sender: Sender<ChannelPublisherWriter>) {
         for publish in self.publish_packets.clone() {
             let publish_to_stream = PublishToStream::init(publish.1);

@@ -23,6 +23,9 @@ pub struct Unsubscribe {
 }
 
 impl Unsubscribe {
+    /// Recibe los bytes del paquete y el packet manager.
+    /// Desubscribe los topicos recibidos.
+    /// Devuelve Ok(()) o un Err de typo String en caso de que algo falle.
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         let mut unsubscribe = Unsubscribe::init(bytes)?;
         let sender_stream = packet_manager.get_sender_stream();
@@ -31,6 +34,7 @@ impl Unsubscribe {
         Ok(())
     }
 
+    /// Constructor del struct
     pub fn init(bytes: &[u8]) -> Result<Unsubscribe, String> {
         check_reserved_bytes(bytes[0])?;
         let bytes_rem_len = &bytes[1..bytes.len()];
@@ -91,6 +95,7 @@ impl Unsubscribe {
         self.send_to_topic_manager(packet_manager, unsubscriber);
     }
 
+    /// elimina la suscripción del usuario en el tópico recibido
     pub fn unsubscribe_topic(&mut self, packet_manager: &PacketManager) -> Result<Self, String> {
         let mut acumulator: usize = 0;
         let mut topics: Vec<String> = Vec::new();
@@ -112,6 +117,7 @@ impl Unsubscribe {
         Ok(unsubscribe)
     }
 
+    /// envia el unsubscribe al cliente
     pub fn send_response(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let packet_type = 0xB0u8;
         let packet_identifier = self.packet_identifier.clone();

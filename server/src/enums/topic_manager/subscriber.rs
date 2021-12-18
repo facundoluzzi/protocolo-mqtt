@@ -7,6 +7,7 @@ use std::sync::mpsc::Sender;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::wildcard::wildcard_handler::Wildcard;
 
+/// Contiene información necesaria para suscribir de forma correcta
 pub struct Subscriber {
     client_id: String,
     topic: String,
@@ -16,6 +17,7 @@ pub struct Subscriber {
 }
 
 impl Subscriber {
+    /// Constructor del struct
     pub fn init(
         client_id: String,
         topic: String,
@@ -32,6 +34,7 @@ impl Subscriber {
         }
     }
 
+    /// Recibe un hash map de topics y subscribe
     pub fn subscribe(
         &mut self,
         topics: HashMap<String, Sender<TopicAction>>,
@@ -70,6 +73,7 @@ impl Subscriber {
         topics
     }
 
+    /// Recibe una wildcard y un hash map de topics y subscribe, si la wildcard matchea con un topico, lo subscribe.
     pub fn subscribe_with_wildcard(
         &self,
         wildcard: Wildcard,
@@ -88,22 +92,27 @@ impl Subscriber {
         topics
     }
 
+    /// Obtiene el client id
     pub fn get_client_id(&self) -> String {
         self.client_id.to_string()
     }
 
+    /// Obtiene el topic
     pub fn get_topic(&self) -> String {
         self.topic.to_string()
     }
 
+    /// Obtiene el sender de user manager
     pub fn get_sender_user_manager(&self) -> Sender<UserManagerAction> {
         self.sender_user_manager.clone()
     }
 
+    /// Obtiene la wildcard
     pub fn get_wildcard(&self) -> Option<Wildcard> {
         self.wildcard.as_ref().cloned()
     }
 
+    /// Obtiene el qos
     pub fn get_qos(&self) -> u8 {
         self.qos
     }

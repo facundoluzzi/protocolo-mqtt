@@ -14,6 +14,7 @@ use std::sync::mpsc::Sender;
 
 use super::disconnect::Disconnect;
 
+/// contiene flags, payload y un return_code que es usado para manejar los errores al finalizar el procesamiento del paquete.
 pub struct Connect {
     flags: ConnectFlags,
     payload: ConnectPayload,
@@ -21,6 +22,8 @@ pub struct Connect {
 }
 
 impl Connect {
+    /// Recibe los bytes del paquete y el packet manager.
+    /// Devuelve Ok(()) o un Err(String) en caso de que algo falle
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         if !packet_manager.is_disconnected() {
             Err("Client is already connected".to_string())
@@ -36,6 +39,8 @@ impl Connect {
         }
     }
 
+    /// Obtiene el variable header y devuelve un nuevo return code en caso de que algo falle
+    /// para que pueda seguir procesando el paquete.
     fn get_variable_header(
         bytes: &[u8],
         mut return_code: ConnectReturnCode,
@@ -46,7 +51,6 @@ impl Connect {
 
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len)?;
-
         if bytes_rem_len.len() != remaining_length + 1 {
             return Err("packet malformed".to_string());
         }
@@ -60,6 +64,8 @@ impl Connect {
         Ok((variable_header, end_variable_header, return_code))
     }
 
+    // Obtiene el payload a partir de una cadena de bytes. Devuelve el return_code modificado en caso de haber errores.
+    // Readed bytes es usado para saber donde empezar a leer.
     fn get_payload(
         bytes: &[u8],
         flags: &ConnectFlags,
@@ -71,6 +77,7 @@ impl Connect {
         Ok(payload)
     }
 
+    /// Setea el keep alive.
     fn process_keep_alive(
         variable_header: &[u8],
         sender_stream: Sender<StreamType>,
@@ -83,6 +90,7 @@ impl Connect {
         }
     }
 
+    /// Crea un AddUserManager con will flag usado para enviar al user manager y agregar el usuario
     fn create_action_with_will_flag(&self, sender_stream: Sender<StreamType>) -> AddUserManager {
         let client_id = self.payload.get_client_id();
         let session_flag = self.flags.get_clean_session_flag();
@@ -101,12 +109,14 @@ impl Connect {
         )
     }
 
+    /// Crea un AddUserManager sin will flag usado para enviar al user manager y agregar el usuario
     fn create_action_without_will_flag(&self, sender_stream: Sender<StreamType>) -> AddUserManager {
         let client_id = self.payload.get_client_id();
         let session_flag = self.flags.get_clean_session_flag();
         AddUserManager::init_without_will(client_id, sender_stream, session_flag)
     }
 
+    /// Crea el AddUserManager según sea el flag del actual paquete. Devuelve el AddUserManager como parte un enum.
     fn create_action_user_manager(&self, sender_stream: Sender<StreamType>) -> UserManagerAction {
         let will_flag = self.flags.get_will_flag();
         let action = if will_flag {
@@ -117,6 +127,7 @@ impl Connect {
         UserManagerAction::AddUserManager(action)
     }
 
+    /// Constructor del paquete
     fn init(bytes: &[u8], packet_manager: &PacketManager) -> Result<Connect, String> {
         let sender_stream = packet_manager.get_sender_stream();
         let sender_user_manager = packet_manager.get_sender_user_manager();
@@ -143,6 +154,7 @@ impl Connect {
         }
     }
 
+    /// Envia la respuesta al stream handler mediante un channel
     fn send_response(
         &self,
         sender_stream: Sender<StreamType>,
@@ -150,9 +162,8 @@ impl Connect {
     ) -> Result<(), String> {
         let session_present_bit = !(0x01 & self.flags.get_clean_session_flag() as u8);
         let connack_response = [0x20, 0x02, session_present_bit, self.return_code].to_vec();
-        if let Err(_msg_error) =
-            sender_stream.send((WriteStream, Some(connack_response), None, None))
-        {}
+        let params = (WriteStream, Some(connack_response), None, None);
+        if let Err(_msg_error) = sender_stream.send(params) {}
 
         if self.return_code != 0x00 {
             Disconnect::disconnect_user(self.get_client_id(), sender_user_manager, sender_stream);
@@ -162,6 +173,7 @@ impl Connect {
         }
     }
 
+    /// Obtiene el client id desde el payload
     fn get_client_id(&self) -> String {
         self.payload.get_client_id()
     }
