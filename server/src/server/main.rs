@@ -12,7 +12,7 @@ use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
 
-pub fn process_packets(
+fn process_packets(
     mut packet_manager: PacketManager,
     mut logger: Logger,
 ) -> Result<String, String> {
@@ -35,7 +35,7 @@ pub fn process_packets(
     }
 }
 
-pub fn receive_message(
+fn receive_message(
     sender_stream: Sender<StreamType>,
     sender: Sender<Vec<u8>>,
 ) -> Result<(), String> {
@@ -46,6 +46,7 @@ pub fn receive_message(
     }
 }
 
+/// maneja los nuevos clientes
 pub fn handle_new_client(
     mut logger: Logger,
     sender_stream: Sender<StreamType>,
@@ -64,6 +65,7 @@ pub fn handle_new_client(
     }
 }
 
+/// corre el servidor
 pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,

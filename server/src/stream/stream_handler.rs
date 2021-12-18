@@ -81,6 +81,8 @@ impl Stream {
         Ok(())
     }
 
+    /// Recibe un tcp stream para poder escribir y leer al mismo tiempo. Lanza un thread que se queda escuchando eventos
+    /// de diferentes partes de la app
     pub fn init(stream_received: TcpStream, logger: Logger) -> Result<Sender<StreamType>, String> {
         let (sender_stream, receiver_stream): ChannelStreamType = mpsc::channel();
         let (stream_to_read, stream_to_write) = Stream::get_streams(stream_received)?;

@@ -1,3 +1,4 @@
+/// Obtiene el keep alive
 pub fn get_keep_alive(variable_header: &[u8]) -> Option<u8> {
     let msb_keep_alive = variable_header[8];
     let lsb_keep_alive = variable_header[9];
@@ -11,6 +12,7 @@ pub fn get_keep_alive(variable_header: &[u8]) -> Option<u8> {
     }
 }
 
+/// Chequea el largo del variable header, devuelve un error de no ser válido
 pub fn check_variable_header_len(variable_header: &[u8]) -> Result<String, String> {
     if variable_header.len() != 10 {
         Err("Invalid variable header length".to_string())

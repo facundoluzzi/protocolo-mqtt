@@ -8,6 +8,8 @@ pub struct ConnectFlags {
 }
 
 impl ConnectFlags {
+
+    /// Recibe un byte y crea el paquete de connect flags
     pub fn init(bytes: &u8) -> ConnectFlags {
         ConnectFlags {
             will_qos: (0x18 & bytes) >> 3,
@@ -19,26 +21,32 @@ impl ConnectFlags {
         }
     }
 
+    /// Obtiene el flag de username
     pub fn get_username_flag(&self) -> bool {
         self.username
     }
 
+    /// Obtiene el flag de password
     pub fn get_password_flag(&self) -> bool {
         self.password
     }
 
+    /// Obtiene el flag de will retain
     pub fn get_will_retain_flag(&self) -> bool {
         self.will_retain
     }
 
+    /// Obtiene el flag de will message
     pub fn get_will_flag(&self) -> bool {
         self.will_flag
     }
 
+    /// Obtiene el flag de clean session
     pub fn get_clean_session_flag(&self) -> bool {
         self.clean_session
     }
 
+    /// obtiene el flag de qos
     pub fn get_will_qos_flag(&self) -> u8 {
         self.will_qos
     }

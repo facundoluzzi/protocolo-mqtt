@@ -18,6 +18,7 @@ impl UTF8 {
         Ok((msb, lsb))
     }
 
+    /// Obtiene el string del encoding recibido
     pub fn utf8_parser(bytes: &[u8]) -> Result<(String, usize), String> {
         UTF8::check_minimum_length(bytes)?;
         let (msb, lsb) = UTF8::check_malmormed_encoding(bytes)?;

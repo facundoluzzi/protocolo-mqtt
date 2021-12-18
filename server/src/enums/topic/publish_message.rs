@@ -1,3 +1,4 @@
+/// Struct para desencadenar un evento de publicacion de un topico.
 pub struct PublishMessage {
     all_bytes: Vec<u8>,
     qos: u8,
@@ -17,6 +18,7 @@ impl Clone for PublishMessage {
 }
 
 impl PublishMessage {
+    /// Instancia el struct relacionado con la publicacion.
     pub fn init(
         all_bytes: Vec<u8>,
         qos: u8,
@@ -30,19 +32,23 @@ impl PublishMessage {
             message,
         }
     }
-
+    
+    /// Obtiene el paquete como un vector de bytes.
     pub fn get_packet(&self) -> Vec<u8> {
         self.all_bytes.clone()
     }
 
+    /// Obtiene el mensaje como un string.
     pub fn get_message(&self) -> String {
         self.message.to_string()
     }
 
+    /// Obtiene el QoS.
     pub fn get_qos(&self) -> u8 {
         self.qos
     }
 
+    /// Obtiene el flag de si es o no un retained massage.
     pub fn get_retained_message(&self) -> bool {
         self.retained_message
     }

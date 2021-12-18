@@ -16,6 +16,9 @@ pub struct Topic {
 }
 
 impl Topic {
+
+    /// Constructor del struct. Lanza un thread escuchando por eventos. 
+    /// Los eventos pueden ser Add topic, remove topic o publish message.
     pub fn init(name: String) -> Sender<TopicAction> {
         let (topic_sender, topic_receiver): (Sender<TopicAction>, Receiver<TopicAction>) =
             mpsc::channel();
@@ -114,10 +117,12 @@ impl Topic {
         }
     }
 
+    /// obtiene el nombre del topic
     pub fn get_name(&self) -> String {
         self.name.to_string()
     }
 
+    /// determina si dos topicos son iguales
     pub fn equals(&self, other_topic: String) -> bool {
         self.name == other_topic
     }
