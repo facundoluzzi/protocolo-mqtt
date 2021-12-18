@@ -2,7 +2,6 @@ use crate::enums::publish_autosend::add_autosend::AddAutoSend;
 use crate::enums::publish_autosend::autosend_action::AutoSendAction;
 use crate::enums::publish_autosend::remove_autosend::RemoveAutoSend;
 use crate::enums::publisher_writter::channel::ChannelPublisherWriter;
-use crate::enums::publisher_writter::publish_to_stream::PublishToStream;
 use crate::enums::publisher_writter::reconnect_stream::ReconnectStream;
 use crate::enums::publisher_writter::stop_publish_to_stream::StopPublishToStream;
 use crate::helper::remaining_length::save_remaining_length;
@@ -47,7 +46,9 @@ impl PublisherWriter {
         thread::spawn(move || {
             for event in receiver {
                 match event {
-                    ChannelPublisherWriter::Publish(publish) => self.publish_message(publish.get_message()),
+                    ChannelPublisherWriter::Publish(publish) => {
+                        self.publish_message(publish.get_message())
+                    }
                     ChannelPublisherWriter::Reconnect(reconnect) => self.reconnect(reconnect),
                     ChannelPublisherWriter::Disconnect => self.disconnect(),
                     ChannelPublisherWriter::StopToPublish(stop_publish) => {

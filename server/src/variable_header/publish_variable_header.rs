@@ -1,6 +1,6 @@
 use crate::helper::utf8_parser::UTF8;
 
-/// 
+///
 pub fn get_variable_header(
     bytes: &[u8],
     qos: u8,

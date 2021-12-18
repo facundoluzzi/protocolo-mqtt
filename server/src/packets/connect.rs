@@ -31,7 +31,7 @@ impl Connect {
             let sender_stream = packet_manager.get_sender_stream();
             let sender_user_manager = packet_manager.get_sender_user_manager();
 
-            let connect = Connect::init(bytes, &packet_manager)?;
+            let connect = Connect::init(bytes, packet_manager)?;
             packet_manager.set_client_id(connect.get_client_id());
             connect.send_response(sender_stream, sender_user_manager)?;
             packet_manager.connect();
@@ -73,7 +73,7 @@ impl Connect {
         return_code: ConnectReturnCode,
     ) -> Result<(ConnectPayload, ConnectReturnCode), String> {
         let rem_bytes = &bytes[readed_bytes + 1..];
-        let payload = ConnectPayload::init(&flags, rem_bytes, return_code)?;
+        let payload = ConnectPayload::init(flags, rem_bytes, return_code)?;
         Ok(payload)
     }
 
@@ -83,11 +83,10 @@ impl Connect {
         sender_stream: Sender<StreamType>,
     ) -> Result<(), String> {
         match get_keep_alive(variable_header) {
-            Some(some_keep_alive) => handler_keep_alive::init(
-                ((some_keep_alive as f64) * 1.5) as u64,
-                sender_stream.clone(),
-            ),
-            None => handler_null_keep_alive::init(sender_stream.clone()),
+            Some(some_keep_alive) => {
+                handler_keep_alive::init(((some_keep_alive as f64) * 1.5) as u64, sender_stream)
+            }
+            None => handler_null_keep_alive::init(sender_stream),
         }
     }
 
@@ -121,9 +120,9 @@ impl Connect {
     fn create_action_user_manager(&self, sender_stream: Sender<StreamType>) -> UserManagerAction {
         let will_flag = self.flags.get_will_flag();
         let action = if will_flag {
-            self.create_action_with_will_flag(sender_stream.clone())
+            self.create_action_with_will_flag(sender_stream)
         } else {
-            self.create_action_without_will_flag(sender_stream.clone())
+            self.create_action_without_will_flag(sender_stream)
         };
         UserManagerAction::AddUserManager(action)
     }
@@ -147,7 +146,7 @@ impl Connect {
             return_code: return_code.apply_validations(),
         };
         Connect::process_keep_alive(variable_header, sender_stream.clone())?;
-        let action = connect.create_action_user_manager(sender_stream.clone());
+        let action = connect.create_action_user_manager(sender_stream);
         if let Err(_err) = sender_user_manager.send(action) {
             Err("Error adding user manager".to_string())
         } else {

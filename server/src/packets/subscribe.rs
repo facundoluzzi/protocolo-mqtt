@@ -13,6 +13,7 @@ use crate::wildcard::wildcard_handler::Wildcard;
 
 use std::convert::TryInto;
 
+/// contiene el packet id, remaining_length, payload y return_codes
 pub struct Subscribe {
     remaining_length: usize,
     packet_identifier: [u8; 2],
@@ -21,6 +22,10 @@ pub struct Subscribe {
 }
 
 impl Subscribe {
+
+    /// Recibe los bytes del paquete y el packet manager.
+    /// Subscribe y en caso de qos 1, devuelve el suback al cliente.
+    /// Devuelve Ok(()) o un Err de typo String en caso de que algo falle
     pub fn process_message(bytes: &[u8], packet_manager: &PacketManager) -> Result<(), String> {
         let mut subscribe = Subscribe::init(bytes)?;
         let subscribe_topic_response = subscribe.subscribe_topic(packet_manager)?;
@@ -28,6 +33,7 @@ impl Subscribe {
         Ok(())
     }
 
+    /// constructor del struct
     pub fn init(bytes: &[u8]) -> Result<Subscribe, String> {
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len)?;
@@ -113,6 +119,7 @@ impl Subscribe {
         });
     }
 
+    /// suscribe los topics con su correspondiente qos. Falla si hay un encoding erroneo
     pub fn subscribe_topic(&mut self, packet_manager: &PacketManager) -> Result<Self, String> {
         let mut acumulator: usize = 0;
         let mut topics_qos: Vec<(String, u8)> = Vec::new();
@@ -137,6 +144,7 @@ impl Subscribe {
         Ok(subscribe)
     }
 
+    /// Envia la respuesta al usuario con los correspondientes codigos de respuesta. 0x80 si algo falla en un topic determinado.
     pub fn send_response(&self, packet_manager: &PacketManager) -> Result<(), String> {
         let sender_stream = packet_manager.get_sender_stream();
         let mut bytes_response = vec![

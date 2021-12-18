@@ -4,6 +4,10 @@ use crate::enums::publisher_writter::reconnect_stream::ReconnectStream;
 use crate::enums::publisher_writter::stop_publish_to_stream::StopPublishToStream;
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::topic_manager::unsubscriberall::UnsubscriberAll;
+use crate::enums::user_manager::add_user_manager::AddUserManager;
+use crate::enums::user_manager::disconnect_user_manager::DisconnectUserManager;
+use crate::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
+use crate::enums::user_manager::stop_publish_user_manager::StopPublish;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::packets::publish::Publish;
 use crate::stream::stream_handler::StreamType;
@@ -25,83 +29,83 @@ impl UserManager {
             Sender<UserManagerAction>,
             Receiver<UserManagerAction>,
         ) = mpsc::channel();
-
         let mut user_manager = UserManager {
             users: HashMap::new(),
             sender_topic_manager,
         };
-
         thread::spawn(move || {
             for receive in receiver_user_manager {
                 match receive {
                     UserManagerAction::AddUserManager(user) => {
-                        let client_id = user.get_client_id();
-                        let sender_stream = user.get_sender_stream();
-                        let clean_session = user.get_clean_session();
-
-                        if let Some(usuario) = user_manager.find_user(client_id.to_string()) {
-                            println!("empieza Reconnect");
-                            let reconnect = ReconnectStream::init(sender_stream);
-                            let result = usuario.send(ChannelPublisherWriter::Reconnect(reconnect));
-                            if let Err(err) = result {
-                                println!("Unexpected error reonnecting stream: {}", err);
-                            }
-                            println!("envia Reconnect");
-                        } else {
-                            let publish: Option<Publish>;
-                            if let Some(message) = user.get_will_message() {
-                                publish = Some(user_manager.generate_will_publish(
-                                    user.get_will_topic(),
-                                    message,
-                                    user.get_will_qos(),
-                                    user.get_will_retain_message(),
-                                ));
-                            } else {
-                                publish = None;
-                            }
-                            user_manager.add(
-                                client_id.to_string(),
-                                sender_stream.clone(),
-                                clean_session,
-                                publish,
-                            );
-                        };
+                        user_manager.process_new_connection(user);
                     }
                     UserManagerAction::DisconnectUserManager(user) => {
-                        let client_id = user.get_client_id();
-                        let disconnection_ungracefully = user.get_disconnection_type();
-                        user_manager.disconnect(client_id, disconnection_ungracefully);
+                        user_manager.process_disconnect(user);
                     }
                     UserManagerAction::PublishMessageUserManager(user) => {
-                        let client_id = user.get_client_id();
-                        let message = user.get_message();
-                        if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
-                            let publish = PublishToStream::init(message);
-                            let result =
-                                sender_for_publish.send(ChannelPublisherWriter::Publish(publish));
-                            if let Err(err) = result {
-                                println!("Unexpected error reonnecting stream: {}", err);
-                            }
-                        }
+                        user_manager.process_publish_message(user);
                     }
                     UserManagerAction::StopPublishUserManager(user) => {
-                        let client_id = user.get_client_id();
-                        let packet_identifier = user.get_packet_identifier();
-                        if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
-                            let stop_publish =
-                                StopPublishToStream::init(packet_identifier.to_vec());
-                            let result = sender_for_publish
-                                .send(ChannelPublisherWriter::StopToPublish(stop_publish));
-                            if let Err(err) = result {
-                                println!("Unexpected error reonnecting stream: {}", err);
-                            }
-                        }
+                        user_manager.process_stop_publish_message(user);
                     }
                 }
             }
         });
-
         sender_user_manager
+    }
+
+    fn process_new_connection(&mut self, user: AddUserManager) {
+        let sender_stream = user.get_sender_stream();
+        if let Some(usuario) = self.find_user(user.get_client_id()) {
+            let reconnect = ReconnectStream::init(sender_stream);
+            let result = usuario.send(ChannelPublisherWriter::Reconnect(reconnect));
+            if let Err(err) = result {
+                println!("Unexpected error reconnecting stream: {}", err);
+            }
+        } else {
+            let publish: Option<Publish>;
+            if let Some(message) = user.get_will_message() {
+                publish = Some(self.generate_will_publish(
+                    user.get_will_topic(),
+                    message,
+                    user.get_will_qos(),
+                    user.get_will_retain_message(),
+                ));
+            } else {
+                publish = None;
+            }
+            self.add(
+                user.get_client_id(),
+                sender_stream,
+                user.get_clean_session(),
+                publish,
+            )
+        }
+    }
+
+    fn process_publish_message(&mut self, user: PublishMessageUserManager) {
+        let client_id = user.get_client_id();
+        let message = user.get_message();
+        if let Some(sender_for_publish) = self.get_sender(client_id) {
+            let publish = PublishToStream::init(message);
+            let result = sender_for_publish.send(ChannelPublisherWriter::Publish(publish));
+            if let Err(err) = result {
+                println!("Unexpected error reconnecting stream: {}", err);
+            }
+        }
+    }
+
+    fn process_stop_publish_message(&mut self, user: StopPublish) {
+        let client_id = user.get_client_id();
+        let packet_identifier = user.get_packet_identifier();
+        if let Some(sender_for_publish) = self.get_sender(client_id) {
+            let stop_publish = StopPublishToStream::init(packet_identifier.to_vec());
+            let result =
+                sender_for_publish.send(ChannelPublisherWriter::StopToPublish(stop_publish));
+            if let Err(err) = result {
+                println!("Unexpected error reconnecting stream: {}", err);
+            }
+        }
     }
 
     fn add(
@@ -114,6 +118,21 @@ impl UserManager {
         let publisher_writer = PublisherWriter::init(stream);
         self.users
             .insert(client_id, (publisher_writer, clean_session, publish_packet));
+    }
+
+    fn generate_publish_bytes(first_b: u8, topic_b: &[u8], payload: &[u8]) -> Vec<u8> {
+        let remaining_length = (6 + payload.len() + topic_b.len()) as u8;
+        let mut publish: Vec<u8> = vec![first_b, remaining_length, 0x00, topic_b.len() as u8];
+        for topic in topic_b {
+            publish.push(*topic);
+        }
+        let bytes_to_concat = [0x00, 0x0A, 0x00, payload.len() as u8];
+        publish = [publish.to_vec(), bytes_to_concat.to_vec()].concat();
+        for message in payload {
+            publish.push(*message);
+        }
+
+        publish
     }
 
     fn generate_will_publish(
@@ -129,24 +148,12 @@ impl UserManager {
         }
         let topic_bytes = topic.as_bytes();
         let payload = message.as_bytes();
-        let remaining_length = (6 + payload.len() + topic_bytes.len()) as u8;
-        let mut publish: Vec<u8> = vec![
-            publish_bytes,
-            remaining_length,
-            0x00,
-            topic_bytes.len() as u8,
-        ];
-        for topic in topic_bytes {
-            publish.push(*topic);
+        let publish = UserManager::generate_publish_bytes(publish_bytes, topic_bytes, payload);
+        if let Ok(packet) = Publish::init(&publish) {
+            packet
+        } else {
+            panic!("Unexpected error: publish packet couldn't be created");
         }
-        publish.push(0x00); // Packet Identifier
-        publish.push(0x0A);
-        publish.push(0x00);
-        publish.push(payload.len() as u8);
-        for message in payload {
-            publish.push(*message);
-        }
-        Publish::init(&publish).unwrap()
     }
 
     fn find_user(&self, client_id: String) -> Option<Sender<ChannelPublisherWriter>> {
@@ -162,7 +169,9 @@ impl UserManager {
         }
     }
 
-    fn disconnect(&mut self, client_id: String, disconnect_ungracefully: bool) {
+    fn process_disconnect(&mut self, user: DisconnectUserManager) {
+        let client_id = user.get_client_id();
+        let disconnection_ungracefully = user.get_disconnection_type();
         let (clean_session, channel_publisher_writer): (
             Option<bool>,
             Option<Sender<ChannelPublisherWriter>>,
@@ -170,44 +179,62 @@ impl UserManager {
             Some(user) => (Some(user.1), Some(user.0.clone())),
             None => (None, None),
         };
-        if disconnect_ungracefully {
-            self.publish_last_will_message(client_id.to_owned());
-            let mut pb: Option<Sender<ChannelPublisherWriter>> = None;
-            let mut cs: bool = false;
-            if let Some(user) = self.users.get(&client_id) {
-                pb = Some(user.0.clone());
-                cs = user.1;
-            }
-            self.users
-                .insert(client_id.to_owned(), (pb.unwrap(), cs, None));
+
+        if disconnection_ungracefully {
+            self.publish_last_will_message(user);
         }
 
         if let Some(clean_session) = clean_session {
-            if clean_session {
-                if self.users.remove(&client_id).is_none() {
-                    println!("Unexpected error");
-                }
-                let unsubscriber_all = UnsubscriberAll::init(client_id);
-                self.sender_topic_manager
-                    .send(TypeMessage::UnsubscriberAll(unsubscriber_all))
-                    .unwrap();
-            } else if let Some(channel) = channel_publisher_writer {
-                let publisher_writer_cloned = channel;
-                let result = publisher_writer_cloned.send(ChannelPublisherWriter::Disconnect);
-                if let Err(err) = result {
-                    println!("Unexpected error reonnecting stream: {}", err);
-                }
+            self.process_clean_session(client_id, clean_session, channel_publisher_writer);
+        }
+    }
+
+    fn process_clean_session(
+        &mut self,
+        client_id: String,
+        clean_session: bool,
+        channel_publisher_writer: Option<Sender<ChannelPublisherWriter>>,
+    ) {
+        if clean_session {
+            if self.users.remove(&client_id).is_none() {
+                println!("Unexpected error");
+            }
+            let unsubscriber_all = UnsubscriberAll::init(client_id);
+            if let Err(err) = self
+                .sender_topic_manager
+                .send(TypeMessage::UnsubscriberAll(unsubscriber_all))
+            {
+                println!("{}", err.to_string());
+            }
+        } else if let Some(channel) = channel_publisher_writer {
+            let publisher_writer_cloned = channel;
+            let result = publisher_writer_cloned.send(ChannelPublisherWriter::Disconnect);
+            if let Err(err) = result {
+                println!("Unexpected error reonnecting stream: {}", err);
             }
         }
     }
 
-    fn publish_last_will_message(&mut self, client_id: String) {
+    fn publish_last_will_message(&mut self, user: DisconnectUserManager) {
+        let client_id = user.get_client_id();
         if let Some(user) = self.users.get(&client_id) {
             if let Some(publish) = &user.2 {
-                publish
-                    .send_message(self.sender_topic_manager.clone(), client_id.to_owned())
-                    .unwrap();
+                if let Err(err) =
+                    publish.send_message(self.sender_topic_manager.clone(), client_id.to_owned())
+                {
+                    println!("{}", err);
+                }
             }
+        }
+        let mut publisher_writer: Option<Sender<ChannelPublisherWriter>> = None;
+        let mut clean_session: bool = false;
+        if let Some(user) = self.users.get(&client_id) {
+            publisher_writer = Some(user.0.clone());
+            clean_session = user.1;
+        }
+        if let Some(publisher_writer_found) = publisher_writer {
+            self.users
+                .insert(client_id, (publisher_writer_found, clean_session, None));
         }
     }
 }

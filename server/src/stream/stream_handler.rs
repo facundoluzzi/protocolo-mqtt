@@ -72,7 +72,9 @@ impl Stream {
                     Stream::close_streams(cloned_to_write, cloned_to_read, logger.clone())
                 }
                 StreamAction::SetKeepAliveStream => {
-                    cloned_to_read.set_read_timeout(message_received.3).unwrap();
+                    if let Err(err) = cloned_to_read.set_read_timeout(message_received.3) {
+                        println!("Unexpected error setting keep alive: {}", err);
+                    }
                 }
             }
         }
