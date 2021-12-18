@@ -52,7 +52,7 @@ impl PublishAutoSend {
         let publish_autosend = PublishAutoSend {
             publish_packets: HashMap::new(),
         };
-        publish_autosend.throw_thread_to_listen_events(receiver, sender_publisher_writer.clone());
+        publish_autosend.throw_thread_to_listen_events(receiver, sender_publisher_writer);
         PublishAutoSend::throw_thread_to_publish_all(sender.clone());
         sender
     }

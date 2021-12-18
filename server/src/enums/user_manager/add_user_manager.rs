@@ -25,9 +25,9 @@ impl AddUserManager {
             client_id,
             sender_stream,
             clean_session,
-            will_topic: will_topic,
-            will_message: will_message,
-            will_qos: will_qos,
+            will_topic,
+            will_message,
+            will_qos,
             will_retain_message: will_retained_message,
         }
     }
