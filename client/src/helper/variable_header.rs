@@ -7,7 +7,6 @@ pub fn get_variable_header(
     match UTF8::utf8_parser(bytes) {
         Ok((parsed_topic, readed_bytes)) => {
             let (packet_identifier, length) = if qos == 1 {
-                println!("LA CONCHA DE LA LORA");
                 (
                     Some(bytes[readed_bytes..readed_bytes + 2].to_vec()),
                     readed_bytes + 4,
