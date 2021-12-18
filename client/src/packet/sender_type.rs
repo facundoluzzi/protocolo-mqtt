@@ -1,5 +1,6 @@
 use crate::packet::input::connect::Connect;
 use crate::packet::input::disconnect::Disconnect;
+use crate::packet::input::puback_to_send::PubackToSend;
 use crate::packet::input::publish::Publish;
 use crate::packet::input::subscribe::Subscribe;
 use crate::packet::input::unsubscribe::Unsubscribe;
@@ -12,12 +13,15 @@ use crate::packet::output::publish_response::PublishResponse;
 use crate::packet::output::suback_response::SubackResponse;
 use crate::packet::output::unsuback_response::UnsubackResponse;
 
+use super::output::pingresp_response::PingrespResponse;
+
 pub enum InterfaceSender {
     Connect(Connect),
     Publish(Publish),
     Subscribe(Subscribe),
     Unsubscribe(Unsubscribe),
     Disconnect(Disconnect),
+    PubackToSend(PubackToSend),
 }
 
 pub enum ClientSender {
@@ -29,4 +33,5 @@ pub enum ClientSender {
     Unsuback(UnsubackResponse),
     Disconnect(DisconnectResponse),
     ConnectError(ConnectErrorResponse),
+    Pingresp(PingrespResponse),
 }

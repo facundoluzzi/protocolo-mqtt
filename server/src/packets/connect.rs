@@ -137,7 +137,6 @@ impl Connect {
             payload,
             return_code: return_code.apply_validations(),
         };
-        println!("3");
         Connect::process_keep_alive(variable_header, sender_stream.clone())?;
         let action = connect.create_action_user_manager(sender_stream.clone());
         if let Err(_err) = sender_user_manager.send(action) {

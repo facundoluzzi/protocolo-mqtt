@@ -7,7 +7,6 @@ use std::thread::spawn;
 
 use crate::enums::publish_autosend::autosend_action::AutoSendAction;
 use crate::enums::publish_autosend::publish_all_autosend::PublishAllAutoSend;
-use crate::topic::publisher_writer::PublisherSubscriberAction::PublishMessagePublisherSubscriber;
 
 type SenderPublishAutoSend = (Sender<AutoSendAction>, Receiver<AutoSendAction>);
 
@@ -70,7 +69,9 @@ impl PublishAutoSend {
     }
 
     pub fn remove(&mut self, packet_identifier: Vec<u8>) {
+        println!("{:?}", self.publish_packets);
         self.publish_packets.remove(&packet_identifier);
+        println!("{:?}", self.publish_packets);
     }
 
     pub fn publish_all(&mut self, sender: Sender<ChannelPublisherWriter>) {
