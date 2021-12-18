@@ -1,5 +1,5 @@
 use std::io::Read;
-use std::{net::TcpStream, io::Write};
+use std::{io::Write, net::TcpStream};
 
 use crate::integration::setup::ServerTest;
 

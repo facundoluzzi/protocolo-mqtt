@@ -5,13 +5,13 @@ use crate::enums::wildcard::wildcard_result::WildcardResult::{
 };
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::helper::validate_payload::check_payload;
+use crate::helper::validate_reserved_bytes::check_reserved_bytes;
 use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
 use crate::wildcard::verify_wildcard;
 use crate::wildcard::wildcard_handler::Wildcard;
-use crate::helper::validate_payload::check_payload;
-use crate::helper::validate_reserved_bytes::check_reserved_bytes;
 
 use std::convert::TryInto;
 
@@ -127,7 +127,6 @@ impl Subscribe {
             topics_qos.push((topic, qos));
             acumulator += length + 1;
         }
-        
 
         self.send_subscribe_to_topic_manager(topics_qos, packet_manager);
 
@@ -163,12 +162,12 @@ impl Subscribe {
             Ok(())
         }
     }
-    
+
     fn check_quality_of_service(&self, byte: u8) -> Result<u8, String> {
         if byte >= 2 {
-            return Err("Malformed Subscribe Error".to_string());
-        } else{
-            return Ok(byte);
+            Err("Malformed Subscribe Error".to_string())
+        } else {
+            Ok(byte)
         }
     }
 }

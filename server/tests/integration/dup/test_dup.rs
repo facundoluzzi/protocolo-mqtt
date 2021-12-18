@@ -92,7 +92,7 @@ fn should_receive_second_publish_with_dup() {
                 0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                 0x00, 0x0A, // packet identifier
                 0x00, 0x03, 0x61, 0x2F, 0x61, // payload;
-            ]; 
+            ];
             assert_eq!(data[0..size], expected_bytes);
         }
         _ => {

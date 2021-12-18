@@ -11,7 +11,7 @@ fn connect_with_invalid_mqtt_packet_should_disconnect() {
     let connect_bytes = [
         0x10, // packet type
         0x10, // remaining length
-        0x00, 0x04, 0x4D, 0x51, 0x54, 0x51,//mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x51, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive

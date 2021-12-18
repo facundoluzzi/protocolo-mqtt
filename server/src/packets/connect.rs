@@ -122,7 +122,6 @@ impl Connect {
         let sender_user_manager = packet_manager.get_sender_user_manager();
         let return_code = ConnectReturnCode::init();
 
-        
         let (variable_header, readed_bytes, return_code) =
             Connect::get_variable_header(bytes, return_code)?;
 
