@@ -123,15 +123,13 @@ impl Connect {
         let sender_user_manager = packet_manager.get_sender_user_manager();
         let return_code = ConnectReturnCode::init();
 
-        println!("0");
         let (variable_header, readed_bytes, return_code) =
             Connect::get_variable_header(bytes, return_code)?;
 
-        println!("1");
         let flags = ConnectFlags::init(&variable_header[7]);
         let (payload, return_code) =
             Connect::get_payload(bytes, &flags, readed_bytes, return_code)?;
-        println!("2");
+
         let connect = Connect {
             flags,
             payload,
