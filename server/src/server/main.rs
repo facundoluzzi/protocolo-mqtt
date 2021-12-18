@@ -39,9 +39,7 @@ pub fn receive_message(
     sender_stream: Sender<StreamType>,
     sender: Sender<Vec<u8>>,
 ) -> Result<(), String> {
-    let sender_result = sender_stream
-        .clone()
-        .send((ReadStream, None, Some(sender.clone()), None));
+    let sender_result = sender_stream.send((ReadStream, None, Some(sender), None));
     match sender_result {
         Ok(()) => Ok(()),
         Err(err) => Err(format!("Error receiving a message: {}", err)),
@@ -56,7 +54,7 @@ pub fn handle_new_client(
 ) {
     let packet_manager = PacketManager::init(
         sender_user_manager,
-        sender_stream.clone(),
+        sender_stream,
         sender_topic_manager,
         logger.clone(),
     );

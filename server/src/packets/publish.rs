@@ -100,7 +100,7 @@ impl Publish {
                 let packet_id = if let Some(packet_id) = self.packet_identifier {
                     [packet_id[0], packet_id[1]]
                 } else {
-                    return Err(format!("Error: packet identifier required"));
+                    return Err("Error: packet identifier required".to_string());
                 };
                 puback_response.append(&mut packet_id.to_vec());
 
