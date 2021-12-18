@@ -67,7 +67,8 @@ impl AppUI {
 
                     if publish.get_qos() == 0x01 {
                         let puback = PubackToSend::init(publish.get_packet_identifier());
-                        if let Err(err) = sender_stream.send(InterfaceSender::PubackToSend(puback)) {
+                        if let Err(err) = sender_stream.send(InterfaceSender::PubackToSend(puback))
+                        {
                             println!("Error mandando puback al broker {}", err);
                         }
                     }

@@ -1,6 +1,6 @@
 use crate::helper::packet_builder::build_bytes_for_suscribe;
 use crate::helper::stream::stream_handler::StreamAction::WriteStream;
-use crate::helper::stream::stream_handler::StreamType;
+use crate::types::StreamType;
 use std::sync::mpsc::Sender;
 
 pub struct Subscribe {

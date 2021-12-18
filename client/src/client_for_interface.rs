@@ -1,11 +1,11 @@
 use crate::helper::stream::stream_handler::StreamAction::ReadStream;
-use crate::helper::stream::stream_handler::StreamType;
 use crate::packet::input::connect::Connect;
 use crate::packet::input::pingreq::Pingreq;
 use crate::packet::packet_manager::PacketManager;
 use crate::packet::sender_type::ClientSender;
 use crate::packet::sender_type::InterfaceSender;
 use crate::types::SenderForServer;
+use crate::types::StreamType;
 
 use std::sync::mpsc;
 use std::sync::mpsc::Receiver;

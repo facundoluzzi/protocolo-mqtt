@@ -1,7 +1,7 @@
 use crate::helper::stream::stream_handler::Stream;
 use crate::helper::stream::stream_handler::StreamAction::WriteStream;
-use crate::helper::stream::stream_handler::StreamType;
 use crate::packet::sender_type::ClientSender;
+use crate::types::StreamType;
 use std::net::TcpStream;
 use std::sync::mpsc::Sender;
 
@@ -34,10 +34,12 @@ impl Connect {
         let address = format!("{}:{}", self.list_of_inputs[0], self.list_of_inputs[1]);
         match TcpStream::connect(address) {
             Ok(stream) => {
-                let sender_stream = Stream::init(stream);
-                self.send_connect(sender_stream.clone());
-
-                Ok(sender_stream)
+                if let Ok(sender_stream) = Stream::init(stream) {
+                    self.send_connect(sender_stream.clone());
+                    Ok(sender_stream)
+                } else {
+                    Err("Error clonando inicializando el stream".to_string())
+                }
             }
             Err(err) => {
                 println!("Failed to connect: {}", err);
@@ -62,11 +64,16 @@ impl Connect {
         }
     }
 
-    fn send_connect(&self, sender_stream: Sender<StreamType>) {
+    fn send_connect(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let connect_bytes = self.build_bytes_for_connect();
-        sender_stream
+        if sender_stream
             .send((WriteStream, Some(connect_bytes), None))
-            .unwrap();
+            .is_err()
+        {
+            return Err("Error enviando el paquete connect".to_string());
+        }
+
+        Ok(())
     }
 
     fn add_client_id_bytes(&self, flags: &mut u8, bytes: &mut Vec<u8>) {

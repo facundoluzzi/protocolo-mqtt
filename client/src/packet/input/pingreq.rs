@@ -1,7 +1,7 @@
 use std::sync::mpsc::Sender;
 
 use crate::helper::stream::stream_handler::StreamAction::WriteStream;
-use crate::helper::stream::stream_handler::StreamType;
+use crate::types::StreamType;
 
 pub struct Pingreq {
     interval: i32,
