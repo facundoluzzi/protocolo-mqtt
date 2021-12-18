@@ -23,37 +23,40 @@ impl Clone for TopicManager {
 
 impl TopicManager {
     pub fn init() -> Sender<TypeMessage> {
-        let (publisher_subscriber_sender, publisher_subscriber_receiver): (
+        let (publisher_subscriber_sender, event_receiver): (
             Sender<TypeMessage>,
             Receiver<TypeMessage>,
         ) = mpsc::channel();
         let sender_to_return = publisher_subscriber_sender.clone();
 
         let topics: HashMap<String, Sender<TopicAction>> = HashMap::new();
-        let mut topic_manager = TopicManager {
+        let topic_manager = TopicManager {
             publisher_subscriber_sender,
             topics,
         };
+        topic_manager.throw_thread_to_listen_events(event_receiver);
+        sender_to_return
+    }
 
+    fn throw_thread_to_listen_events(mut self, event_receiver: Receiver<TypeMessage>) {
         thread::spawn(move || {
-            for publish_subscriber in publisher_subscriber_receiver {
-                match publish_subscriber {
+            for event in event_receiver {
+                let topics = self.topics.clone();
+                match event {
                     TypeMessage::Publisher(publisher) => {
-                        topic_manager.topics = publisher.publish(topic_manager.topics.clone());
+                        self.topics = publisher.publish(topics);
                     }
                     TypeMessage::Subscriber(mut subscriber) => {
-                        topic_manager.topics = subscriber.subscribe(topic_manager.topics.clone());
+                        self.topics = subscriber.subscribe(topics);
                     }
                     TypeMessage::Unsubscriber(mut unsubscriber) => {
-                        topic_manager.topics =
-                            unsubscriber.unsubscribe(topic_manager.topics.clone());
+                        self.topics = unsubscriber.unsubscribe(topics);
                     }
                     TypeMessage::UnsubscriberAll(mut unsubscriber_all) => {
-                        unsubscriber_all.unsubscribe_all(topic_manager.topics.clone())
+                        self.topics = unsubscriber_all.unsubscribe_all(topics);
                     }
                 }
             }
         });
-        sender_to_return
     }
 }

@@ -3,7 +3,6 @@ use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::logs::logger::Logger;
 use crate::packets::connect::Connect;
-use crate::packets::default::Default;
 use crate::packets::disconnect::Disconnect;
 use crate::packets::pingreq;
 use crate::packets::publish::Publish;
@@ -21,6 +20,19 @@ pub struct PacketManager {
     sender_topic_manager: Sender<TypeMessage>,
     logger: Logger,
     is_disconnected: bool,
+}
+
+impl Clone for PacketManager {
+    fn clone(&self) -> Self {
+        Self {
+            client_id: self.client_id.to_string(),
+            sender_stream: self.sender_stream.clone(),
+            sender_user_manager: self.sender_user_manager.clone(),
+            sender_topic_manager: self.sender_topic_manager.clone(),
+            logger: self.logger.clone(),
+            is_disconnected: self.is_disconnected,
+        }
+    }
 }
 
 impl PacketManager {
@@ -68,11 +80,11 @@ impl PacketManager {
         self.is_disconnected
     }
 
-    fn connect(&mut self) {
+    pub fn connect(&mut self) {
         self.is_disconnected = false;
     }
 
-    fn disconnect(&mut self) {
+    pub fn disconnect(&mut self) {
         self.is_disconnected = true;
     }
 
@@ -205,10 +217,15 @@ impl PacketManager {
                     10 => self.process_unsubscribe_message(bytes)?,
                     12 => self.process_pingreq_message()?,
                     14 => self.process_disconnect_message()?,
-                    _ => Default::init(bytes).send_response(self.sender_stream.clone()),
+                    _ => {
+                        return Err(
+                            "Unexpecter error: packet received don't match with another packet"
+                                .to_string(),
+                        )
+                    }
                 }
             }
-            None => Default::init(bytes).send_response(self.sender_stream.clone()),
+            None => return Err("Unexpecter error: packet malformed".to_string()),
         };
         Ok(())
     }

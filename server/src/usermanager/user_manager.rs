@@ -1,13 +1,12 @@
+use crate::enums::publisher_writter::channel::ChannelPublisherWriter;
+use crate::enums::publisher_writter::publish_to_stream::PublishToStream;
+use crate::enums::publisher_writter::reconnect_stream::ReconnectStream;
+use crate::enums::publisher_writter::stop_publish_to_stream::StopPublishToStream;
 use crate::enums::topic_manager::topic_message::TypeMessage;
 use crate::enums::topic_manager::unsubscriberall::UnsubscriberAll;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::packets::publish::Publish;
 use crate::stream::stream_handler::StreamType;
-use crate::topic::publisher_writer::ChannelPublisherWriter;
-use crate::topic::publisher_writer::PublisherSubscriberAction::DisconnectPublisherSubscriber;
-use crate::topic::publisher_writer::PublisherSubscriberAction::PublishMessagePublisherSubscriber;
-use crate::topic::publisher_writer::PublisherSubscriberAction::ReconnectPublisherSubscriber;
-use crate::topic::publisher_writer::PublisherSubscriberAction::StopPublishPublisherSubscriber;
 use crate::topic::publisher_writer::PublisherWriter;
 
 use std::sync::mpsc;
@@ -41,9 +40,13 @@ impl UserManager {
                         let clean_session = user.get_clean_session();
 
                         if let Some(usuario) = user_manager.find_user(client_id.to_string()) {
-                            usuario
-                                .send((ReconnectPublisherSubscriber, None, Some(sender_stream)))
-                                .unwrap();
+                            println!("empieza Reconnect");
+                            let reconnect = ReconnectStream::init(sender_stream);
+                            let result = usuario.send(ChannelPublisherWriter::Reconnect(reconnect));
+                            if let Err(err) = result {
+                                println!("Unexpected error reonnecting stream: {}", err);
+                            }
+                            println!("envia Reconnect");
                         } else {
                             let publish: Option<Publish>;
                             if let Some(message) = user.get_will_message() {
@@ -73,22 +76,25 @@ impl UserManager {
                         let client_id = user.get_client_id();
                         let message = user.get_message();
                         if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
-                            sender_for_publish
-                                .send((PublishMessagePublisherSubscriber, Some(message), None))
-                                .unwrap();
+                            let publish = PublishToStream::init(message);
+                            let result =
+                                sender_for_publish.send(ChannelPublisherWriter::Publish(publish));
+                            if let Err(err) = result {
+                                println!("Unexpected error reonnecting stream: {}", err);
+                            }
                         }
                     }
                     UserManagerAction::StopPublishUserManager(user) => {
                         let client_id = user.get_client_id();
                         let packet_identifier = user.get_packet_identifier();
                         if let Some(sender_for_publish) = user_manager.get_sender(client_id) {
-                            sender_for_publish
-                                .send((
-                                    StopPublishPublisherSubscriber,
-                                    Some(packet_identifier.to_vec()),
-                                    None,
-                                ))
-                                .unwrap();
+                            let stop_publish =
+                                StopPublishToStream::init(packet_identifier.to_vec());
+                            let result = sender_for_publish
+                                .send(ChannelPublisherWriter::StopToPublish(stop_publish));
+                            if let Err(err) = result {
+                                println!("Unexpected error reonnecting stream: {}", err);
+                            }
                         }
                     }
                 }
@@ -187,9 +193,10 @@ impl UserManager {
                     .unwrap();
             } else if let Some(channel) = channel_publisher_writer {
                 let publisher_writer_cloned = channel;
-                publisher_writer_cloned
-                    .send((DisconnectPublisherSubscriber, None, None))
-                    .unwrap();
+                let result = publisher_writer_cloned.send(ChannelPublisherWriter::Disconnect);
+                if let Err(err) = result {
+                    println!("Unexpected error reonnecting stream: {}", err);
+                }
             }
         }
     }

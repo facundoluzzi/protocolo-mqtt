@@ -12,23 +12,39 @@ pub struct AddUserManager {
 }
 
 impl AddUserManager {
-    pub fn init(
+    pub fn init_with_will(
         client_id: String,
         sender_stream: Sender<StreamType>,
         clean_session: bool,
         will_topic: Option<String>,
         will_message: Option<String>,
         will_qos: Option<u8>,
-        will_retain_message: Option<bool>,
+        will_retained_message: Option<bool>,
     ) -> AddUserManager {
         AddUserManager {
             client_id,
             sender_stream,
             clean_session,
-            will_topic,
-            will_message,
-            will_qos,
-            will_retain_message,
+            will_topic: will_topic,
+            will_message: will_message,
+            will_qos: will_qos,
+            will_retain_message: will_retained_message,
+        }
+    }
+
+    pub fn init_without_will(
+        client_id: String,
+        sender_stream: Sender<StreamType>,
+        clean_session: bool,
+    ) -> Self {
+        AddUserManager {
+            client_id,
+            sender_stream,
+            clean_session,
+            will_topic: None,
+            will_message: None,
+            will_qos: None,
+            will_retain_message: None,
         }
     }
 

@@ -84,8 +84,8 @@ impl ConnectReturnCode {
 
     pub fn check_authentication(
         &mut self,
-        username: Option<&String>,
-        password: Option<&String>,
+        username: Option<String>,
+        password: Option<String>,
     ) -> ConnectReturnCode {
         self.status_code = match self.status_code {
             ReturnCode::Success => match (username.as_ref(), password.as_ref()) {
