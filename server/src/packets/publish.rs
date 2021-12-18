@@ -21,6 +21,9 @@ pub struct Publish {
 }
 
 impl Publish {
+    /// Recibe los bytes del paquete y el packet manager. 
+    /// Envia el mensaje a los suscriptores y devuelve la respuesta mediante el stream.
+    /// Devuelve Ok(()) o un Err de typo String en caso de que algo falle
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         if packet_manager.is_disconnected() {
             Err("Client is not connected".to_string())

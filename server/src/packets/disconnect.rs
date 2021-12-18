@@ -9,6 +9,8 @@ use std::sync::mpsc::Sender;
 pub struct Disconnect {}
 
 impl Disconnect {
+
+    /// Desconecta al usuario de forma protocolar
     pub fn disconnect_user(
         client_id: String,
         user_manager_sender: Sender<UserManagerAction>,
@@ -22,6 +24,7 @@ impl Disconnect {
         Disconnect::disconnect_stream(sender_stream);
     }
 
+    /// Desconecta al usuario de forma no protocolar, dejando la posibiliadad de mandar last will message
     pub fn disconnect_ungracefully(
         client_id: String,
         user_manager_sender: Sender<UserManagerAction>,
@@ -35,6 +38,7 @@ impl Disconnect {
         Disconnect::disconnect_stream(sender_stream);
     }
 
+    /// Recibe un sender a StreamHandler y desconecta el stream de lectura y de escritura.
     fn disconnect_stream(sender: Sender<StreamType>) {
         if let Err(_msg) = sender.send((CloseConnectionStream, None, None, None)) {
             println!("Error");

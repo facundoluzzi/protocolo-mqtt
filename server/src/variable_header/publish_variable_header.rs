@@ -1,7 +1,6 @@
 use crate::helper::utf8_parser::UTF8;
-/**
- * https://docs.solace.com/PubSub-Basics/SMF-Topics.htm
- */
+
+/// 
 pub fn get_variable_header(
     bytes: &[u8],
     qos: u8,
