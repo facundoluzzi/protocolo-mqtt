@@ -17,7 +17,7 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
     let subscribe_to_verify_retained_message = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -27,7 +27,7 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
     let publisher_alteg_connect_bytes = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -63,7 +63,7 @@ fn testing_retained_message_new_subscribe_must_receive_the_retained_message() {
     }
 
     let subscribe_bytes_crear_cantidad_de_goles = [
-        0x80, // Packet Type
+        0x82, // Packet Type
         0x20, // Remaining Length ---------> RECALCULAR PORQUE ESTA MAL
         0x00, 0x0A, // Variable Header, en particular packet identifier
         0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -142,7 +142,7 @@ fn testing_retained_message_one_publish_with_retain_and_another_without_retain_m
     let subscribe_to_create_topic = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -152,7 +152,7 @@ fn testing_retained_message_one_publish_with_retain_and_another_without_retain_m
     let subscribe_to_verify_retained_message = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -162,7 +162,7 @@ fn testing_retained_message_one_publish_with_retain_and_another_without_retain_m
     let publisher_alteg_connect_bytes = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -172,7 +172,7 @@ fn testing_retained_message_one_publish_with_retain_and_another_without_retain_m
     let publisher_boca_connect_bytes = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -234,7 +234,7 @@ fn testing_retained_message_one_publish_with_retain_and_another_without_retain_m
     }
 
     let subscribe_bytes_crear_cantidad_de_goles = [
-        0x80, // Packet Type
+        0x82, // Packet Type
         0x20, // Remaining Length
         0x00, 0x0A, // Variable Header, en particular packet identifier
         0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -335,7 +335,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
     let subscribe_to_create_topic = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -345,7 +345,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
     let subscribe_to_verify_retained_message = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -355,7 +355,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
     let publisher_alteg_connect_bytes = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -365,7 +365,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
     let publisher_boca_connect_bytes = [
         0x10, // Packet Type
         0x0E, // Remaining Length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
         0x04, // Protocol Name - SIEMPRE en 04 o falla
         0x00, // Flags
         0x00, 0x0B, // keep alive
@@ -427,7 +427,7 @@ fn testing_retained_message_two_publish_with_retain_must_receive_the_last() {
     }
 
     let subscribe_bytes_crear_cantidad_de_goles = [
-        0x80, // Packet Type
+        0x82, // Packet Type
         0x20, // Remaining Length
         0x00, 0x0A, // Variable Header, en particular packet identifier
         0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
