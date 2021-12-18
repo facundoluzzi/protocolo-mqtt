@@ -1,58 +1,60 @@
+use crate::enums::publisher_writter::channel::ChannelPublisherWriter;
+use crate::enums::publisher_writter::publish_to_stream::PublishToStream;
 use core::time;
 use std::collections::HashMap;
 use std::sync::mpsc::{self, Receiver, Sender};
+use std::thread::spawn;
 
 use crate::enums::publish_autosend::autosend_action::AutoSendAction;
 use crate::enums::publish_autosend::publish_all_autosend::PublishAllAutoSend;
-use crate::topic::publisher_writer::ChannelPublisherWriter;
-use crate::topic::publisher_writer::PublisherSubscriberAction::PublishMessagePublisherSubscriber;
+
+type SenderPublishAutoSend = (Sender<AutoSendAction>, Receiver<AutoSendAction>);
 
 pub struct PublishAutoSend {
     publish_packets: HashMap<Vec<u8>, Vec<u8>>,
 }
 
 impl PublishAutoSend {
-    pub fn init(sender_publisher_writer: Sender<ChannelPublisherWriter>) -> Sender<AutoSendAction> {
-        let (sender, receiver): (Sender<AutoSendAction>, Receiver<AutoSendAction>) =
-            mpsc::channel();
-        let sender_to_return = sender.clone();
-        let mut publish_autosend = PublishAutoSend {
-            publish_packets: HashMap::new(),
-        };
-        std::thread::spawn(move || {
+    fn throw_thread_to_publish_all(sender: Sender<AutoSendAction>) {
+        spawn(move || loop {
+            std::thread::sleep(time::Duration::from_secs(5));
+            let result = sender.send(AutoSendAction::PublishAll(PublishAllAutoSend::init()));
+            if let Err(error) = result {
+                println!("{:?}", error);
+            };
+        });
+    }
+
+    fn throw_thread_to_listen_events(
+        mut self,
+        receiver: Receiver<AutoSendAction>,
+        sender_publisher_writer: Sender<ChannelPublisherWriter>,
+    ) {
+        spawn(move || {
             for type_action in receiver {
                 match type_action {
                     AutoSendAction::Add(operation) => {
-                        publish_autosend
-                            .add(operation.get_packet_identifier(), operation.get_publish());
+                        self.add(operation.get_packet_identifier(), operation.get_publish())
                     }
                     AutoSendAction::Remove(operation) => {
-                        println!("Largo antes:{:?}", publish_autosend.publish_packets.len());
-                        publish_autosend.remove(operation.get_packet_identifier());
-                        println!("Largo despues:{:?}", publish_autosend.publish_packets.len());
+                        self.remove(operation.get_packet_identifier())
                     }
                     AutoSendAction::PublishAll(_) => {
-                        for publish in publish_autosend.publish_packets.clone() {
-                            if let Err(msg) = sender_publisher_writer.send((
-                                PublishMessagePublisherSubscriber,
-                                Some(publish.1),
-                                None,
-                            )) {
-                                println!("Unexpected error: {}", msg);
-                            };
-                        }
+                        self.publish_all(sender_publisher_writer.clone())
                     }
                 }
             }
         });
-        std::thread::spawn(move || loop {
-            std::thread::sleep(time::Duration::from_secs(5));
-            if let Err(error) = sender.send(AutoSendAction::PublishAll(PublishAllAutoSend::init()))
-            {
-                println!("{:?}", error);
-            };
-        });
-        sender_to_return
+    }
+
+    pub fn init(sender_publisher_writer: Sender<ChannelPublisherWriter>) -> Sender<AutoSendAction> {
+        let (sender, receiver): SenderPublishAutoSend = mpsc::channel();
+        let publish_autosend = PublishAutoSend {
+            publish_packets: HashMap::new(),
+        };
+        publish_autosend.throw_thread_to_listen_events(receiver, sender_publisher_writer.clone());
+        PublishAutoSend::throw_thread_to_publish_all(sender.clone());
+        sender
     }
 
     pub fn add(&mut self, packet_identifier: Vec<u8>, receive: Vec<u8>) {
@@ -70,5 +72,15 @@ impl PublishAutoSend {
         println!("{:?}", self.publish_packets);
         self.publish_packets.remove(&packet_identifier);
         println!("{:?}", self.publish_packets);
+    }
+
+    pub fn publish_all(&mut self, sender: Sender<ChannelPublisherWriter>) {
+        for publish in self.publish_packets.clone() {
+            let publish_to_stream = PublishToStream::init(publish.1);
+            let result = sender.send(ChannelPublisherWriter::Publish(publish_to_stream));
+            if let Err(msg) = result {
+                println!("Unexpected error: {}", msg);
+            };
+        }
     }
 }

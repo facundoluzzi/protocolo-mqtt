@@ -12,42 +12,36 @@ pub struct ConnectPayload {
 }
 
 impl ConnectPayload {
-    pub fn init(
-        connect_flags: &ConnectFlags,
-        remaining_bytes: &[u8],
-        mut return_code: ConnectReturnCode,
-    ) -> Result<(ConnectPayload, ConnectReturnCode), String> {
-        let mut pointer: usize = 0;
-        let client_identifier: String;
-        let username: Option<String>;
-        let password: Option<String>;
-        let will_topic: Option<String>;
-        let will_message: Option<String>;
-
+    fn parse_client_id(bytes: &[u8]) -> Result<(String, usize), String> {
         let parser = UTF8::utf8_parser;
-
-        if remaining_bytes != [0x00u8] {
-            if let Ok((client_identifier_copy, index)) = parser(remaining_bytes) {
-                client_identifier = client_identifier_copy;
-                pointer += index;
+        if bytes != [0x00u8] {
+            if let Ok((client_identifier_copy, index)) = parser(bytes) {
+                Ok((client_identifier_copy.to_string(), index))
             } else {
                 return Err("error parsing client identifier".to_string());
             }
         } else {
-            client_identifier = "PayloadNull".to_owned();
+            Ok(("PayloadNull".to_owned(), 0))
         }
+    }
 
-        if connect_flags.get_will_flag() {
-            if let Ok((will_topic_copy, index)) =
-                parser(&remaining_bytes[pointer..remaining_bytes.len()])
-            {
-                will_topic = Some(will_topic_copy);
+    fn parse_last_will_topic_msg(
+        bytes: &[u8],
+        flags: &ConnectFlags,
+        mut pointer: usize,
+    ) -> Result<(Option<String>, Option<String>, usize), String> {
+        let parser = UTF8::utf8_parser;
+        if flags.get_will_flag() {
+            let bytes_will_topic_to_parse = &bytes[pointer..bytes.len()];
+            if let Ok((will_topic_copy, index)) = parser(bytes_will_topic_to_parse) {
                 pointer += index;
-                if let Ok((will_message_copy, index)) =
-                    parser(&remaining_bytes[pointer..remaining_bytes.len()])
-                {
-                    will_message = Some(will_message_copy);
-                    pointer += index;
+                let bytes_will_message_to_parse = &bytes[pointer..bytes.len()];
+                if let Ok((will_message_copy, index)) = parser(bytes_will_message_to_parse) {
+                    Ok((
+                        Some(will_topic_copy),
+                        Some(will_message_copy),
+                        pointer + index,
+                    ))
                 } else {
                     return Err("Error parsing will message".to_string());
                 }
@@ -55,26 +49,26 @@ impl ConnectPayload {
                 return Err("Error parsing will flag".to_string());
             }
         } else {
-            will_topic = None;
-            will_message = None;
+            Ok((None, None, pointer))
         }
+    }
 
-        if connect_flags.get_username_flag() {
-            let username_to_validate = &remaining_bytes[pointer..remaining_bytes.len()];
+    fn parse_username_password(
+        bytes: &[u8],
+        flags: &ConnectFlags,
+        mut pointer: usize,
+    ) -> Result<(Option<String>, Option<String>), String> {
+        let parser = UTF8::utf8_parser;
+        if flags.get_username_flag() {
+            let username_to_validate = &bytes[pointer..bytes.len()];
             if let Ok((username_copy, index)) = parser(username_to_validate) {
-                return_code = return_code.check_malformed_username(username_copy.to_string());
-                username = Some(username_copy);
                 pointer += index;
-
-                if !connect_flags.get_password_flag() {
-                    return_code = return_code.check_malformed_password("".to_string());
-                    password = None;
+                if !flags.get_password_flag() {
+                    Ok((Some(username_copy), None))
                 } else {
-                    let password_to_validate = &remaining_bytes[pointer..remaining_bytes.len()];
+                    let password_to_validate = &bytes[pointer..bytes.len()];
                     if let Ok((password_copy, _index)) = parser(password_to_validate) {
-                        return_code =
-                            return_code.check_malformed_password(password_copy.to_string());
-                        password = Some(password_copy);
+                        Ok((Some(username_copy), Some(password_copy)))
                     } else {
                         return Err("Error parsing password".to_string());
                     }
@@ -83,10 +77,46 @@ impl ConnectPayload {
                 return Err("Error parsing username".to_string());
             }
         } else {
-            username = None;
-            password = None;
+            Ok((None, None))
         }
+    }
 
+    fn check_username_password(
+        username: Option<String>,
+        password: Option<String>,
+        mut return_code: ConnectReturnCode,
+    ) -> ConnectReturnCode {
+        return_code = match (username.clone(), password.clone()) {
+            (Some(uname), Some(pass)) => {
+                return_code = return_code.check_malformed_username(uname);
+                return_code.check_malformed_password(pass)
+            }
+            (Some(uname), None) => {
+                return_code = return_code.check_malformed_username(uname);
+                return_code.check_malformed_password("".to_string())
+            }
+            _ => return_code,
+        };
+        return_code.check_authentication(username, password)
+    }
+
+    pub fn init(
+        flags: &ConnectFlags,
+        remaining_bytes: &[u8],
+        mut return_code: ConnectReturnCode,
+    ) -> Result<(ConnectPayload, ConnectReturnCode), String> {
+        let (client_identifier, pointer) =
+            ConnectPayload::parse_client_id(remaining_bytes.clone())?;
+        let (will_topic, will_message, pointer) =
+            ConnectPayload::parse_last_will_topic_msg(remaining_bytes.clone(), flags, pointer)?;
+        let (username, password) =
+            ConnectPayload::parse_username_password(remaining_bytes, flags, pointer)?;
+
+        return_code = ConnectPayload::check_username_password(
+            username.clone(),
+            password.clone(),
+            return_code,
+        );
         let new_connect_payload = ConnectPayload {
             client_identifier,
             username,

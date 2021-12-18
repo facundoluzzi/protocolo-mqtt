@@ -5,6 +5,17 @@ pub struct PublishMessage {
     message: String,
 }
 
+impl Clone for PublishMessage {
+    fn clone(&self) -> Self {
+        Self {
+            all_bytes: self.all_bytes.clone(),
+            qos: self.qos,
+            retained_message: self.retained_message,
+            message: self.message.to_string(),
+        }
+    }
+}
+
 impl PublishMessage {
     pub fn init(
         all_bytes: Vec<u8>,

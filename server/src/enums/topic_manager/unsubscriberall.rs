@@ -12,11 +12,16 @@ impl UnsubscriberAll {
         UnsubscriberAll { client_id }
     }
 
-    pub fn unsubscribe_all(&mut self, topics: HashMap<String, Sender<TopicAction>>) {
+    pub fn unsubscribe_all(
+        &mut self,
+        topics: HashMap<String, Sender<TopicAction>>,
+    ) -> HashMap<String, Sender<TopicAction>> {
         for topic_sender in topics.values() {
             let remove_topic = TopicAction::Remove(RemoveTopic::init(self.client_id.to_owned()));
             topic_sender.send(remove_topic).unwrap();
         }
+
+        topics
     }
 
     pub fn get_client_id(&self) -> String {

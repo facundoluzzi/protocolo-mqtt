@@ -71,7 +71,7 @@ mod tests {
         topic.send(publish).unwrap();
 
         for _recv in receiver_one.recv() {
-            panic!("Should be fail");
+            panic!("Should fail");
         }
         match receiver_two.recv().unwrap() {
             UserManagerAction::PublishMessageUserManager(user) => {
