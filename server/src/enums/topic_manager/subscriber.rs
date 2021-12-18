@@ -17,7 +17,6 @@ pub struct Subscriber {
 }
 
 impl Subscriber {
-
     /// Constructor del struct
     pub fn init(
         client_id: String,

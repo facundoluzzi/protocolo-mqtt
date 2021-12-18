@@ -13,10 +13,10 @@ impl DisconnectUserManager {
         }
     }
 
-    /// Obtiene el identificador del cliente que interviene en esta desconeccion. 
+    /// Obtiene el identificador del cliente que interviene en esta desconeccion.
     pub fn get_client_id(&self) -> String {
         self.client_id.to_string()
-    }   
+    }
 
     /// Obtiene el tipo de desconeccion que se va a ejecutar.
     /// True -> Ungracefully Desconnection (NO PAQUETE DISCONNECT)

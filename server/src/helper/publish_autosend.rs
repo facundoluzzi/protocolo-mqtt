@@ -73,7 +73,7 @@ impl PublishAutoSend {
         }
     }
 
-    /// Remueve un paquete con el packet id, para que el paquete deje de ser enviado. 
+    /// Remueve un paquete con el packet id, para que el paquete deje de ser enviado.
     /// Esto sucede cuando el broker recibe un puback
     pub fn remove(&mut self, packet_identifier: Vec<u8>) {
         self.publish_packets.remove(&packet_identifier);

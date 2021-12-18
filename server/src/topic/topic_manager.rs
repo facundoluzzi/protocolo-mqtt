@@ -20,7 +20,6 @@ impl Clone for TopicManager {
 }
 
 impl TopicManager {
-
     /// Lanza un thread para quedarse escuchando por eventos.
     /// Los eventos pueden ser Publisher, Subscriber, Unsubscriber, UnsubscriberAll
     pub fn init() -> Sender<TypeMessage> {
@@ -28,14 +27,10 @@ impl TopicManager {
             Sender<TypeMessage>,
             Receiver<TypeMessage>,
         ) = mpsc::channel();
-        let sender_to_return = publisher_subscriber_sender.clone();
-
         let topics: HashMap<String, Sender<TopicAction>> = HashMap::new();
-        let topic_manager = TopicManager {
-            topics,
-        };
+        let topic_manager = TopicManager { topics };
         topic_manager.throw_thread_to_listen_events(event_receiver);
-        sender_to_return
+        publisher_subscriber_sender
     }
 
     fn throw_thread_to_listen_events(mut self, event_receiver: Receiver<TypeMessage>) {

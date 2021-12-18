@@ -60,11 +60,7 @@ impl Publish {
         init: usize,
         packet_id: Option<&[u8]>,
     ) -> Result<String, String> {
-        let length = if let Some(_) = packet_id {
-            length
-        } else {
-            2
-        };
+        let length = if packet_id.is_some() { length } else { 2 };
         match from_utf8(&bytes[init + length..bytes.len()]) {
             Ok(st) => Ok(st.to_string()),
             Err(err) => Err(err.to_string()),
@@ -72,10 +68,7 @@ impl Publish {
     }
 
     fn parse_packet_id(packet_id: Option<&[u8]>) -> Option<[u8; 2]> {
-        match packet_id {
-            Some(packet) => Some([packet[0], packet[1]]),
-            None => None,
-        }
+        packet_id.map(|packet| [packet[0], packet[1]])
     }
 
     /// Constructor del struct
@@ -92,7 +85,7 @@ impl Publish {
         let packet_identifier = Publish::parse_packet_id(packet_id);
 
         let payload = if let Ok(parsed_payload) = payload_to_be_parsed {
-            parsed_payload.to_string()
+            parsed_payload
         } else {
             return Err("Unexpected error parsing payload".to_string());
         };

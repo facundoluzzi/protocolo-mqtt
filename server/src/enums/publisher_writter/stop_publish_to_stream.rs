@@ -4,7 +4,6 @@ pub struct StopPublishToStream {
 }
 
 impl StopPublishToStream {
-
     /// Constructor del struct
     pub fn init(packet_id: Vec<u8>) -> Self {
         StopPublishToStream { packet_id }

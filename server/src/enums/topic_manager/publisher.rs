@@ -15,7 +15,6 @@ pub struct Publisher {
 }
 
 impl Publisher {
-
     /// Constructor del struct
     pub fn init(
         client_id: String,

@@ -9,7 +9,6 @@ use std::sync::mpsc::Sender;
 pub struct Disconnect {}
 
 impl Disconnect {
-
     /// Desconecta al usuario de forma protocolar
     pub fn disconnect_user(
         client_id: String,

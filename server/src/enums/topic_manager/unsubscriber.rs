@@ -12,7 +12,6 @@ pub struct Unsubscriber {
 }
 
 impl Unsubscriber {
-
     /// Constructor del struct
     pub fn init(client_id: String, topic: String, wildcard: Option<Wildcard>) -> Unsubscriber {
         Unsubscriber {

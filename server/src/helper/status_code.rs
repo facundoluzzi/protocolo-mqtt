@@ -16,7 +16,6 @@ pub struct ConnectReturnCode {
 }
 
 impl ConnectReturnCode {
-
     /// Constructor del struct
     pub fn init() -> Self {
         ConnectReturnCode {

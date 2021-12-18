@@ -16,8 +16,7 @@ pub struct Topic {
 }
 
 impl Topic {
-
-    /// Constructor del struct. Lanza un thread escuchando por eventos. 
+    /// Constructor del struct. Lanza un thread escuchando por eventos.
     /// Los eventos pueden ser Add topic, remove topic o publish message.
     pub fn init(name: String) -> Sender<TopicAction> {
         let (topic_sender, topic_receiver): (Sender<TopicAction>, Receiver<TopicAction>) =

@@ -16,7 +16,7 @@ fn should_receive_second_publish_with_dup() {
     let subscriber_connect_bytes = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -26,7 +26,7 @@ fn should_receive_second_publish_with_dup() {
     let publisher_connect_bytes = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -91,8 +91,8 @@ fn should_receive_second_publish_with_dup() {
                 0x0C, // remaining length
                 0x00, 0x03, 0x61, 0x2F, 0x62, // topic name
                 0x00, 0x0A, // packet identifier
-                0x00, 0x03, 0x61, 0x2F, 0x61,
-            ]; // payload];
+                0x00, 0x03, 0x61, 0x2F, 0x61, // payload;
+            ];
             assert_eq!(data[0..size], expected_bytes);
         }
         _ => {
@@ -134,7 +134,7 @@ fn should_receive_third_publish_with_dup() {
     let subscriber_connect_bytes = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -144,7 +144,7 @@ fn should_receive_third_publish_with_dup() {
     let publisher_connect_bytes = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -273,7 +273,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     let subscriber_connect_bytes = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive
@@ -283,7 +283,7 @@ fn should_receive_second_publish_with_dup_and_after_puback_not_receive_more() {
     let publisher_connect_bytes = [
         0x10, // packet type
         0x0E, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x0B, // keep alive

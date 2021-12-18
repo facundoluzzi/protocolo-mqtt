@@ -1,12 +1,11 @@
 /// Contiene el client id y el packet identifier del paquete que va cortar su iteracion de publicacion con
-/// DUP == 1. 
+/// DUP == 1.
 pub struct StopPublish {
     client_id: String,
     packet_identifier: [u8; 2],
 }
 
 impl StopPublish {
-
     /// Constructor del struct
     pub fn init(client_id: String, packet_identifier: [u8; 2]) -> StopPublish {
         StopPublish {

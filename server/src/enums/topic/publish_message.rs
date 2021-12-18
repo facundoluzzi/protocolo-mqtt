@@ -32,7 +32,7 @@ impl PublishMessage {
             message,
         }
     }
-    
+
     /// Obtiene el paquete como un vector de bytes.
     pub fn get_packet(&self) -> Vec<u8> {
         self.all_bytes.clone()

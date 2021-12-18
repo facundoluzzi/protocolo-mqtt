@@ -61,7 +61,7 @@ impl AddUserManager {
         self.sender_stream.clone()
     }
 
-    /// Obtiene el flag de CleanSeasion para la coneccion. 
+    /// Obtiene el flag de CleanSeasion para la coneccion.
     pub fn get_clean_session(&self) -> bool {
         self.clean_session
     }

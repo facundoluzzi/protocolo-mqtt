@@ -102,7 +102,7 @@ impl PacketManager {
         if let Err(err) = Connect::process_message(bytes, self) {
             let message_to_log = "Unexpected error processing connect packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
-            Disconnect::disconnect_user(
+            Disconnect::disconnect_ungracefully(
                 self.client_id.to_owned(),
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),
@@ -118,11 +118,10 @@ impl PacketManager {
     /// Procesa el paquete publish, desonecta el cliente en caso de error.
     fn process_publish_message(&mut self, bytes: &[u8]) -> Result<(), String> {
         self.logger.info("proccessing publish packet".to_string());
-
         if let Err(err) = Publish::process_message(bytes, self) {
             let message_to_log = "Unexpected error processing publish packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
-            Disconnect::disconnect_user(
+            Disconnect::disconnect_ungracefully(
                 self.client_id.to_owned(),
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),
@@ -171,7 +170,7 @@ impl PacketManager {
         if let Err(err) = Unsubscribe::process_message(bytes, self) {
             let message = format!("Unexpected error processing unsubscribe packet: {}", err);
             self.logger.info(message);
-            Disconnect::disconnect_user(
+            Disconnect::disconnect_ungracefully(
                 self.client_id.to_owned(),
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),
@@ -187,7 +186,7 @@ impl PacketManager {
         if let Err(err) = pingreq::send_response(self) {
             let message_to_log = "Unexpected error processing pingreq packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
-            Disconnect::disconnect_user(
+            Disconnect::disconnect_ungracefully(
                 self.client_id.to_owned(),
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),
@@ -204,7 +203,7 @@ impl PacketManager {
         if let Err(err) = Puback::process_message(bytes, self) {
             let message_to_log = "Unexpected error processing pingreq packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
-            Disconnect::disconnect_user(
+            Disconnect::disconnect_ungracefully(
                 self.client_id.to_owned(),
                 self.sender_user_manager.clone(),
                 self.sender_stream.clone(),

@@ -27,7 +27,6 @@ pub struct PublisherWriter {
 }
 
 impl PublisherWriter {
-
     /// Recibe un sender de Stream Handler y lanza un thread para quedarse escuchando por nuevos eventos.
     /// Estos eventos pueden ser publish, disconnect, reconnect y stop to publish
     pub fn init(socket: Sender<StreamType>) -> Sender<ChannelPublisherWriter> {

@@ -24,7 +24,6 @@ pub struct UserManager {
 }
 
 impl UserManager {
-
     /// Constructor del struct. Lanza un thread para quedarse escuchando por eventos.
     /// Los eventos pueden ser AddUserManager, DisconnectUserManager, PublishMessageUserManager, StopToPublishUserManager
     pub fn init(sender_topic_manager: Sender<TypeMessage>) -> Sender<UserManagerAction> {

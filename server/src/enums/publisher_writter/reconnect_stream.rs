@@ -7,7 +7,6 @@ pub struct ReconnectStream {
 }
 
 impl ReconnectStream {
-
     /// Constructor del struct
     pub fn init(sender: Sender<StreamType>) -> Self {
         ReconnectStream { sender }

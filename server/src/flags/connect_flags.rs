@@ -8,7 +8,6 @@ pub struct ConnectFlags {
 }
 
 impl ConnectFlags {
-
     /// Recibe un byte y crea el paquete de connect flags
     pub fn init(bytes: &u8) -> ConnectFlags {
         ConnectFlags {

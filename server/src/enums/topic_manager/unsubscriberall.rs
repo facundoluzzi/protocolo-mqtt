@@ -9,7 +9,6 @@ pub struct UnsubscriberAll {
 }
 
 impl UnsubscriberAll {
-
     /// Constructor del struct
     pub fn init(client_id: String) -> UnsubscriberAll {
         UnsubscriberAll { client_id }

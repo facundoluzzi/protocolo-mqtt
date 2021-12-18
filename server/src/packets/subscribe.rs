@@ -5,6 +5,8 @@ use crate::enums::wildcard::wildcard_result::WildcardResult::{
 };
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::helper::validate_payload::check_payload;
+use crate::helper::validate_reserved_bytes::check_reserved_bytes;
 use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::variable_header::subscribe_variable_header::get_variable_header;
@@ -22,7 +24,6 @@ pub struct Subscribe {
 }
 
 impl Subscribe {
-
     /// Recibe los bytes del paquete y el packet manager.
     /// Subscribe y en caso de qos 1, devuelve el suback al cliente.
     /// Devuelve Ok(()) o un Err de typo String en caso de que algo falle
@@ -35,6 +36,7 @@ impl Subscribe {
 
     /// constructor del struct
     pub fn init(bytes: &[u8]) -> Result<Subscribe, String> {
+        check_reserved_bytes(bytes[0])?;
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len)?;
 
@@ -43,7 +45,7 @@ impl Subscribe {
         let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()])?;
         let (_packet_identifier, length) = variable_header;
 
-        let payload = &bytes[init_variable_header + length..bytes.len()];
+        let payload = check_payload(&bytes[init_variable_header + length..bytes.len()])?;
 
         let packet_identifier = _packet_identifier[0..2]
             .try_into()
@@ -127,7 +129,7 @@ impl Subscribe {
         while self.payload.len() > acumulator {
             let topic_qos = &self.payload[acumulator..self.payload.len()];
             let (topic, length) = UTF8::utf8_parser(topic_qos)?;
-            let qos = self.payload[length + acumulator];
+            let qos = self.check_quality_of_service(self.payload[length + acumulator])?;
             topics_qos.push((topic, qos));
             acumulator += length + 1;
         }
@@ -165,6 +167,14 @@ impl Subscribe {
             return Err(format!("Error in sending response: {}", msg_error));
         } else {
             Ok(())
+        }
+    }
+
+    fn check_quality_of_service(&self, byte: u8) -> Result<u8, String> {
+        if byte >= 2 {
+            Err("Malformed Subscribe Error".to_string())
+        } else {
+            Ok(byte)
         }
     }
 }
