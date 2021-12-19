@@ -58,14 +58,11 @@ impl UserManager {
 
     fn process_new_connection(&mut self, user: AddUserManager) {
         let sender_stream = user.get_sender_stream();
-        if let Some(usuario) = self.find_user(user.get_client_id()) {
-            let reconnect = ReconnectStream::init(sender_stream);
-            let result = usuario.send(ChannelPublisherWriter::Reconnect(reconnect));
-            if let Err(err) = result {
-                println!("Unexpected error reconnecting stream: {}", err);
-            }
-        } else {
-            let publish: Option<Publish>;
+        let mut publish: Option<Publish> = None;
+        if let Some(user_on_hash) = self.users.remove(&user.get_client_id()) {
+            let reconnect = ReconnectStream::init(sender_stream.clone());
+            let sender = user_on_hash.0;
+            let result = sender.send(ChannelPublisherWriter::Reconnect(reconnect));
             if let Some(message) = user.get_will_message() {
                 publish = Some(self.generate_will_publish(
                     user.get_will_topic(),
@@ -73,8 +70,24 @@ impl UserManager {
                     user.get_will_qos(),
                     user.get_will_retain_message(),
                 ));
-            } else {
-                publish = None;
+            }
+            self.add(
+                user.get_client_id(),
+                sender_stream,
+                user.get_clean_session(),
+                publish,
+            );
+            if let Err(err) = result {
+                println!("Unexpected error reconnecting stream: {}", err);
+            }
+        } else {
+            if let Some(message) = user.get_will_message() {
+                publish = Some(self.generate_will_publish(
+                    user.get_will_topic(),
+                    message,
+                    user.get_will_qos(),
+                    user.get_will_retain_message(),
+                ));
             }
             self.add(
                 user.get_client_id(),
