@@ -25,7 +25,7 @@ impl PublishAutoSend {
             };
         });
     }
-
+ 
     fn throw_thread_to_listen_events(
         mut self,
         receiver: Receiver<AutoSendAction>,
