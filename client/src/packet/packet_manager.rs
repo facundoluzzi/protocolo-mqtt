@@ -129,7 +129,6 @@ impl PacketManager {
         match first_byte {
             Some(first_byte_ok) => {
                 let packet_type = PacketManager::get_control_packet_type(*first_byte_ok);
-                println!("{}", packet_type);
 
                 match packet_type {
                     2 => self.process_connack_packet(bytes),

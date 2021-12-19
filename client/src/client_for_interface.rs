@@ -106,7 +106,6 @@ impl Client {
                             self.signal_sender = None;
                         }
                     }
-                    println!("Ok");
                 }
                 Err(err) => {
                     println!("err: {}", err);
@@ -122,9 +121,7 @@ impl Client {
     fn process_unsubscribe_event(&mut self, unsubscribe: Unsubscribe) {
         match self.sender_stream.clone() {
             Some(sender_stream) => match unsubscribe.send_unsubscribe(sender_stream) {
-                Ok(_result_ok) => {
-                    println!("Ok");
-                }
+                Ok(_result_ok) => {}
                 Err(err) => {
                     println!("err: {}", err);
                 }
@@ -139,9 +136,7 @@ impl Client {
     fn process_subscribe_event(&mut self, subscribe: Subscribe) {
         match self.sender_stream.clone() {
             Some(sender_stream) => match subscribe.send_suscribe(sender_stream) {
-                Ok(_result_ok) => {
-                    println!("Ok");
-                }
+                Ok(_result_ok) => {}
                 Err(err) => {
                     println!("err: {}", err);
                 }
@@ -156,9 +151,7 @@ impl Client {
     fn process_publish_event(&mut self, publish: Publish) {
         match self.sender_stream.clone() {
             Some(sender_stream) => match publish.send_publish(sender_stream) {
-                Ok(_result_ok) => {
-                    println!("Ok");
-                }
+                Ok(_result_ok) => {}
                 Err(err) => {
                     println!("err: {}", err);
                 }
@@ -252,9 +245,7 @@ impl Client {
                 return;
             }
             match pingreq.send_pingreq(sender.clone()) {
-                Ok(_result) => {
-                    println!("Mando pingreq");
-                }
+                Ok(_result) => {}
                 Err(err) => {
                     println!("err: {}", err);
                 }

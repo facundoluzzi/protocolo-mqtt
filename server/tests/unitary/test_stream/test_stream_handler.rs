@@ -21,7 +21,6 @@ fn should_write_and_read() {
                 thread::spawn(move || {
                     for stream in listener.incoming() {
                         let sender_stream = Stream::init(stream.unwrap(), logger.clone()).unwrap();
-                        println!("llega aca");
                         sender_stream
                             .send((ReadStream, None, Some(sender.clone()), None))
                             .unwrap();

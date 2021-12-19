@@ -42,13 +42,10 @@ impl Publisher {
     ) -> HashMap<String, Sender<TopicAction>> {
         match topics.get(&topic_name) {
             Some(topic_sender) => {
-                println!("topic_name a: {}", topic_name);
                 topic_sender.send(TopicAction::Publish(publish)).unwrap();
             }
             None => {
-                println!("topic_name b: {}", topic_name);
                 if publish.get_retained_message() {
-                    println!("topic_name entro retained message true: {}", topic_name);
                     let sender_topic = Topic::init(self.topic.to_owned());
                     topics.insert(self.topic.to_owned(), sender_topic.clone());
                     sender_topic.send(TopicAction::Publish(publish)).unwrap();
