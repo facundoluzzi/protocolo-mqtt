@@ -5,6 +5,8 @@ use crate::enums::wildcard::wildcard_result::WildcardResult::{
 };
 use crate::helper::remaining_length::save_remaining_length;
 use crate::helper::utf8_parser::UTF8;
+use crate::helper::validate_payload::check_payload;
+use crate::helper::validate_reserved_bytes::check_reserved_bytes;
 use crate::packets::packet_manager::PacketManager;
 use crate::stream::stream_handler::StreamAction::WriteStream;
 use crate::stream::stream_handler::StreamType;
@@ -21,6 +23,9 @@ pub struct Unsubscribe {
 }
 
 impl Unsubscribe {
+    /// Recibe los bytes del paquete y el packet manager.
+    /// Desubscribe los topicos recibidos.
+    /// Devuelve Ok(()) o un Err de typo String en caso de que algo falle.
     pub fn process_message(bytes: &[u8], packet_manager: &mut PacketManager) -> Result<(), String> {
         let mut unsubscribe = Unsubscribe::init(bytes)?;
         let sender_stream = packet_manager.get_sender_stream();
@@ -29,14 +34,16 @@ impl Unsubscribe {
         Ok(())
     }
 
+    /// Constructor del struct
     pub fn init(bytes: &[u8]) -> Result<Unsubscribe, String> {
+        check_reserved_bytes(bytes[0])?;
         let bytes_rem_len = &bytes[1..bytes.len()];
         let (readed_index, remaining_length) = save_remaining_length(bytes_rem_len).unwrap();
         let init_variable_header = 1 + readed_index;
         let variable_header = get_variable_header(&bytes[init_variable_header..bytes.len()])?;
         let (packet_identifier_rec, length) = variable_header;
 
-        let payload = &bytes[init_variable_header + length..bytes.len()];
+        let payload = check_payload(&bytes[init_variable_header + length..bytes.len()])?;
         let packet_identifier = packet_identifier_rec[0..2]
             .try_into()
             .expect("slice with incorrect length");
@@ -88,6 +95,7 @@ impl Unsubscribe {
         self.send_to_topic_manager(packet_manager, unsubscriber);
     }
 
+    /// elimina la suscripción del usuario en el tópico recibido
     pub fn unsubscribe_topic(&mut self, packet_manager: &PacketManager) -> Result<Self, String> {
         let mut acumulator: usize = 0;
         let mut topics: Vec<String> = Vec::new();
@@ -109,6 +117,7 @@ impl Unsubscribe {
         Ok(unsubscribe)
     }
 
+    /// envia el unsubscribe al cliente
     pub fn send_response(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let packet_type = 0xB0u8;
         let packet_identifier = self.packet_identifier.clone();

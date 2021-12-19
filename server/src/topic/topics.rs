@@ -1,4 +1,6 @@
+use crate::enums::topic::add_topic::AddTopic;
 use crate::enums::topic::publish_message::PublishMessage;
+use crate::enums::topic::remove_topic::RemoveTopic;
 use crate::enums::topic::topic_actions::TopicAction;
 use crate::enums::topic::topic_actions::TopicAction::{Add, Publish, Remove};
 use crate::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
@@ -14,62 +16,59 @@ pub struct Topic {
 }
 
 impl Topic {
+    /// Constructor del struct. Lanza un thread escuchando por eventos.
+    /// Los eventos pueden ser Add topic, remove topic o publish message.
     pub fn init(name: String) -> Sender<TopicAction> {
         let (topic_sender, topic_receiver): (Sender<TopicAction>, Receiver<TopicAction>) =
             mpsc::channel();
-        let mut topic = Topic {
+        let topic = Topic {
             name,
             subscribers: HashMap::new(),
             retained_message: None,
         };
-
-        thread::spawn(move || {
-            for message in topic_receiver {
-                match message {
-                    Add(action) => {
-                        topic.add(
-                            action.get_client_id(),
-                            action.get_sender(),
-                            action.get_qos(),
-                        );
-                    }
-                    Remove(action) => {
-                        topic.remove(action.get_client_id());
-                    }
-                    Publish(action) => {
-                        let packet = action.get_packet();
-                        let qos = action.get_qos();
-                        let message = action.get_message();
-                        let retained_message = action.get_retained_message();
-                        if retained_message {
-                            if packet.is_empty() {
-                                topic.retained_message = None;
-                            } else {
-                                let publish = PublishMessage::init(
-                                    packet.clone(),
-                                    qos,
-                                    true,
-                                    message.to_string(),
-                                );
-                                topic.retained_message = Some(publish);
-                            }
-                        }
-
-                        topic.publish_msg(packet, qos, message);
-                    }
-                }
-            }
-        });
+        topic.throw_thread_to_listen_events(topic_receiver);
         topic_sender
     }
 
-    fn add(&mut self, client_id: String, sender: Sender<UserManagerAction>, qos_subscribe: u8) {
+    fn throw_thread_to_listen_events(mut self, receiver: Receiver<TopicAction>) {
+        thread::spawn(move || {
+            for message in receiver {
+                match message {
+                    Add(action) => self.add(action),
+                    Remove(action) => self.remove(action),
+                    Publish(action) => self.publish(action),
+                }
+            }
+        });
+    }
+
+    fn add(&mut self, add_topic: AddTopic) {
+        let client_id = add_topic.get_client_id();
+        let sender = add_topic.get_sender();
+        let qos_subscribe = add_topic.get_qos();
         self.publish_retained_message(client_id.to_owned(), sender.clone(), qos_subscribe);
         self.subscribers.insert(client_id, (sender, qos_subscribe));
     }
 
-    fn remove(&mut self, subscriber: String) {
-        self.subscribers.remove(&subscriber);
+    fn remove(&mut self, remove_topic: RemoveTopic) {
+        self.subscribers.remove(&remove_topic.get_client_id());
+    }
+
+    fn publish(&mut self, publish_message: PublishMessage) {
+        let packet = publish_message.get_packet();
+        let qos = publish_message.get_qos();
+        let message = publish_message.get_message();
+        let retained_message = publish_message.get_retained_message();
+        if retained_message {
+            if packet.is_empty() {
+                self.retained_message = None;
+            } else {
+                let publish = PublishMessage::init(packet.clone(), qos, true, message.to_string());
+                self.retained_message = Some(publish);
+            }
+        }
+
+        self.publish_msg(packet, qos, message);
     }
 
     fn publish_retained_message(
@@ -117,10 +116,12 @@ impl Topic {
         }
     }
 
+    /// obtiene el nombre del topic
     pub fn get_name(&self) -> String {
         self.name.to_string()
     }
 
+    /// determina si dos topicos son iguales
     pub fn equals(&self, other_topic: String) -> bool {
         self.name == other_topic
     }

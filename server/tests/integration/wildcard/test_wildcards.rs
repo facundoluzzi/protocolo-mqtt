@@ -19,7 +19,7 @@ mod tests {
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -29,7 +29,7 @@ mod tests {
         let subscriber_partidos_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -39,7 +39,7 @@ mod tests {
         let subscriber_with_wildcard_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -49,7 +49,7 @@ mod tests {
         let publisher_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -107,7 +107,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_goles = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x20, // Remaining Length ---------> RECALCULAR PORQUE ESTA MAL
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -130,7 +130,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_partidos = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x23, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F,
@@ -151,7 +151,7 @@ mod tests {
         }
 
         let subscribe_bytes_with_wildcard = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x12, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x0D, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -239,7 +239,7 @@ mod tests {
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -249,7 +249,7 @@ mod tests {
         let subscriber_partidos_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -259,7 +259,7 @@ mod tests {
         let subscriber_with_wildcard_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -269,7 +269,7 @@ mod tests {
         let publisher_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -327,7 +327,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_goles = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x20, // Remaining Length ---------> RECALCULAR PORQUE ESTA MAL
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -350,7 +350,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_partidos = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x23, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -372,7 +372,7 @@ mod tests {
         }
 
         let subscribe_bytes_with_wildcard = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x1C, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x17, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Inicio Payload
@@ -442,7 +442,7 @@ mod tests {
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -452,7 +452,7 @@ mod tests {
         let subscriber_partidos_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -462,7 +462,7 @@ mod tests {
         let subscriber_with_wildcard_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -472,7 +472,7 @@ mod tests {
         let publisher_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -530,7 +530,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_goles = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x25, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x20, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -554,7 +554,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_partidos = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x23, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F,
@@ -575,7 +575,7 @@ mod tests {
         }
 
         let subscribe_bytes_with_wildcard = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x12, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x0D, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -645,7 +645,7 @@ mod tests {
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -655,7 +655,7 @@ mod tests {
         let subscriber_partidos_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -665,7 +665,7 @@ mod tests {
         let subscriber_with_wildcard_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -675,7 +675,7 @@ mod tests {
         let publisher_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x00, // keep alive
@@ -733,7 +733,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_goles = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x25, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x20, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -758,7 +758,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_partidos = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x23, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F,
@@ -781,7 +781,7 @@ mod tests {
         }
 
         let subscribe_bytes_with_wildcard = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x0D, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x08, 0x2A, // Inicio Payload
@@ -852,7 +852,7 @@ mod tests {
         let subscriber_goles_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -862,7 +862,7 @@ mod tests {
         let subscriber_partidos_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -872,7 +872,7 @@ mod tests {
         let subscriber_with_wildcard_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -882,7 +882,7 @@ mod tests {
         let publisher_connect_bytes = [
             0x10, // Packet Type
             0x0E, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
             0x04, // Protocol Name - SIEMPRE en 04 o falla
             0x00, // Flags
             0x00, 0x0B, // keep alive
@@ -940,7 +940,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_goles = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x20, // Remaining Length ---------> RECALCULAR PORQUE ESTA MAL
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1B, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -964,7 +964,7 @@ mod tests {
         }
 
         let subscribe_bytes_crear_cantidad_de_partidos = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x23, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x1E, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, 0x2F, 0x62, 0x6F, 0x63, 0x61, 0x2F,
@@ -985,7 +985,7 @@ mod tests {
         }
 
         let subscribe_bytes_with_wildcard = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x0D, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x08, 0x2A, // Inicio Payload
@@ -1048,7 +1048,7 @@ mod tests {
     //     let subscriber_with_wildcard_connect_bytes = [
     //         0x10, // Packet Type
     //         0x0E, // Remaining Length
-    //         0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT
+    //         0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
     //         0x04, // Protocol Name - SIEMPRE en 04 o falla
     //         0x00, // Flags
     //         0x00, 0x0B, // keep alive
@@ -1070,7 +1070,7 @@ mod tests {
     //     }
 
     //     let subscribe_bytes_with_wildcard = [
-    //         0x80, // Packet Type
+    //         0x82, // Packet Type
     //         0x12, // Remaining Length
     //         0x00, 0x0A, // Variable Header, en particular packet identifier
     //         0x00, 0x0D, 0x66, 0x75, 0x74, 0x62, 0x6F, 0x6C, // Inicio Payload
@@ -1085,7 +1085,7 @@ mod tests {
     //         .unwrap();
     //     match stream_to_subscribe_with_wildcard.read(&mut data) {
     //         Ok(size) => {
-    //             assert_eq!(data[0..size], [0x80, 0x03, 0x00, 0x0A, 0x00]);
+    //             assert_eq!(data[0..size], [0x82, 0x03, 0x00, 0x0A, 0x00]);
     //         }
     //         _ => {
     //             panic!();

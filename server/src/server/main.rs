@@ -12,43 +12,60 @@ use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
 
+fn process_packets(
+    mut packet_manager: PacketManager,
+    mut logger: Logger,
+) -> Result<String, String> {
+    let (sender, receiver): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
+    let sender_stream = packet_manager.get_sender_stream();
+
+    loop {
+        receive_message(sender_stream.clone(), sender.clone())?;
+        match receiver.recv() {
+            Ok(packet) => {
+                let result_process_message = packet_manager.process_message(&packet);
+                if let Err(err) = result_process_message {
+                    return Err(format!("Error processing the packet received: {}", err));
+                } else {
+                    logger.info(format!("Packet received: {:?}", packet));
+                }
+            }
+            Err(err) => return Err(format!("Error reading the packet received: {}", err)),
+        }
+    }
+}
+
+fn receive_message(
+    sender_stream: Sender<StreamType>,
+    sender: Sender<Vec<u8>>,
+) -> Result<(), String> {
+    let sender_result = sender_stream.send((ReadStream, None, Some(sender), None));
+    match sender_result {
+        Ok(()) => Ok(()),
+        Err(err) => Err(format!("Error receiving a message: {}", err)),
+    }
+}
+
+/// maneja los nuevos clientes
 pub fn handle_new_client(
     mut logger: Logger,
     sender_stream: Sender<StreamType>,
     sender_topic_manager: Sender<TypeMessage>,
     sender_user_manager: Sender<UserManagerAction>,
 ) {
-    let mut packet_factory = PacketManager::init(
+    let packet_manager = PacketManager::init(
         sender_user_manager,
-        sender_stream.clone(),
+        sender_stream,
         sender_topic_manager,
         logger.clone(),
     );
 
-    let (sender, receiver): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
-
-    loop {
-        let message_sent =
-            sender_stream
-                .clone()
-                .send((ReadStream, None, Some(sender.clone()), None));
-
-        if let Err(msg) = message_sent {
-            logger.info(format!("Error receiving a message: {}", msg));
-        } else if let Ok(packet) = receiver.recv() {
-            logger.info(format!("Packet received: {:?}", packet));
-            let packet_u8: &[u8] = &packet;
-            if let Err(err) = packet_factory.process_message(packet_u8) {
-                logger.info(format!("Error processing the packet received: {}", err));
-                break;
-            }
-        } else if let Err(err) = receiver.recv() {
-            logger.info(format!("Error reading the packet received: {}", err));
-            break;
-        }
+    if let Err(err) = process_packets(packet_manager, logger.clone()) {
+        logger.info(err);
     }
 }
 
+/// corre el servidor
 pub fn run_server(
     listener: &TcpListener,
     mut logger: Logger,
@@ -63,7 +80,11 @@ pub fn run_server(
                 let logger_clone = logger.clone();
                 let sender_tm_cloned = sender_topic_manager.clone();
                 let sender_um_cloned = sender_user_manager.clone();
-                let sender_stream = Stream::init(stream, logger.clone());
+                let sender_stream = if let Ok(stream) = Stream::init(stream, logger.clone()) {
+                    stream
+                } else {
+                    panic!("Unexpected error: Stream can't be created");
+                };
 
                 thread::spawn(move || {
                     handle_new_client(

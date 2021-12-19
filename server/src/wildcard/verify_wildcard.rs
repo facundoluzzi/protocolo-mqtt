@@ -4,6 +4,7 @@ use crate::enums::wildcard::wildcard_result::WildcardResult::{
 };
 use crate::wildcard::wildcard_handler::Wildcard;
 
+/// Obtiene las wildcards de un topico, devuelve un Result custom relacionada a la misma.
 pub fn get_wilcard(topic: String) -> WildcardResult {
     let vec_words: Vec<String> = topic.split('/').map(|s| s.to_string()).collect();
     let astherisc = "*".to_owned();

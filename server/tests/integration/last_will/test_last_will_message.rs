@@ -18,7 +18,7 @@ mod tests {
         let connect_bytes_user_two = [
             0x10, // packet type
             0x1D, // remaining length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
             0x04, // protocol name
             0xC0, // flags
             0x00, 0x0B, // keep alive
@@ -30,7 +30,7 @@ mod tests {
         let connect_bytes = [
             0x10, // Packet type
             0x2F, // Remaining Length
-            0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, // MQTT - Inicio variable header
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT - Inicio variable header
             0x04, // Protocol Name
             0xE4, // Flags
             0x00, 0x0B, // keep alive - Fin variable header
@@ -69,7 +69,7 @@ mod tests {
         }
 
         let subscribe_bytes_topic_mqtt = [
-            0x80, // Packet Type
+            0x82, // Packet Type
             0x09, // Remaining Length
             0x00, 0x0A, // Variable Header, en particular packet identifier
             0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT - Inicio variable header
@@ -89,7 +89,7 @@ mod tests {
         }
 
         let subscribe_bytes = [
-            0x80, // packet type
+            0x82, // packet type
             0x01, // remaining length
             0x00, // variable header, en particular packet identifier
         ];

@@ -1,3 +1,4 @@
+/// Contiene una lista de palabras que forman el/los filtros de la wildcard
 pub struct Wildcard {
     vec_words: Vec<String>,
 }
@@ -11,10 +12,12 @@ impl Clone for Wildcard {
 }
 
 impl Wildcard {
+    /// Instancia el struct de la wildcard
     pub fn init(words: Vec<String>) -> Wildcard {
         Wildcard { vec_words: words }
     }
 
+    /// Verifica que el topic filter sea valido.
     pub fn verify_topic(&self, topic: String) -> bool {
         let vec_topic: Vec<String> = topic.split('/').map(|s| s.to_string()).collect();
         let mut counter = 0;

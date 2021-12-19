@@ -13,7 +13,7 @@ fn should_connect_and_cant_subscribe_with_keep_alive() {
     let connect_bytes = [
         0x10, // packet type
         0x10, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x02, // keep alive
@@ -28,10 +28,10 @@ fn should_connect_and_cant_subscribe_with_keep_alive() {
     assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
 
     let subscribe_bytes = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, // payload MQTT como mensaje + qos
     ];
 
     sleep(Duration::from_secs(2));
@@ -45,10 +45,10 @@ fn should_connect_and_cant_subscribe_with_keep_alive() {
     sleep(Duration::from_secs(4));
 
     let subscribe_bytes_2 = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, // payload MQTT como mensaje + qos
     ];
     stream.write(&subscribe_bytes_2).unwrap();
 
@@ -67,7 +67,7 @@ fn should_send_pingreq_and_response_ok_with_keep_alive() {
     let connect_bytes = [
         0x10, // packet type
         0x10, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x02, // keep alive
@@ -82,10 +82,10 @@ fn should_send_pingreq_and_response_ok_with_keep_alive() {
     assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
 
     let subscribe_bytes = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, // payload MQTT como mensaje + qos
     ];
 
     let pingreq_bytes = [
@@ -128,10 +128,10 @@ fn should_send_pingreq_and_response_ok_with_keep_alive() {
     sleep(Duration::from_secs(4));
 
     let subscribe_bytes_2 = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, // payload MQTT como mensaje + qos
     ];
     stream.write(&subscribe_bytes_2).unwrap();
 
@@ -150,7 +150,7 @@ fn should_connect_and_can_subscribe_with_null_keep_alive() {
     let connect_bytes = [
         0x10, // packet type
         0x10, // remaining length
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, //mqtt
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, //mqtt
         0x04, // protocol name
         0x00, // flags
         0x00, 0x00, // keep alive
@@ -165,10 +165,10 @@ fn should_connect_and_can_subscribe_with_null_keep_alive() {
     assert_eq!(data[0..size], [0x20, 0x02, 0xFF, 0x00]);
 
     let subscribe_bytes = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
-        0x00, 0x04, 0x4D, 0x15, 0x45, 0x45, 0x00, // payload MQTT como mensaje + qos
+        0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, 0x00, // payload MQTT como mensaje + qos
     ];
 
     stream.write(&subscribe_bytes).unwrap();
@@ -180,7 +180,7 @@ fn should_connect_and_can_subscribe_with_null_keep_alive() {
     sleep(Duration::from_secs(4));
 
     let subscribe_bytes_2 = [
-        0x80, // packet type
+        0x82, // packet type
         0x09, // remaining length
         0x00, 0x0A, // variable header, en particular packet identifier
         0x00, 0x04, 0x4D, 0x15, 0x45, 0x15, 0x00, // payload MQTT como mensaje + qos

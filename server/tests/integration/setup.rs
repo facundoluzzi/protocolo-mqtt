@@ -44,7 +44,7 @@ impl ServerTest {
                                     spawn(move || {
                                         handle_new_client(
                                             logger_clone,
-                                            sender_stream,
+                                            sender_stream.unwrap(),
                                             sender_tm_cloned,
                                             sender_um_cloned,
                                         );

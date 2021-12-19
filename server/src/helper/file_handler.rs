@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+/// Recibe un path y devuelve un File
 pub fn open_configuration_file(path: String) -> File {
     let file = File::open(&path);
     match file {
@@ -10,6 +11,7 @@ pub fn open_configuration_file(path: String) -> File {
     }
 }
 
+/// Recibe un path y devuelve las lineas en un hash como key, value
 pub fn get_lines_as_key_values(path: String) -> HashMap<String, String> {
     let mut configs: HashMap<String, String> = HashMap::new();
     let file = open_configuration_file(path);

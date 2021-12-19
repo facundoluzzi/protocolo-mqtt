@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+/// Recibe un nombre de usuario, password y un hash de users ya precargado. Valida que valido.
 pub fn is_authenticated(
     username: String,
     password: String,
