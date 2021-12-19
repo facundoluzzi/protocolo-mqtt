@@ -1,13 +1,15 @@
+use crate::packet::output::trait_response::ResponseTrait;
+
 pub struct SubackResponse {
     response: String,
 }
 
-impl SubackResponse {
-    pub fn init(response: String) -> SubackResponse {
+impl ResponseTrait for SubackResponse {
+    fn init(response: String) -> SubackResponse {
         SubackResponse { response }
     }
 
-    pub fn get_response(&self) -> String {
+    fn get_response(&self) -> String {
         self.response.to_string()
     }
 }
