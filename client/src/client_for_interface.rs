@@ -1,13 +1,10 @@
 use crate::helper::stream::stream_handler::StreamAction::ReadStream;
 use crate::packet::input::connect::Connect;
-use crate::packet::input::disconnect;
 use crate::packet::input::disconnect::Disconnect;
 use crate::packet::input::pingreq::Pingreq;
 use crate::packet::input::puback_to_send::PubackToSend;
-use crate::packet::input::publish;
 use crate::packet::input::publish::Publish;
 use crate::packet::input::subscribe::Subscribe;
-use crate::packet::input::unsubscribe;
 use crate::packet::input::unsubscribe::Unsubscribe;
 use crate::packet::packet_manager::PacketManager;
 use crate::packet::sender_type::ClientSender;
@@ -87,7 +84,7 @@ impl Client {
     fn process_puback_to_send_event(&mut self, puback_to_send: PubackToSend) {
         match self.sender_stream.clone() {
             Some(sender_stream) => {
-                if puback_to_send.send_puback(sender_stream.clone()).is_err() {
+                if puback_to_send.send_puback(sender_stream).is_err() {
                     println!("Error sending PUBACK")
                 };
             }
@@ -100,7 +97,7 @@ impl Client {
     /// Procesa el evento creado en la interfaz que corresponde al Disconnect
     fn process_disconnect_event(&mut self, disconnect: Disconnect) {
         match self.sender_stream.clone() {
-            Some(sender_stream) => match disconnect.send_disconnect(sender_stream.clone()) {
+            Some(sender_stream) => match disconnect.send_disconnect(sender_stream) {
                 Ok(_result_ok) => {
                     if let Some(signal_sender) = self.signal_sender.clone() {
                         if let Err(err) = signal_sender.send(false) {
@@ -124,7 +121,7 @@ impl Client {
     /// Procesa el evento creado en la interfaz que corresponde al Unsubscribe
     fn process_unsubscribe_event(&mut self, unsubscribe: Unsubscribe) {
         match self.sender_stream.clone() {
-            Some(sender_stream) => match unsubscribe.send_unsubscribe(sender_stream.clone()) {
+            Some(sender_stream) => match unsubscribe.send_unsubscribe(sender_stream) {
                 Ok(_result_ok) => {
                     println!("Ok");
                 }
@@ -141,7 +138,7 @@ impl Client {
     /// Procesa el evento creado en la interfaz que corresponde al Subscribe
     fn process_subscribe_event(&mut self, subscribe: Subscribe) {
         match self.sender_stream.clone() {
-            Some(sender_stream) => match subscribe.send_suscribe(sender_stream.clone()) {
+            Some(sender_stream) => match subscribe.send_suscribe(sender_stream) {
                 Ok(_result_ok) => {
                     println!("Ok");
                 }
@@ -158,7 +155,7 @@ impl Client {
     /// Procesa el evento creado en la interfaz que corresponde al Publish
     fn process_publish_event(&mut self, publish: Publish) {
         match self.sender_stream.clone() {
-            Some(sender_stream) => match publish.send_publish(sender_stream.clone()) {
+            Some(sender_stream) => match publish.send_publish(sender_stream) {
                 Ok(_result_ok) => {
                     println!("Ok");
                 }
@@ -181,10 +178,10 @@ impl Client {
             let (sender_for_ping, receiver_for_ping) = mpsc::channel::<bool>();
 
             if !connect.keep_alive_is_empty() {
-                self.signal_sender = Some(sender_for_ping.clone());
+                self.signal_sender = Some(sender_for_ping);
                 Client::start_to_send_pingreq(&connect, sender.clone(), receiver_for_ping);
             }
-            Client::start_to_read(sender.clone(), connect.get_gtk_sender());
+            Client::start_to_read(sender, connect.get_gtk_sender());
         }
     }
 

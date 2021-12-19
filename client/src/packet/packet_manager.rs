@@ -24,8 +24,7 @@ pub enum ResponsePacket {
     Default,
 }
 
-pub struct PacketManager {
-}
+pub struct PacketManager {}
 
 impl Default for PacketManager {
     fn default() -> Self {
@@ -35,8 +34,7 @@ impl Default for PacketManager {
 
 impl PacketManager {
     pub fn new() -> Self {
-        PacketManager {
-        }
+        PacketManager {}
     }
 
     /// Obtiene el control packet type de un paquete
