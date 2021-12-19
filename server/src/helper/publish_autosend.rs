@@ -1,3 +1,4 @@
+use crate::config_parser::ServerConfigs;
 use crate::enums::publisher_writter::channel::ChannelPublisherWriter;
 use crate::enums::publisher_writter::publish_to_stream::PublishToStream;
 use core::time;
@@ -16,16 +17,16 @@ pub struct PublishAutoSend {
 }
 
 impl PublishAutoSend {
-    fn throw_thread_to_publish_all(sender: Sender<AutoSendAction>) {
+    fn throw_thread_to_publish_all(dup_time: u64, sender: Sender<AutoSendAction>) {
         spawn(move || loop {
-            std::thread::sleep(time::Duration::from_secs(5));
+            std::thread::sleep(time::Duration::from_secs(dup_time));
             let result = sender.send(AutoSendAction::PublishAll(PublishAllAutoSend::init()));
             if let Err(error) = result {
                 println!("{:?}", error);
             };
         });
     }
- 
+
     fn throw_thread_to_listen_events(
         mut self,
         receiver: Receiver<AutoSendAction>,
@@ -52,12 +53,17 @@ impl PublishAutoSend {
     /// lanza un thread que se queda escuchando por eventos y otro thread
     /// para poder cortar el envío constante de paquetes.
     pub fn init(sender_publisher_writer: Sender<ChannelPublisherWriter>) -> Sender<AutoSendAction> {
+        let config = ServerConfigs::obtain_configurations("./server.conf".to_string());
+        let dup_time = config
+            .get_conf_named("dup_time".to_string())
+            .parse::<u64>()
+            .unwrap_or(5_u64);
         let (sender, receiver): SenderPublishAutoSend = mpsc::channel();
         let publish_autosend = PublishAutoSend {
             publish_packets: HashMap::new(),
         };
         publish_autosend.throw_thread_to_listen_events(receiver, sender_publisher_writer);
-        PublishAutoSend::throw_thread_to_publish_all(sender.clone());
+        PublishAutoSend::throw_thread_to_publish_all(dup_time, sender.clone());
         sender
     }
 
