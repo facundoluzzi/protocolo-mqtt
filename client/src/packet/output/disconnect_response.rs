@@ -1,11 +1,16 @@
-pub struct DisconnectResponse {}
+use crate::packet::output::trait_response::ResponseTrait;
 
-impl DisconnectResponse {
-    pub fn init() -> DisconnectResponse {
-        DisconnectResponse {}
+pub struct DisconnectResponse {
+    response: String,
+}
+
+impl ResponseTrait for DisconnectResponse {
+    fn init(response: String) -> Self {
+        DisconnectResponse { response }
     }
 
-    pub fn get_response(&self) -> String {
-        "Desconexión exitosa".to_string()
+    /// Obtiene la respuesta en forma de String correspondiente al estado del paquete Disconnect recibido
+    fn get_response(&self) -> String {
+        self.response.to_string()
     }
 }

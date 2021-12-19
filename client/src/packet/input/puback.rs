@@ -5,6 +5,7 @@ pub struct Puback {
 }
 
 impl Puback {
+    /// Inicializa un struct mediante un array de bytes representando al paquete Puback y sus diferentes propiedades
     pub fn init(bytes: &[u8]) -> Puback {
         let variable_header = &bytes[2..4];
         let _packet_identifier_msb = variable_header[0];

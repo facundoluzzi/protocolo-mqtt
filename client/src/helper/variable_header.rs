@@ -1,5 +1,6 @@
 use crate::helper::utf8_parser::UTF8;
 
+/// Obtiene la longitud y el packet ID que pertenecen al variable header de un paquete
 pub fn get_variable_header(
     bytes: &[u8],
     qos: u8,

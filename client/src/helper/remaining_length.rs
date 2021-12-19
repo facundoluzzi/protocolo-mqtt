@@ -1,11 +1,9 @@
-/**
- * Se calcula la cantidad de bytes dentro del actual paquete, incluyendo la data del header variable
- * y el payload. Esto no incluye los bytes usados para encodear el remaining length.
- * Aclaraciones: toma los primeros 7 bits de cada byte porque el último está reservado como flag
- * para continuar procesando.
- * En cada byte procesado se multiplica el valor representado con esos 7 bits por 128^n siendo n
- * la posición del byte procesado.
- */
+/// Se calcula la cantidad de bytes dentro del actual paquete, incluyendo la data del header variable
+/// y el payload. Esto no incluye los bytes usados para encodear el remaining length.
+/// Aclaraciones: toma los primeros 7 bits de cada byte porque el último está reservado como flag
+/// para continuar procesando.
+/// En cada byte procesado se multiplica el valor representado con esos 7 bits por 128^n siendo n
+/// la posición del byte procesado.
 pub fn save_remaining_length(bytes: &[u8]) -> Result<(usize, usize), String> {
     let mut multiplier: usize = 1;
     let mut value: usize = 0;

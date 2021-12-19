@@ -1,13 +1,15 @@
+use crate::packet::output::trait_response::ResponseTrait;
 pub struct PubackResponse {
     response: String,
 }
 
-impl PubackResponse {
-    pub fn init(response: String) -> PubackResponse {
+impl ResponseTrait for PubackResponse {
+    fn init(response: String) -> PubackResponse {
         PubackResponse { response }
     }
 
-    pub fn get_response(&self) -> String {
+    /// Obtiene la respuesta en forma de String correspondiente al estado del paquete Puback recibido
+    fn get_response(&self) -> String {
         self.response.to_string()
     }
 }

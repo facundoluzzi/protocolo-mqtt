@@ -1,6 +1,6 @@
 use crate::helper::packet_builder::build_bytes_for_publish;
 use crate::helper::stream::stream_handler::StreamAction::WriteStream;
-use crate::helper::stream::stream_handler::StreamType;
+use crate::types::StreamType;
 use std::sync::mpsc::Sender;
 
 pub struct Publish {
@@ -18,6 +18,8 @@ impl Publish {
         }
     }
 
+    /// Obtiene la serie de bytes que van a representar al paquete Publish, y manda una accion de escritura hacia el Stream, para que
+    /// lo mande hacia el broker
     pub fn send_publish(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let publish_bytes = build_bytes_for_publish(
             self.topic.to_string(),

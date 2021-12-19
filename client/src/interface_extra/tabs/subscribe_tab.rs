@@ -30,6 +30,7 @@ impl SubscribeTab {
         SubscribeTab { sender_of_client }
     }
 
+    /// Crea el comportamiento que va a tener el boton de desuscribir dentro de la interfaz en la pestania de suscripcion
     fn attach_action_for_unsubscribe_button(
         &self,
         unsubscribe_button: gtk::Button,
@@ -57,6 +58,7 @@ impl SubscribeTab {
         });
     }
 
+    /// Crea el comportamiento que va a tener el boton de suscribit dentro de la interfaz en la pestania de suscripcion
     fn attach_action_for_suscribe_button(
         &self,
         subscribe_button: gtk::Button,
@@ -74,6 +76,7 @@ impl SubscribeTab {
         });
     }
 
+    /// Crea el comportamiento que va a tener el boton de agregar topico dentro de la interfaz en la pestania de suscripcion
     fn attach_action_for_add_topic_button(
         &self,
         add_topic_button: gtk::Button,
@@ -92,6 +95,8 @@ impl SubscribeTab {
         });
     }
 
+    /// A traves de un receiver obtiene los nuevos topicos que el usuario agrego a la lista para poder suscribirse
+    /// y luego formatea el topic y qos segun lo que se recibio y lo muestra en el label correspondiente a los topics
     fn set_receiver_for_new_topics(
         &self,
         receiver_for_new_topics: gtk::glib::Receiver<(String, bool)>,
@@ -115,33 +120,16 @@ impl SubscribeTab {
         });
     }
 
+    /// Construye todos los elementos que conforman la pestania de suscripcion los crea para poder mostrarlos y ademas
+    /// les asigna su comportamiento segun corresponda
     pub fn build(&self, builder: &gtk::Builder) {
-        let input_topic_subscribe: gtk::Entry =
-            build_entry_with_name(builder, "input_topic_subscribe");
-        let subscribe_button: gtk::Button = build_button_with_name(builder, "subscribe_button");
-        let qos_subscriber_0: gtk::RadioButton =
-            build_radiobutton_with_name(builder, "qos_subscriber_0");
-        let unsubscribe_button: gtk::Button = build_button_with_name(builder, "unsubscribe_button");
-        let input_topic_unsubscribe: gtk::Entry =
-            build_entry_with_name(builder, "input_topic_unsubscribe");
-        let add_topic_button: gtk::Button = build_button_with_name(builder, "add_topic_button");
-        let topic_list_label: gtk::Label = build_label_with_name(builder, "topic_list_label");
-        let sender_unsubscribe = self.get_clone_sender_of_client();
-
         let list_of_topics_to_suscribe = Vec::new();
         let data = Arc::new(Mutex::new(list_of_topics_to_suscribe));
         let data_for_thread = data.clone();
-        let data_for_thread_dos = data;
-
-        let cloned_topic_list_label = topic_list_label.clone();
-        let sender_subscribe = self.get_clone_sender_of_client();
-
         let (sender_t, receiver_t): (SenderNewTopicsAndQoS, ReceiverNewTopicsAndQoS) =
             mpsc::channel();
-
         let (sender_for_new_topics, receiver_for_new_topics) =
             glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-
         thread::spawn(move || {
             for received_topic in receiver_t {
                 if let Ok(mut data) = data_for_thread.lock() {
@@ -149,27 +137,31 @@ impl SubscribeTab {
                 };
             }
         });
-
         self.attach_action_for_unsubscribe_button(
-            unsubscribe_button,
-            input_topic_unsubscribe,
-            cloned_topic_list_label,
-            sender_unsubscribe,
+            build_button_with_name(builder, "unsubscribe_button"),
+            build_entry_with_name(builder, "input_topic_unsubscribe"),
+            build_label_with_name(builder, "topic_list_label"),
+            self.get_clone_sender_of_client(),
         );
         self.attach_action_for_suscribe_button(
-            subscribe_button,
-            data_for_thread_dos,
-            sender_subscribe,
+            build_button_with_name(builder, "subscribe_button"),
+            data,
+            self.get_clone_sender_of_client(),
         );
         self.attach_action_for_add_topic_button(
-            add_topic_button,
-            input_topic_subscribe,
-            qos_subscriber_0,
+            build_button_with_name(builder, "add_topic_button"),
+            build_entry_with_name(builder, "input_topic_subscribe"),
+            build_radiobutton_with_name(builder, "qos_subscriber_0"),
             sender_for_new_topics,
         );
-        self.set_receiver_for_new_topics(receiver_for_new_topics, topic_list_label, sender_t);
+        self.set_receiver_for_new_topics(
+            receiver_for_new_topics,
+            build_label_with_name(builder, "topic_list_label"),
+            sender_t,
+        );
     }
 
+    /// Crea un clon del sender que sirve para mandarle al cliente el paquete que debe ser enviado hacia el broker
     fn get_clone_sender_of_client(&self) -> Sender<InterfaceSender> {
         self.sender_of_client.clone()
     }

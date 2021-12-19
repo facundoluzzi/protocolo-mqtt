@@ -1,6 +1,8 @@
 extern crate gtk;
 use client::client_for_interface::Client;
 use client::packet::input::puback_to_send::PubackToSend;
+use client::packet::output::publish_response::PublishResponse;
+use client::packet::output::trait_response::ResponseTrait;
 use client::packet::sender_type::ClientSender;
 use client::packet::sender_type::InterfaceSender;
 use std::str::from_utf8;
@@ -30,6 +32,29 @@ impl AppUI {
         }
     }
 
+    /// Si amerita, manda el paquete puback de regreso al broker
+    fn send_puback_to_broker(publish: PublishResponse, sender_stream: Sender<InterfaceSender>) {
+        let puback = PubackToSend::init(publish.get_packet_identifier());
+        if let Err(err) = sender_stream.send(InterfaceSender::PubackToSend(puback)) {
+            println!("Error mandando puback al broker {}", err);
+        }
+    }
+
+    /// Muestra por pantalla el resultado de un paquete de respuesta
+    fn get_packet_response_and_show_it(response_packet: Box<dyn ResponseTrait>, label: gtk::Label) {
+        let response = response_packet.get_response();
+        label.set_text(&response);
+    }
+
+    /// Inicializa las pestañas de la interfaz
+    pub fn initialize_tabs(&self, builder: gtk::Builder) {
+        self.connect_tab.build(&builder);
+        self.subscribe_tab.build(&builder);
+        self.publish_tab.build(&builder);
+    }
+
+    /// Recibe la respuestas que manda el Packet Manger que a su vez recibe los paquetes mandados desde el servidor (broker)
+    /// Mediante un receiver matchea el paquete de respuesta que llego e imprime por la interfaz la respuesta en caso de exito o error
     pub fn start_receiving_responses(
         &self,
         rc: gtk::glib::Receiver<ClientSender>,
@@ -41,18 +66,20 @@ impl AppUI {
     ) {
         rc.attach(None, move |client_sender| {
             match client_sender {
-                ClientSender::Connack(connack) => {
-                    let response = connack.get_response();
-                    result_for_connect.set_text(&response);
-                }
-                ClientSender::Suback(suback) => {
-                    let response = suback.get_response();
-                    result_suback_unsuback.set_text(&response);
-                }
-                ClientSender::Puback(puback) => {
-                    let response = puback.get_response();
-                    result_for_publish.set_text(&response);
-                }
+                ClientSender::Connack(connack) => AppUI::get_packet_response_and_show_it(
+                    Box::new(connack),
+                    result_for_connect.clone(),
+                ),
+                ClientSender::Suback(suback) => AppUI::get_packet_response_and_show_it(
+                    Box::new(suback),
+                    result_suback_unsuback.clone(),
+                ),
+
+                ClientSender::Puback(puback) => AppUI::get_packet_response_and_show_it(
+                    Box::new(puback),
+                    result_for_publish.clone(),
+                ),
+
                 ClientSender::Publish(publish) => {
                     let mut message = publish.get_response();
                     let topic = publish.get_topic();
@@ -66,33 +93,33 @@ impl AppUI {
                         .set_text(&(messages_received_label.text().to_string() + result + "\n"));
 
                     if publish.get_qos() == 0x01 {
-                        let puback = PubackToSend::init(publish.get_packet_identifier());
-                        if let Err(err) = sender_stream.send(InterfaceSender::PubackToSend(puback)) {
-                            println!("Error mandando puback al broker {}", err);
-                        }
+                        AppUI::send_puback_to_broker(publish, sender_stream.clone());
                     }
                 }
-                ClientSender::Unsuback(unsuback) => {
-                    let response = unsuback.get_response();
-                    result_suback_unsuback.set_text(&response);
-                }
-                ClientSender::Disconnect(disconnect) => {
-                    let response = disconnect.get_response();
-                    result_for_connect.set_text(&response);
-                }
-                ClientSender::ConnectError(connect) => {
-                    let error_response = connect.get_response();
-                    result_for_connect.set_text(&error_response);
-                }
-                ClientSender::Pingresp(_pingresp) => {}
-                ClientSender::Default(_default) => {}
+                ClientSender::Unsuback(unsuback) => AppUI::get_packet_response_and_show_it(
+                    Box::new(unsuback),
+                    result_suback_unsuback.clone(),
+                ),
+
+                ClientSender::Disconnect(disconnect) => AppUI::get_packet_response_and_show_it(
+                    Box::new(disconnect),
+                    result_for_connect.clone(),
+                ),
+
+                ClientSender::ConnectError(connect) => AppUI::get_packet_response_and_show_it(
+                    Box::new(connect),
+                    result_for_connect.clone(),
+                ),
+
+                _ => {}
             }
             glib::Continue(true)
         });
     }
 }
 
-fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSender>) {
+/// Construye la ventana principal que usa GTK para mostrar las cosas en pantalla
+fn init_ui() -> (gtk::Window, gtk::Builder) {
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
 
@@ -101,6 +128,12 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
         None => panic!("Can not create the UI"),
     };
 
+    (window, builder)
+}
+
+/// Construye las tres pestañas de la interfaz grafica y crea algunas estructuras a utilizar para la interfaz
+fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSender>) {
+    let (window, builder) = init_ui();
     let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
     let result_for_connect: gtk::Label = build_label_with_name(&builder, "result_label");
@@ -114,9 +147,7 @@ fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSe
     let publish_tab = PublishTab::new(client_sender.clone());
 
     let app_window = AppUI::new(connect_tab, subscribe_tab, publish_tab);
-    app_window.connect_tab.build(&builder);
-    app_window.subscribe_tab.build(&builder);
-    app_window.publish_tab.build(&builder);
+    app_window.initialize_tabs(builder);
     app_window.start_receiving_responses(
         rc,
         result_for_connect,
