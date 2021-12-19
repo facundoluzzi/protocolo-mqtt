@@ -1,6 +1,6 @@
-use std::io::Error;
 use crate::helper::remaining_length::save_remaining_length;
 use crate::logs::logger::Logger;
+use std::io::Error;
 use std::net::Shutdown;
 use std::net::TcpStream;
 use std::sync::mpsc;
@@ -34,13 +34,11 @@ impl Stream {
     fn process_input_and_output(
         message_received: StreamType,
         to_write: TcpStream,
-        to_read: TcpStream
+        to_read: TcpStream,
     ) -> Result<(), Error> {
         let action = message_received.0;
         match action {
-            StreamAction::WriteStream => {
-                Stream::write(to_write, message_received.1)
-            }
+            StreamAction::WriteStream => Stream::write(to_write, message_received.1),
             StreamAction::ReadStream => {
                 if let Some(sender) = message_received.2 {
                     thread::spawn(move || -> Result<(), Error> {
@@ -68,12 +66,10 @@ impl Stream {
                 if let Err(err) = Stream::process_input_and_output(
                     message_received,
                     stream_received.try_clone()?,
-                    stream_received.try_clone()?
+                    stream_received.try_clone()?,
                 ) {
                     logger.info(format!("Unexpected error in logger: {}", err.to_string()));
                     return Err(err);
-                } else {
-                    return Ok(());
                 }
             }
             Ok(())
@@ -85,7 +81,7 @@ impl Stream {
         match message {
             Some(message) => {
                 let message_to_write: &[u8] = &message;
-                stream.write(message_to_write)?;
+                stream.write_all(message_to_write)?;
                 Ok(())
             }
             None => panic!("Unexpected error: send a Some(message) here"),
@@ -95,14 +91,14 @@ impl Stream {
     fn read(
         mut stream: TcpStream,
         stream_to_write: TcpStream,
-        sender: Sender<Vec<u8>>
+        sender: Sender<Vec<u8>>,
     ) -> Result<(), Error> {
         let mut total_data: Vec<u8> = Vec::new();
         let mut is_first_byte = true;
         let mut packet_length = 0;
         let mut readed_bytes = 0;
         let mut data = [0_u8; 5];
-        Ok(while match stream.read(&mut data) {
+        while match stream.read(&mut data) {
             Ok(size) => {
                 total_data = Stream::build_total_data(
                     &mut data,
@@ -120,13 +116,11 @@ impl Stream {
                 )
             }
             Err(_err) => {
-                Stream::close_streams(
-                    stream.try_clone()?,
-                    stream_to_write.try_clone()?
-                )?;
+                Stream::close_streams(stream.try_clone()?, stream_to_write.try_clone()?)?;
                 true
             }
-        } {})
+        } {}
+        Ok(())
     }
 
     fn build_total_data(
