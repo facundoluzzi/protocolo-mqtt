@@ -24,7 +24,8 @@ pub enum ResponsePacket {
     Default,
 }
 
-pub struct PacketManager {}
+pub struct PacketManager {
+}
 
 impl Default for PacketManager {
     fn default() -> Self {
@@ -34,7 +35,8 @@ impl Default for PacketManager {
 
 impl PacketManager {
     pub fn new() -> Self {
-        PacketManager {}
+        PacketManager {
+        }
     }
 
     /// Obtiene el control packet type de un paquete
@@ -122,6 +124,7 @@ impl PacketManager {
         Some(ClientSender::Default(default_response))
     }
 
+    /// Hace un match del packet type para iniciar el proceso de un paquete mandado desde el broker hacia el cliente
     pub fn process_message(&self, bytes: &[u8]) -> Option<ClientSender> {
         let first_byte = bytes.get(0);
 

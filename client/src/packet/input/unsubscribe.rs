@@ -12,6 +12,8 @@ impl Unsubscribe {
         Unsubscribe { topic }
     }
 
+    /// Obtiene la serie de bytes que van a representar al paquete Unsuscribe, y manda una accion de escritura hacia el Stream, para que
+    /// lo mande hacia el broker
     pub fn send_unsubscribe(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let unsubscribe_bytes = build_bytes_for_unsubscribe(self.topic.to_string());
         let result = sender_stream.send((WriteStream, Some(unsubscribe_bytes), None));
