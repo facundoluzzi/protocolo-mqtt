@@ -1,4 +1,7 @@
+use std::sync::mpsc::Sender;
+
 use crate::helper::remaining_length::save_remaining_length;
+use crate::helper::stream::stream_handler::StreamAction;
 use crate::helper::variable_header::get_variable_header;
 use crate::packet::input::connack::Connack;
 use crate::packet::input::default;
@@ -12,7 +15,7 @@ use crate::packet::output::suback_response::SubackResponse;
 use crate::packet::output::trait_response::ResponseTrait;
 use crate::packet::output::unsuback_response::UnsubackResponse;
 use crate::packet::sender_type::ClientSender;
-use crate::types::PublishPacket;
+use crate::types::{PublishPacket, StreamType};
 
 use super::output::pingresp_response::PingrespResponse;
 
@@ -59,11 +62,17 @@ impl PacketManager {
     }
 
     /// Procesa un paquete Connack recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
-    fn process_connack_packet(&self, bytes: &[u8]) -> Option<ClientSender> {
+    fn process_connack_packet(
+        &self,
+        bytes: &[u8],
+        sender_stream: Sender<StreamType>,
+    ) -> Option<ClientSender> {
         let connack = Connack::init(bytes);
         let connack_code = connack.get_status_code();
         let response_text = connack.status_for_code(connack_code);
-
+        if let Err(err) = sender_stream.send((StreamAction::StopTimeout, None, None)) {
+            println!("unexpected error: {}", err);
+        }
         let connack_response = ConnackResponse::init(response_text);
 
         Some(ClientSender::Connack(connack_response))
@@ -123,7 +132,11 @@ impl PacketManager {
     }
 
     /// Hace un match del packet type para iniciar el proceso de un paquete mandado desde el broker hacia el cliente
-    pub fn process_message(&self, bytes: &[u8]) -> Option<ClientSender> {
+    pub fn process_message(
+        &self,
+        bytes: &[u8],
+        sender_stream: Sender<StreamType>,
+    ) -> Option<ClientSender> {
         let first_byte = bytes.get(0);
 
         match first_byte {
@@ -131,7 +144,7 @@ impl PacketManager {
                 let packet_type = PacketManager::get_control_packet_type(*first_byte_ok);
 
                 match packet_type {
-                    2 => self.process_connack_packet(bytes),
+                    2 => self.process_connack_packet(bytes, sender_stream),
                     3 => self.process_publish_packet(bytes),
                     4 => self.process_puback_packet(bytes),
                     9 => self.process_suback_packet(bytes),
