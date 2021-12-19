@@ -8,6 +8,7 @@ impl ResponseTrait for PubackResponse {
         PubackResponse { response }
     }
 
+    /// Obtiene la respuesta en forma de String correspondiente al estado del paquete Puback recibido
     fn get_response(&self) -> String {
         self.response.to_string()
     }

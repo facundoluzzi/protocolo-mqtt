@@ -9,6 +9,7 @@ impl ResponseTrait for SubackResponse {
         SubackResponse { response }
     }
 
+    /// Obtiene la respuesta en forma de String correspondiente al estado del paquete Suback recibido
     fn get_response(&self) -> String {
         self.response.to_string()
     }

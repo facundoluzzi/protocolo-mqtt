@@ -32,6 +32,7 @@ impl AppUI {
         }
     }
 
+    /// Si amerita, manda el paquete puback de regreso al broker
     fn send_puback_to_broker(publish: PublishResponse, sender_stream: Sender<InterfaceSender>) {
         let puback = PubackToSend::init(publish.get_packet_identifier());
         if let Err(err) = sender_stream.send(InterfaceSender::PubackToSend(puback)) {
@@ -39,17 +40,21 @@ impl AppUI {
         }
     }
 
+    /// Muestra por pantalla el resultado de un paquete de respuesta
     fn get_packet_response_and_show_it(response_packet: Box<dyn ResponseTrait>, label: gtk::Label) {
         let response = response_packet.get_response();
         label.set_text(&response);
     }
 
+    /// Inicializa las pestañas de la interfaz
     pub fn initialize_tabs(&self, builder: gtk::Builder) {
         self.connect_tab.build(&builder);
         self.subscribe_tab.build(&builder);
         self.publish_tab.build(&builder);
     }
 
+    /// Recibe la respuestas que manda el Packet Manger que a su vez recibe los paquetes mandados desde el servidor (broker)
+    /// Mediante un receiver matchea el paquete de respuesta que llego e imprime por la interfaz la respuesta en caso de exito o error
     pub fn start_receiving_responses(
         &self,
         rc: gtk::glib::Receiver<ClientSender>,
@@ -113,6 +118,7 @@ impl AppUI {
     }
 }
 
+/// Construye la ventana principal que usa GTK para mostrar las cosas en pantalla
 fn init_ui() -> (gtk::Window, gtk::Builder) {
     let glade_src = include_str!("test.glade");
     let builder = gtk::Builder::from_string(glade_src);
@@ -125,6 +131,7 @@ fn init_ui() -> (gtk::Window, gtk::Builder) {
     (window, builder)
 }
 
+/// Construye las tres pestañas de la interfaz grafica y crea algunas estructuras a utilizar para la interfaz
 fn build_ui_for_client(app: &gtk::Application, client_sender: Sender<InterfaceSender>) {
     let (window, builder) = init_ui();
     let (tx_for_connection, rc) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);

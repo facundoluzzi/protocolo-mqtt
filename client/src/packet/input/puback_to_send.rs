@@ -12,6 +12,8 @@ impl PubackToSend {
         PubackToSend { packet_identifier }
     }
 
+    /// Obtiene la serie de bytes que van a representar al paquete puback, y manda una accion de escritura hacia el Stream, para que
+    /// lo mande hacia el broker
     pub fn send_puback(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let puback_bytes = vec![
             0x40,

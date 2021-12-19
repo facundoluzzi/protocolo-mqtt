@@ -8,6 +8,7 @@ impl ResponseTrait for ConnectErrorResponse {
         ConnectErrorResponse { response }
     }
 
+    /// Obtiene la respuesta en forma de String correspondiente al estado de error que se recibio desde el connack recibido
     fn get_response(&self) -> String {
         self.response.to_string()
     }

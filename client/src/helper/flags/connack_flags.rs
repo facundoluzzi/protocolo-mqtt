@@ -8,6 +8,8 @@ impl ConnackFlags {
             _session_present_flag: 0x01 & bytes != 0,
         }
     }
+
+    /// Devuelve el flag de session persistente que se encuentra en el Connack
     pub fn _get_session_present_flag(&self) -> bool {
         self._session_present_flag
     }

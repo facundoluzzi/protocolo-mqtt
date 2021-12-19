@@ -30,6 +30,7 @@ impl SubscribeTab {
         SubscribeTab { sender_of_client }
     }
 
+    /// Crea el comportamiento que va a tener el boton de desuscribir dentro de la interfaz en la pestania de suscripcion
     fn attach_action_for_unsubscribe_button(
         &self,
         unsubscribe_button: gtk::Button,
@@ -57,6 +58,7 @@ impl SubscribeTab {
         });
     }
 
+    /// Crea el comportamiento que va a tener el boton de suscribit dentro de la interfaz en la pestania de suscripcion
     fn attach_action_for_suscribe_button(
         &self,
         subscribe_button: gtk::Button,
@@ -74,6 +76,7 @@ impl SubscribeTab {
         });
     }
 
+    /// Crea el comportamiento que va a tener el boton de agregar topico dentro de la interfaz en la pestania de suscripcion
     fn attach_action_for_add_topic_button(
         &self,
         add_topic_button: gtk::Button,
@@ -92,6 +95,8 @@ impl SubscribeTab {
         });
     }
 
+    /// A traves de un receiver obtiene los nuevos topicos que el usuario agrego a la lista para poder suscribirse
+    /// y luego formatea el topic y qos segun lo que se recibio y lo muestra en el label correspondiente a los topics
     fn set_receiver_for_new_topics(
         &self,
         receiver_for_new_topics: gtk::glib::Receiver<(String, bool)>,
@@ -115,6 +120,8 @@ impl SubscribeTab {
         });
     }
 
+    /// Construye todos los elementos que conforman la pestania de suscripcion los crea para poder mostrarlos y ademas
+    /// les asigna su comportamiento segun corresponda
     pub fn build(&self, builder: &gtk::Builder) {
         let list_of_topics_to_suscribe = Vec::new();
         let data = Arc::new(Mutex::new(list_of_topics_to_suscribe));
@@ -154,6 +161,7 @@ impl SubscribeTab {
         );
     }
 
+    /// Crea un clon del sender que sirve para mandarle al cliente el paquete que debe ser enviado hacia el broker
     fn get_clone_sender_of_client(&self) -> Sender<InterfaceSender> {
         self.sender_of_client.clone()
     }

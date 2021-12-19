@@ -19,6 +19,9 @@ pub enum StreamAction {
 }
 
 impl Stream {
+    ///Inicializa una estructura que representa un TCPStream, crea channels que van a ser utilizados
+    /// para ver la accion a realizar con respecto al TCPStream, estritura o lectura.
+    /// Devuelve el sender de dicho stream o un error en caso de fallar al clonar
     pub fn init(stream: TcpStream) -> Result<Sender<StreamType>, std::io::Error> {
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
@@ -37,6 +40,9 @@ impl Stream {
         Ok(sender_stream)
     }
 
+    /// Hace un match de las dos acciones para realizar por el stream, escritura o lectura.
+    /// En cada caso lee o escribe segun lo recibido o corta la conexion con el server en caso que
+    /// llegue una accion que represente a un error.
     fn match_action_for_stream(
         message_received: StreamType,
         stream_to_write: TcpStream,
@@ -75,11 +81,14 @@ impl Stream {
         }
     }
 
+    /// Escribe un mensaje en el TCPStream
     fn write(mut stream: TcpStream, message: Vec<u8>) {
         let c: &[u8] = &message; // c: &[u8]
         if let Err(_msg_error) = stream.write(c) {}
     }
 
+    /// Procesa los primeros bytes del paquete recibido, identificando las diferentes partes necesarias para seguir
+    /// procesando dicho paquete
     fn process_first_byte_of_packet(
         data: [u8; 5],
         size: usize,
@@ -98,6 +107,7 @@ impl Stream {
         total_data
     }
 
+    /// Una vez leido y almacenado todos los bytes del paquete recibido, procesa todos los bytes de dicho paquete
     fn process_total_bytes_of_packet(
         is_first_byte: &mut bool,
         total_data: &mut Vec<u8>,
@@ -115,6 +125,8 @@ impl Stream {
         false
     }
 
+    /// Lee el paquete recibido y lo va haciendo de a 5 bytes hasta llegar al final del paquete, luego de eso lo procesa
+    /// cuando la lectura se da por concluida
     fn read(mut stream: TcpStream, stream_to_write: TcpStream, sender: Sender<Vec<u8>>) {
         let mut data = [0_u8; 5];
         let mut total_data: Vec<u8> = Vec::new();

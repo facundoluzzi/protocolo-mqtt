@@ -7,19 +7,12 @@ pub struct Connack {
 }
 
 impl Connack {
-    /**
-     * Se calcula la cantidad de bytes dentro del actual paquete, incluyendo la data del header variable
-     * y el payload. Esto no incluye los bytes usados para encodear el remaining length.
-     * Aclaraciones: toma los primeros 7 bits de cada byte porque el último está reservado como flag
-     * para continuar procesando.
-     * En cada byte procesado se multiplica el valor representado con esos 7 bits por 128^n siendo n
-     * la posición del byte procesado.
-     */
-
+    /// Devuelve el status code que esta presente en el paquete Connack
     pub fn get_status_code(&self) -> u8 {
         self.status_code
     }
 
+    /// Inicializa un struct mediante un array de bytes representando al paquete connack y sus diferentes propiedades
     pub fn init(bytes: &[u8]) -> Connack {
         let variable_header = &bytes[2..4];
         let connack_flags = ConnackFlags::init(&variable_header[0]);
@@ -31,6 +24,7 @@ impl Connack {
         }
     }
 
+    /// Devuelve un texto a mostrar a la interfaz segun cada codigo de Connack recibido
     pub fn status_for_code(&self, code: u8) -> String {
         match code {
             0x00 => "Conexion realizada con exito".to_string(),

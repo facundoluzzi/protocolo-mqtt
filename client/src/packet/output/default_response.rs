@@ -9,6 +9,7 @@ impl ResponseTrait for DefaultResponse {
         DefaultResponse { response }
     }
 
+    /// Obtiene la respuesta en forma de String correspondiente al paquete default, que es un paquete creado de un codigo desconocido
     fn get_response(&self) -> String {
         self.response.to_string()
     }

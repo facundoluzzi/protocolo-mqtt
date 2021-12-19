@@ -9,6 +9,7 @@ impl ResponseTrait for UnsubackResponse {
         UnsubackResponse { response }
     }
 
+    /// Obtiene la respuesta en forma de String correspondiente al estado del paquete Unsuback recibido
     fn get_response(&self) -> String {
         self.response.to_string()
     }

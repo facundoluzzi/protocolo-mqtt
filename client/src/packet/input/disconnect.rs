@@ -10,6 +10,8 @@ impl Disconnect {
         Disconnect {}
     }
 
+    /// Obtiene la serie de bytes que van a representar al paquete Disconnect, y manda una accion de escritura hacia el Stream, para que
+    /// lo mande hacia el broker
     pub fn send_disconnect(&self, sender_stream: Sender<StreamType>) -> Result<(), String> {
         let disconnect_bytes = build_bytes_for_disconnect();
         if sender_stream

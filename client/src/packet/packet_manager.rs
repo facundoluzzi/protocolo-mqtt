@@ -24,9 +24,7 @@ pub enum ResponsePacket {
     Default,
 }
 
-pub struct PacketManager {
-    client_id: String,
-}
+pub struct PacketManager {}
 
 impl Default for PacketManager {
     fn default() -> Self {
@@ -36,19 +34,16 @@ impl Default for PacketManager {
 
 impl PacketManager {
     pub fn new() -> Self {
-        PacketManager {
-            client_id: "".to_string(),
-        }
+        PacketManager {}
     }
 
+    /// Obtiene el control packet type de un paquete
     pub fn get_control_packet_type(first_byte: u8) -> u8 {
         (0b11110000 & first_byte) >> 4
     }
 
-    pub fn set_client_id(&mut self, client_id: String) {
-        self.client_id = client_id;
-    }
-
+    /// Procesa el paquete publish que es mandando desde el broker a un cliente que es suscriptor
+    /// obtiene el topico, mensaje, qos y packet ID y lo devuelve
     pub fn process_publish(&self, bytes: &[u8]) -> PublishPacket {
         let qos_flag = (0x06 & bytes[0]) >> 1;
         let bytes_rem_len = &bytes[1..bytes.len()];
@@ -63,6 +58,7 @@ impl PacketManager {
         Ok((topic, response.to_string(), qos_flag, packet_identifier))
     }
 
+    /// Procesa un paquete Connack recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
     fn process_connack_packet(&self, bytes: &[u8]) -> Option<ClientSender> {
         let connack = Connack::init(bytes);
         let connack_code = connack.get_status_code();
@@ -73,6 +69,7 @@ impl PacketManager {
         Some(ClientSender::Connack(connack_response))
     }
 
+    /// Procesa un paquete Publish recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
     fn process_publish_packet(&self, bytes: &[u8]) -> Option<ClientSender> {
         match self.process_publish(bytes) {
             Ok((topic, message, qos, packet_identifier)) => {
@@ -87,6 +84,7 @@ impl PacketManager {
         }
     }
 
+    /// Procesa un paquete Puback recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
     fn process_puback_packet(&self, bytes: &[u8]) -> Option<ClientSender> {
         let _puback = Puback::init(bytes);
 
@@ -94,6 +92,7 @@ impl PacketManager {
         Some(ClientSender::Puback(puback_response))
     }
 
+    /// Procesa un paquete Suback recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
     fn process_suback_packet(&self, bytes: &[u8]) -> Option<ClientSender> {
         let suback = Suback::init(bytes);
         let suback_codes = suback.get_status_code();
@@ -104,16 +103,19 @@ impl PacketManager {
         Some(ClientSender::Suback(suback_response))
     }
 
+    /// Procesa un paquete Unsuback recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
     fn process_unsuback_packet(&self) -> Option<ClientSender> {
         let unsuback_response = UnsubackResponse::init("Unsubscribe realizado".to_string());
         Some(ClientSender::Unsuback(unsuback_response))
     }
 
+    /// Procesa un paquete Pingresp recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
     fn process_pingresp_packet(&self) -> Option<ClientSender> {
         let pingresp_response = PingrespResponse::init();
         Some(ClientSender::Pingresp(pingresp_response))
     }
 
+    /// Procesa un paquete Default recibido desde el server y envia la respuesta a la interfaz para imprimir el exito o error del paquete
     fn process_default_packet(&self, bytes: &[u8]) -> Option<ClientSender> {
         default::Default::init(bytes);
         let default_response = DefaultResponse::init("Paquete no reconocido".to_string());

@@ -1,6 +1,9 @@
 pub struct UTF8 {}
 
 impl UTF8 {
+    /// Parsea una serie de bytes para transformarlos en un string, para ello toma en cuenta
+    /// los diferentes bytes que contiene cada paquete para calcular la longitud correcta y poder
+    /// desencodearlo de manera adecuada para todos los paquetes
     pub fn utf8_parser(bytes: &[u8]) -> Result<(String, usize), String> {
         let copy_bytes = bytes.to_vec();
         if bytes.len() < 3 {
@@ -21,6 +24,7 @@ impl UTF8 {
         }
     }
 
+    /// Calcula la longitud, el inici y final del variable header del paquete que tiene los bytes que se buscan parsear
     pub fn calculate_init_end_and_length_of_variable_header(
         msb: u8,
         lsb: u8,

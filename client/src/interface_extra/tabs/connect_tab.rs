@@ -29,6 +29,7 @@ impl ConnectTab {
         }
     }
 
+    /// Crea el comportamiento que va a tener el boton de desconectar dentro de la interfaz en la pestania de conexion
     fn attach_action_for_disconnect_button(
         &self,
         disconnect_button: gtk::Button,
@@ -50,12 +51,14 @@ impl ConnectTab {
         });
     }
 
+    /// Envia un error de conexion hacia la interfaz para que pueda avisar al usuario
     fn send_connection_error(tx_for_error_connection: gtk::glib::Sender<ClientSender>) {
         let connect_error =
             ConnectErrorResponse::init("ClientID requerido o activar Clean Session".to_string());
         if let Ok(()) = tx_for_error_connection.send(ClientSender::ConnectError(connect_error)) {}
     }
 
+    /// Crea el comportamiento que va a tener el boton de conectar dentro de la interfaz en la pestania de conexion
     fn attach_action_for_connect_button(
         &self,
         connect_button: gtk::Button,
@@ -95,6 +98,8 @@ impl ConnectTab {
         });
     }
 
+    /// Construye todos los elementos que conforman la pestania de conexion los crea para poder mostrarlos y ademas
+    /// les asigna su comportamiento segun corresponda
     pub fn build(&self, builder: &gtk::Builder) {
         let sender_connect = self.get_clone_sender_of_client();
         let sender_disconnect = self.get_clone_sender_of_client();
@@ -126,10 +131,13 @@ impl ConnectTab {
         );
     }
 
+    /// Crea un clon del sender que sirve para mandarle al cliente el paquete que debe ser enviado hacia el broker
     fn get_clone_sender_of_client(&self) -> Sender<InterfaceSender> {
         self.sender_of_client.clone()
     }
 
+    /// Crea un clon del sender que sirve para mandarle a la interfaz el paquete de respuesta que debe procesar para mostrar el resultado
+    /// en la pantalla
     fn get_clone_sender_for_client(&self) -> gtk::glib::Sender<ClientSender> {
         self.sender_for_client.clone()
     }
