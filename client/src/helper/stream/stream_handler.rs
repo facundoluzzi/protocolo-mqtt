@@ -86,7 +86,7 @@ impl Stream {
         is_first_byte: &mut bool,
         packet_length: &mut usize,
         readed_bytes: &mut usize,
-        total_data: Vec<u8>,
+        mut total_data: Vec<u8>,
     ) -> Vec<u8> {
         if let Ok((_readed_bytes, _packet_length)) = save_remaining_length(&data[1..size]) {
             *packet_length = _packet_length;
@@ -94,7 +94,7 @@ impl Stream {
         }
 
         *is_first_byte = false;
-        let total_data = [total_data, data.to_vec()].concat();
+        total_data = [total_data, data.to_vec()].concat();
         total_data
     }
 

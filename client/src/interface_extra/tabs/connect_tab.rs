@@ -53,9 +53,7 @@ impl ConnectTab {
     fn send_connection_error(tx_for_error_connection: gtk::glib::Sender<ClientSender>) {
         let connect_error =
             ConnectErrorResponse::init("ClientID requerido o activar Clean Session".to_string());
-        if let Ok(()) = tx_for_error_connection.send(ClientSender::ConnectError(connect_error)) {
-            return;
-        }
+        if let Ok(()) = tx_for_error_connection.send(ClientSender::ConnectError(connect_error)) {}
     }
 
     fn attach_action_for_connect_button(

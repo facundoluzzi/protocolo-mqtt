@@ -35,7 +35,7 @@ impl Connect {
         match TcpStream::connect(address) {
             Ok(stream) => {
                 if let Ok(sender_stream) = Stream::init(stream) {
-                    self.send_connect(sender_stream.clone());
+                    self.send_connect(sender_stream.clone())?;
                     Ok(sender_stream)
                 } else {
                     Err("Error clonando inicializando el stream".to_string())

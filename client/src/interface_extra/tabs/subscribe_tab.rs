@@ -133,12 +133,12 @@ impl SubscribeTab {
         self.attach_action_for_unsubscribe_button(
             build_button_with_name(builder, "unsubscribe_button"),
             build_entry_with_name(builder, "input_topic_unsubscribe"),
-            build_label_with_name(builder, "topic_list_label").clone(),
+            build_label_with_name(builder, "topic_list_label"),
             self.get_clone_sender_of_client(),
         );
         self.attach_action_for_suscribe_button(
             build_button_with_name(builder, "subscribe_button"),
-            data.clone(),
+            data,
             self.get_clone_sender_of_client(),
         );
         self.attach_action_for_add_topic_button(
