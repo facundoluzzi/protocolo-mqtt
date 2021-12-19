@@ -6,6 +6,7 @@ use std::sync::mpsc;
 use std::sync::mpsc::Receiver;
 use std::sync::mpsc::Sender;
 use std::thread;
+use std::time::Duration;
 
 use std::io::Read;
 use std::io::Write;
@@ -16,6 +17,7 @@ pub enum StreamAction {
     WriteStream,
     ReadStream,
     CloseConnectionStream,
+    StopTimeout,
 }
 
 impl Stream {
@@ -25,6 +27,10 @@ impl Stream {
     pub fn init(stream: TcpStream) -> Result<Sender<StreamType>, std::io::Error> {
         let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
             mpsc::channel();
+
+        if let Err(err) = stream.set_read_timeout(Some(Duration::from_secs(5))) {
+            println!("Unexpected error setting first timeout: {}", err);
+        }
 
         thread::spawn(move || -> Result<(), std::io::Error> {
             for message_received in receiver_stream {
@@ -40,6 +46,65 @@ impl Stream {
         Ok(sender_stream)
     }
 
+    /// Procesa la accion de escritura que va a ser realizada en el stream
+    fn process_write_action(
+        message: Option<Vec<u8>>,
+        stream_to_write: TcpStream,
+    ) -> Result<(), std::io::Error> {
+        if let Some(msg) = message {
+            Stream::write(stream_to_write, msg);
+            Ok(())
+        } else {
+            panic!("Unexpected error: send a Some(message) here");
+        }
+    }
+
+    /// Procesa la accion de lectura que va a ser realizada en el stream
+    fn process_read_action(
+        sender: Option<Sender<Vec<u8>>>,
+        stream_to_write: TcpStream,
+        stream_to_read: TcpStream,
+    ) -> Result<(), std::io::Error> {
+        if let Some(sender) = sender {
+            thread::spawn(move || {
+                Stream::read(stream_to_read, stream_to_write, sender);
+            });
+            Ok(())
+        } else {
+            panic!("Unexpected error: send a Some(Sender<String>) here");
+        }
+    }
+
+    /// Procesa la accion de desconexion que va a ser realizada en el stream
+    fn process_close_connection_action(
+        stream_to_read: TcpStream,
+        stream_to_write: TcpStream,
+    ) -> Result<(), std::io::Error> {
+        if let Err(_err_msg) = stream_to_read.shutdown(Shutdown::Both) {
+            return Err(_err_msg);
+        }
+
+        if let Err(_err_msg) = stream_to_write.shutdown(Shutdown::Both) {
+            return Err(_err_msg);
+        }
+        Ok(())
+    }
+
+    /// Procesa la accion de eliminar el timeout que va a ser realizada en el stream
+    fn process_stop_timeout_action(
+        stream_to_write: TcpStream,
+        stream_to_read: TcpStream,
+    ) -> Result<(), std::io::Error> {
+        if let Err(err) = stream_to_read.set_read_timeout(None) {
+            println!("Unexpected error setting keep alive: {}", err);
+        }
+
+        if let Err(err) = stream_to_write.set_read_timeout(None) {
+            println!("Unexpected error setting keep alive: {}", err);
+        }
+        Ok(())
+    }
+
     /// Hace un match de las dos acciones para realizar por el stream, escritura o lectura.
     /// En cada caso lee o escribe segun lo recibido o corta la conexion con el server en caso que
     /// llegue una accion que represente a un error.
@@ -51,32 +116,16 @@ impl Stream {
         let action = message_received.0;
         match action {
             StreamAction::WriteStream => {
-                if let Some(message) = message_received.1 {
-                    Stream::write(stream_to_write, message);
-                    Ok(())
-                } else {
-                    panic!("Unexpected error: send a Some(message) here");
-                }
+                Stream::process_write_action(message_received.1, stream_to_write)
             }
             StreamAction::ReadStream => {
-                if let Some(sender) = message_received.2 {
-                    thread::spawn(move || {
-                        Stream::read(stream_to_read, stream_to_write, sender);
-                    });
-                    Ok(())
-                } else {
-                    panic!("Unexpected error: send a Some(Sender<String>) here");
-                }
+                Stream::process_read_action(message_received.2, stream_to_write, stream_to_read)
             }
             StreamAction::CloseConnectionStream => {
-                if let Err(_err_msg) = stream_to_read.shutdown(Shutdown::Both) {
-                    return Err(_err_msg);
-                }
-
-                if let Err(_err_msg) = stream_to_write.shutdown(Shutdown::Both) {
-                    return Err(_err_msg);
-                }
-                Ok(())
+                Stream::process_close_connection_action(stream_to_read, stream_to_write)
+            }
+            StreamAction::StopTimeout => {
+                Stream::process_stop_timeout_action(stream_to_write, stream_to_read)
             }
         }
     }
@@ -107,24 +156,6 @@ impl Stream {
         total_data
     }
 
-    /// Una vez leido y almacenado todos los bytes del paquete recibido, procesa todos los bytes de dicho paquete
-    fn process_total_bytes_of_packet(
-        is_first_byte: &mut bool,
-        total_data: &mut Vec<u8>,
-        packet_length: usize,
-        readed_bytes: usize,
-        sender: Sender<Vec<u8>>,
-    ) -> bool {
-        *is_first_byte = true;
-        let bytes_to_process = &total_data[0..packet_length + readed_bytes + 1];
-        if sender.send(bytes_to_process.to_vec()).is_err() {
-            return false;
-        }
-
-        *total_data = Vec::new();
-        false
-    }
-
     /// Lee el paquete recibido y lo va haciendo de a 5 bytes hasta llegar al final del paquete, luego de eso lo procesa
     /// cuando la lectura se da por concluida
     fn read(mut stream: TcpStream, stream_to_write: TcpStream, sender: Sender<Vec<u8>>) {
@@ -149,23 +180,14 @@ impl Stream {
                 } else if !is_first_byte && size != 0 {
                     total_data = [total_data, data.to_vec()].concat();
                 }
-
-                if total_data.len() > packet_length + readed_bytes {
-                    Stream::process_total_bytes_of_packet(
-                        &mut is_first_byte,
-                        &mut total_data,
-                        packet_length,
-                        readed_bytes,
-                        sender.clone(),
-                    )
-                } else if is_first_byte && size == 0 {
-                    if sender.send(vec![]).is_err() {
-                        return;
-                    }
-                    false
-                } else {
-                    true
-                }
+                Stream::finish_to_process_packet(
+                    &mut total_data,
+                    packet_length,
+                    readed_bytes,
+                    &mut is_first_byte,
+                    sender.clone(),
+                    size,
+                )
             }
             Err(_err) => {
                 if let Err(_err_msg) = stream.shutdown(Shutdown::Both) {}
@@ -173,5 +195,33 @@ impl Stream {
                 true
             }
         } {}
+    }
+
+    /// Una vez leido y almacenado todos los bytes del paquete recibido, los procesa y arma para poder ser enviado
+    fn finish_to_process_packet(
+        total_data: &mut Vec<u8>,
+        packet_length: usize,
+        readed_bytes: usize,
+        is_first_byte: &mut bool,
+        sender: Sender<Vec<u8>>,
+        size: usize,
+    ) -> bool {
+        if total_data.len() > packet_length + readed_bytes {
+            *is_first_byte = true;
+            let bytes_to_process = &total_data[0..packet_length + readed_bytes + 1];
+            if sender.send(bytes_to_process.to_vec()).is_err() {
+                return false;
+            }
+
+            *total_data = Vec::new();
+            false
+        } else if *is_first_byte && size == 0 {
+            if sender.send(vec![]).is_err() {
+                return false;
+            }
+            false
+        } else {
+            true
+        }
     }
 }

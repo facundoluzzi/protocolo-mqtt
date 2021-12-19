@@ -172,7 +172,7 @@ impl Client {
 
             if !connect.keep_alive_is_empty() {
                 self.signal_sender = Some(sender_for_ping);
-                Client::start_to_send_pingreq(&connect, sender.clone(), receiver_for_ping);
+                self.start_to_send_pingreq(&connect, sender.clone(), receiver_for_ping);
             }
             Client::start_to_read(sender, connect.get_gtk_sender());
         }
@@ -183,9 +183,10 @@ impl Client {
     fn process_packet(
         bytes: &[u8],
         sender: gtk::glib::Sender<ClientSender>,
+        sender_stream: Sender<StreamType>,
     ) -> Result<(), SendError<ClientSender>> {
         let packet_manager = PacketManager::new();
-        let response = packet_manager.process_message(bytes);
+        let response = packet_manager.process_message(bytes, sender_stream);
 
         if let Some(client_sender) = response {
             sender.send(client_sender)?;
@@ -221,7 +222,9 @@ impl Client {
                         break;
                     }
                     let packet_u8: &[u8] = &packet;
-                    if let Err(err) = Client::process_packet(packet_u8, sender_gtk.clone()) {
+                    if let Err(err) =
+                        Client::process_packet(packet_u8, sender_gtk.clone(), sender_stream.clone())
+                    {
                         println!("err: {}", err);
                         break;
                     }
@@ -233,6 +236,7 @@ impl Client {
     /// Inicia a mandar el pingreq en caso que sea necesario, una vez que recibe la senial a traves del channel
     /// significa que el cliente se desconecto y ya no es necesario enviar el pingreq, asi que deja de hacerlo.
     fn start_to_send_pingreq(
+        &self,
         connect: &Connect,
         sender: SenderForServer,
         receiver_for_ping: Receiver<bool>,
