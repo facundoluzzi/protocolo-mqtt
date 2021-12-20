@@ -9,6 +9,7 @@ use crate::enums::user_manager::disconnect_user_manager::DisconnectUserManager;
 use crate::enums::user_manager::publish_message_user_manager::PublishMessageUserManager;
 use crate::enums::user_manager::stop_publish_user_manager::StopPublish;
 use crate::enums::user_manager::user_manager_action::UserManagerAction;
+use crate::enums::user_manager::valid_client_id_user_manager::ValidClientIdUserManager;
 use crate::packets::publish::Publish;
 use crate::stream::stream_handler::StreamType;
 use crate::topic::publisher_writer::PublisherWriter;
@@ -18,8 +19,14 @@ use std::sync::mpsc::Receiver;
 use std::thread;
 use std::{collections::HashMap, sync::mpsc::Sender};
 
+type HashMapValue = (
+    Sender<ChannelPublisherWriter>,
+    (bool, bool),
+    Option<Publish>,
+);
+
 pub struct UserManager {
-    users: HashMap<String, (Sender<ChannelPublisherWriter>, bool, Option<Publish>)>,
+    users: HashMap<String, HashMapValue>,
     sender_topic_manager: Sender<TypeMessage>,
 }
 
@@ -50,10 +57,25 @@ impl UserManager {
                     UserManagerAction::StopPublishUserManager(user) => {
                         user_manager.process_stop_publish_message(user);
                     }
+                    UserManagerAction::ValidClientId(user) => {
+                        user_manager.process_is_valid_client_id(user);
+                    }
                 }
             }
         });
         sender_user_manager
+    }
+
+    fn process_is_valid_client_id(&mut self, user_client: ValidClientIdUserManager) {
+        let user = self.users.get(&user_client.get_client_id());
+        if let Some(user_found) = user {
+            let (_, (_clean_session, is_connected), _) = user_found;
+            if let Err(err) = user_client.get_sender().send(!is_connected) {
+                println!("Unexpected error: {}", err);
+            }
+        } else if let Err(err) = user_client.get_sender().send(true) {
+            println!("Unexpected error: {}", err);
+        }
     }
 
     fn process_new_connection(&mut self, user: AddUserManager) {
@@ -76,6 +98,7 @@ impl UserManager {
                 sender_stream,
                 user.get_clean_session(),
                 publish,
+                Some(sender),
             );
             if let Err(err) = result {
                 println!("Unexpected error reconnecting stream: {}", err);
@@ -94,6 +117,7 @@ impl UserManager {
                 sender_stream,
                 user.get_clean_session(),
                 publish,
+                None,
             )
         }
     }
@@ -129,10 +153,18 @@ impl UserManager {
         stream: Sender<StreamType>,
         clean_session: bool,
         publish_packet: Option<Publish>,
+        pub_writer: Option<Sender<ChannelPublisherWriter>>,
     ) {
-        let publisher_writer = PublisherWriter::init(stream);
-        self.users
-            .insert(client_id, (publisher_writer, clean_session, publish_packet));
+        if let Some(pwriter) = pub_writer {
+            self.users
+                .insert(client_id, (pwriter, (clean_session, true), publish_packet));
+        } else {
+            let publisher_writer = PublisherWriter::init(stream);
+            self.users.insert(
+                client_id,
+                (publisher_writer, (clean_session, true), publish_packet),
+            );
+        }
     }
 
     fn generate_publish_bytes(first_b: u8, topic_b: &[u8], payload: &[u8]) -> Vec<u8> {
@@ -187,8 +219,8 @@ impl UserManager {
     fn process_disconnect(&mut self, user: DisconnectUserManager) {
         let client_id = user.get_client_id();
         let disconnection_ungracefully = user.get_disconnection_type();
-        let (clean_session, channel_publisher_writer): (
-            Option<bool>,
+        let (clean_session_is_connected, channel_publisher_writer): (
+            Option<(bool, bool)>,
             Option<Sender<ChannelPublisherWriter>>,
         ) = match self.users.get(&client_id) {
             Some(user) => (Some(user.1), Some(user.0.clone())),
@@ -199,8 +231,8 @@ impl UserManager {
             self.publish_last_will_message(user);
         }
 
-        if let Some(clean_session) = clean_session {
-            self.process_clean_session(client_id, clean_session, channel_publisher_writer);
+        if let Some(clean_session) = clean_session_is_connected {
+            self.process_clean_session(client_id, clean_session.0, channel_publisher_writer);
         }
     }
 
@@ -224,6 +256,10 @@ impl UserManager {
         } else if let Some(channel) = channel_publisher_writer {
             let publisher_writer_cloned = channel;
             let result = publisher_writer_cloned.send(ChannelPublisherWriter::Disconnect);
+            if let Some(user) = self.users.remove(&client_id) {
+                self.users
+                    .insert(client_id, (user.0.clone(), (user.1 .0, false), user.2));
+            }
             if let Err(err) = result {
                 println!("Unexpected error reonnecting stream: {}", err);
             }
@@ -245,11 +281,13 @@ impl UserManager {
         let mut clean_session: bool = false;
         if let Some(user) = self.users.get(&client_id) {
             publisher_writer = Some(user.0.clone());
-            clean_session = user.1;
+            clean_session = user.1 .0;
         }
         if let Some(publisher_writer_found) = publisher_writer {
-            self.users
-                .insert(client_id, (publisher_writer_found, clean_session, None));
+            self.users.insert(
+                client_id,
+                (publisher_writer_found, (clean_session, false), None),
+            );
         }
     }
 }

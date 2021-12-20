@@ -71,9 +71,10 @@ impl Connect {
         flags: &ConnectFlags,
         readed_bytes: usize,
         return_code: ConnectReturnCode,
+        sender_user_manager: Sender<UserManagerAction>,
     ) -> Result<(ConnectPayload, ConnectReturnCode), String> {
         let rem_bytes = &bytes[readed_bytes + 1..];
-        let payload = ConnectPayload::init(flags, rem_bytes, return_code)?;
+        let payload = ConnectPayload::init(flags, rem_bytes, return_code, sender_user_manager)?;
         Ok(payload)
     }
 
@@ -137,14 +138,20 @@ impl Connect {
             Connect::get_variable_header(bytes, return_code)?;
 
         let flags = ConnectFlags::init(&variable_header[7]);
-        let (payload, return_code) =
-            Connect::get_payload(bytes, &flags, readed_bytes, return_code)?;
+        let (payload, return_code) = Connect::get_payload(
+            bytes,
+            &flags,
+            readed_bytes,
+            return_code,
+            sender_user_manager.clone(),
+        )?;
 
         let connect = Connect {
             flags,
             payload,
             return_code: return_code.apply_validations(),
         };
+
         Connect::process_keep_alive(variable_header, sender_stream.clone())?;
         let action = connect.create_action_user_manager(sender_stream);
         if let Err(_err) = sender_user_manager.send(action) {

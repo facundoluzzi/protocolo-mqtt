@@ -1,6 +1,8 @@
+use crate::enums::user_manager::user_manager_action::UserManagerAction;
 use crate::flags::connect_flags::ConnectFlags;
 use crate::helper::status_code::ConnectReturnCode;
 use crate::helper::utf8_parser::UTF8;
+use std::sync::mpsc::Sender;
 
 #[derive(Debug)]
 pub struct ConnectPayload {
@@ -12,16 +14,16 @@ pub struct ConnectPayload {
 }
 
 impl ConnectPayload {
-    fn parse_client_id(bytes: &[u8]) -> Result<(String, usize), String> {
+    fn parse_client_id(bytes: &[u8]) -> Result<(Option<String>, usize), String> {
         let parser = UTF8::utf8_parser;
         if bytes != [0x00u8] {
             if let Ok((client_identifier_copy, index)) = parser(bytes) {
-                Ok((client_identifier_copy, index))
+                Ok((Some(client_identifier_copy), index))
             } else {
                 Err("error parsing client identifier".to_string())
             }
         } else {
-            Ok(("PayloadNull".to_owned(), 0))
+            Ok((None, 0))
         }
     }
 
@@ -105,8 +107,11 @@ impl ConnectPayload {
         flags: &ConnectFlags,
         remaining_bytes: &[u8],
         mut return_code: ConnectReturnCode,
+        sender_user_manager: Sender<UserManagerAction>,
     ) -> Result<(ConnectPayload, ConnectReturnCode), String> {
-        let (client_identifier, pointer) = ConnectPayload::parse_client_id(remaining_bytes)?;
+        let (client_id, pointer) = ConnectPayload::parse_client_id(remaining_bytes)?;
+        return_code = return_code.check_client_id(client_id.clone(), sender_user_manager);
+
         let (will_topic, will_message, pointer) =
             ConnectPayload::parse_last_will_topic_msg(remaining_bytes, flags, pointer)?;
         let (username, password) =
@@ -118,7 +123,7 @@ impl ConnectPayload {
             return_code,
         );
         let new_connect_payload = ConnectPayload {
-            client_identifier,
+            client_identifier: client_id.unwrap_or_else(|| "INVALID".to_string()),
             username,
             password,
             will_topic,
@@ -140,7 +145,7 @@ impl ConnectPayload {
 
     /// Devuelve el client id
     pub fn get_client_id(&self) -> String {
-        self.client_identifier.to_owned()
+        self.client_identifier.to_string()
     }
 
     /// Devuelve el will topic
