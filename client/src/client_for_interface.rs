@@ -30,18 +30,6 @@ pub enum ClientAction {
     Subscribe,
 }
 
-pub type SenderClient = (
-    ClientAction,
-    Option<String>,
-    Option<String>,
-    Option<String>,
-    Option<String>,
-    Option<String>,
-    Option<bool>,
-    Sender<String>,
-    Option<Sender<String>>,
-);
-
 impl Client {
     /// Inicializa el cliente con un receiver que se queda escuchando por eventos, estos eventos
     /// son los que se producen por alguna accion propia de la interfaz, el evento recibido desde ahi

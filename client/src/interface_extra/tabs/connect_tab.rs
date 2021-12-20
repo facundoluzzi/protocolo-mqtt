@@ -53,8 +53,7 @@ impl ConnectTab {
 
     /// Envia un error de conexion hacia la interfaz para que pueda avisar al usuario
     fn send_connection_error(tx_for_error_connection: gtk::glib::Sender<ClientSender>) {
-        let connect_error =
-            ConnectErrorResponse::init("ClientID requerido o activar Clean Session".to_string());
+        let connect_error = ConnectErrorResponse::init("ClientID requerido".to_string());
         if let Ok(()) = tx_for_error_connection.send(ClientSender::ConnectError(connect_error)) {}
     }
 
@@ -72,7 +71,7 @@ impl ConnectTab {
             let id_client = entry_vec[4].text().to_string();
             let clean_session_is_active = clean_session_checkbox.is_active();
 
-            if id_client.is_empty() && !clean_session_is_active {
+            if id_client.is_empty() {
                 ConnectTab::send_connection_error(tx_for_connection.clone());
             }
 
