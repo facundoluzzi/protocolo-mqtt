@@ -173,7 +173,7 @@ impl UserManager {
         for topic in topic_b {
             publish.push(*topic);
         }
-        let bytes_to_concat = [0x00, 0x0A, 0x00, payload.len() as u8];
+        let bytes_to_concat = [0x00, 0x0A];
         publish = [publish.to_vec(), bytes_to_concat.to_vec()].concat();
         for message in payload {
             publish.push(*message);

@@ -14,7 +14,7 @@ pub fn build_bytes_for_suscribe(list_of_topics: Vec<(String, bool)>) -> Vec<u8> 
 
 /// Construye el vector de bytes que van a representar al paquete Unsubscribe y los devuelve
 pub fn build_bytes_for_unsubscribe(topic: String) -> Vec<u8> {
-    let mut bytes = vec![0xA0, 0x00, 0x00, 0x0A];
+    let mut bytes = vec![0xA2, 0x00, 0x00, 0x0A];
     let mut topic_as_bytes = topic.as_bytes().to_vec();
     bytes.push(0x00);
     bytes.push(topic_as_bytes.len() as u8);
