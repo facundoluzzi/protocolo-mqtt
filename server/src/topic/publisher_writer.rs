@@ -56,6 +56,7 @@ impl PublisherWriter {
                     ChannelPublisherWriter::Reconnect(reconnect) => self.reconnect(reconnect),
                     ChannelPublisherWriter::Disconnect => self.disconnect(),
                     ChannelPublisherWriter::StopToPublish(stop_publish) => {
+                        println!("Llego aca :D");
                         self.remove(stop_publish)
                     }
                 };
@@ -69,9 +70,19 @@ impl PublisherWriter {
             sleep(Duration::from_millis(100));
             self.publish_message(message);
         }
+        let action = AutoSendAction::ChangeMode;
+        let result = self.publish_autosend.send(action);
+        if let Err(err) = result {
+            println!("Unexpected error stopping to publish: {}", err);
+        }
     }
 
     fn disconnect(&mut self) {
+        let action = AutoSendAction::ChangeMode;
+        let result = self.publish_autosend.send(action);
+        if let Err(err) = result {
+            println!("Unexpected error stopping to publish: {}", err);
+        }
         self.socket = None;
     }
 

@@ -14,6 +14,7 @@ type SenderPublishAutoSend = (Sender<AutoSendAction>, Receiver<AutoSendAction>);
 /// Contiene publish_packets guardados
 pub struct PublishAutoSend {
     publish_packets: HashMap<Vec<u8>, Vec<u8>>,
+    is_disconnected: bool,
 }
 
 impl PublishAutoSend {
@@ -44,6 +45,9 @@ impl PublishAutoSend {
                     AutoSendAction::PublishAll(_) => {
                         self.publish_all(sender_publisher_writer.clone())
                     }
+                    AutoSendAction::ChangeMode => {
+                        self.change_mode()
+                    }
                 }
             }
         });
@@ -61,6 +65,7 @@ impl PublishAutoSend {
         let (sender, receiver): SenderPublishAutoSend = mpsc::channel();
         let publish_autosend = PublishAutoSend {
             publish_packets: HashMap::new(),
+            is_disconnected: false,
         };
         publish_autosend.throw_thread_to_listen_events(receiver, sender_publisher_writer);
         PublishAutoSend::throw_thread_to_publish_all(dup_time, sender.clone());
@@ -75,7 +80,10 @@ impl PublishAutoSend {
             let first_byte = byte | 0b00001000;
             let mut packet = vec![first_byte];
             packet.append(&mut receive[1..receive.len()].to_vec());
+            println!("Agregando: {:?}", packet_identifier);
+
             self.publish_packets.insert(packet_identifier, packet);
+
         }
     }
 
@@ -87,12 +95,22 @@ impl PublishAutoSend {
 
     /// publica a todos los mensajes guardados
     pub fn publish_all(&mut self, sender: Sender<ChannelPublisherWriter>) {
-        for publish in self.publish_packets.clone() {
-            let publish_to_stream = PublishToStream::init(publish.1);
-            let result = sender.send(ChannelPublisherWriter::Publish(publish_to_stream));
-            if let Err(msg) = result {
-                println!("Unexpected error: {}", msg);
-            };
+        if !self.is_disconnected{
+            for publish in self.publish_packets.clone() {
+                let publish_to_stream = PublishToStream::init(publish.1);
+                let result = sender.send(ChannelPublisherWriter::Publish(publish_to_stream));
+                if let Err(msg) = result {
+                    println!("Unexpected error: {}", msg);
+                };
+            }
+        }
+    }
+
+    pub fn change_mode(&mut self) {
+        if self.is_disconnected {
+            self.is_disconnected = false;
+        } else {
+            self.is_disconnected = true;
         }
     }
 }
