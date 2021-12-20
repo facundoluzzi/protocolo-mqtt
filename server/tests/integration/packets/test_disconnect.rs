@@ -85,7 +85,17 @@ mod tests {
         }
 
         stream = TcpStream::connect("0.0.0.0:1894".to_string()).unwrap();
-        stream.write(&connect_bytes).unwrap();
+
+        let second_connect_bytes = [
+            0x10, // Packet Type
+            0x0E, // Remaining Length
+            0x00, 0x04, 0x4D, 0x51, 0x54, 0x54, // MQTT
+            0x04, // Protocol Name - SIEMPRE en 04 o falla
+            0x00, // Flags
+            0x00, 0x0B, // keep alive
+            0x00, 0x02, 0x62, 0x66, // Client Identifier
+        ];
+        stream.write(&second_connect_bytes).unwrap();
 
         data = vec![0; 100];
         match stream.read(&mut data) {

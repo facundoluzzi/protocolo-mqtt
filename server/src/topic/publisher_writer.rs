@@ -12,6 +12,8 @@ use crate::{
 };
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 
 pub enum PublisherSubscriberAction {
     PublishMessagePublisherSubscriber,
@@ -26,20 +28,10 @@ pub struct PublisherWriter {
     publish_autosend: Sender<AutoSendAction>,
 }
 
-impl Clone for PublisherWriter {
-    fn clone(&self) -> Self {
-        Self {
-            socket: self.socket.clone(),
-            queue: self.queue.clone(),
-            publish_autosend: self.publish_autosend.clone(),
-        }
-    }
-}
-
 impl PublisherWriter {
     /// Recibe un sender de Stream Handler y lanza un thread para quedarse escuchando por nuevos eventos.
     /// Estos eventos pueden ser publish, disconnect, reconnect y stop to publish
-    pub fn init(socket: Sender<StreamType>) -> Self {
+    pub fn init(socket: Sender<StreamType>) -> Sender<ChannelPublisherWriter> {
         let (sender, receiver): (
             Sender<ChannelPublisherWriter>,
             Receiver<ChannelPublisherWriter>,
@@ -48,10 +40,10 @@ impl PublisherWriter {
         let publisher = PublisherWriter {
             socket: Some(socket),
             queue: Vec::new(),
-            publish_autosend: PublishAutoSend::init(sender),
+            publish_autosend: PublishAutoSend::init(sender.clone()),
         };
-        publisher.clone().throw_thread_to_listen_events(receiver);
-        publisher
+        publisher.throw_thread_to_listen_events(receiver);
+        sender
     }
 
     fn throw_thread_to_listen_events(mut self, receiver: Receiver<ChannelPublisherWriter>) {
@@ -71,46 +63,25 @@ impl PublisherWriter {
         });
     }
 
-    /// si el usuario no existe, reconecta y envía los paquetes publish pendientes
-    pub fn reconnect(&mut self, reconnect: ReconnectStream) {
+    fn reconnect(&mut self, reconnect: ReconnectStream) {
         self.socket = Some(reconnect.get_sender());
         for message in self.queue.clone() {
+            sleep(Duration::from_millis(100));
             self.publish_message(message);
         }
     }
 
-    /// desconecta el socket
-    pub fn disconnect(&mut self) {
+    fn disconnect(&mut self) {
         self.socket = None;
     }
 
-    /// indica si el usuario está desconectado
-    pub fn is_disconnected(&self) -> bool {
-        self.socket.is_none()
-    }
-
-    /// frena la publicación determinada por el autosend
-    pub fn remove(&mut self, stop_publish: StopPublishToStream) {
+    fn remove(&mut self, stop_publish: StopPublishToStream) {
         let packet_id = stop_publish.get_packet_id();
         let remove_autosend = RemoveAutoSend::init(packet_id);
         let action = AutoSendAction::Remove(remove_autosend);
         let result = self.publish_autosend.send(action);
         if let Err(err) = result {
             println!("Unexpected error stopping to publish: {}", err);
-        }
-    }
-
-    /// publica un mensaje si el usuario está conectado, en otro caso lo agrega a la cola
-    pub fn publish_message(&mut self, message: Vec<u8>) {
-        if let Some(socket) = &self.socket {
-            match socket.send((WriteStream, Some(message.clone()), None, None)) {
-                Ok(_) => {
-                    self.publish(message);
-                }
-                Err(_) => {}
-            }
-        } else {
-            self.queue.push(message);
         }
     }
 
@@ -126,6 +97,19 @@ impl PublisherWriter {
             Ok(packet.to_vec())
         } else {
             panic!("Unexpected error: unnecessary packet identifier in qos 1");
+        }
+    }
+
+    fn publish_message(&mut self, message: Vec<u8>) {
+        if let Some(socket) = &self.socket {
+            match socket.send((WriteStream, Some(message.clone()), None, None)) {
+                Ok(_) => {
+                    self.publish(message);
+                }
+                Err(_err) => {}
+            }
+        } else {
+            self.queue.push(message);
         }
     }
 
