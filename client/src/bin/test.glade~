@@ -505,6 +505,31 @@
                     <property name="y">700</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="width_request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Retain</property>
+                  </object>
+                  <packing>
+                    <property name="x">350</property>
+                    <property name="y">360</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="retain_check">
+                    <property name="width_request">100</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">426</property>
+                    <property name="y">361</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="title" translatable="yes">Publicación</property>
