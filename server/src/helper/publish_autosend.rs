@@ -53,7 +53,7 @@ impl PublishAutoSend {
     /// lanza un thread que se queda escuchando por eventos y otro thread
     /// para poder cortar el envío constante de paquetes.
     pub fn init(sender_publisher_writer: Sender<ChannelPublisherWriter>) -> Sender<AutoSendAction> {
-        let config = ServerConfigs::obtain_configurations("./server.conf".to_string());
+        let config = ServerConfigs::obtain_configurations("../server.conf".to_string());
         let dup_time = config
             .get_conf_named("dup_time".to_string())
             .parse::<u64>()
