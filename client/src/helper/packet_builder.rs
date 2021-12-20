@@ -150,10 +150,7 @@ fn add_publish_packet_type(is_qos_0: bool, bytes: &mut Vec<u8>) {
 /// Agrega al vector de bytes, los bytes correspondientes al mensaje
 fn add_message_bytes(message: String, bytes: &mut Vec<u8>) {
     if !message.is_empty() {
-        let message_length = message.len();
         let mut message_in_bytes = message.as_bytes().to_vec();
-        bytes.push(0x00);
-        bytes.push(message_length as u8);
         bytes.append(&mut message_in_bytes);
     }
 }
