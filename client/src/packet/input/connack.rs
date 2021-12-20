@@ -29,6 +29,7 @@ impl Connack {
         match code {
             0x00 => "Conexion realizada con exito".to_string(),
             0x01 => "Error: la version del protocolo no es compatible".to_string(),
+            0x02 => "Error: el ID de cliente no esta disponible".to_string(),
             0x04 => "Error: los datos enviados no son correctos".to_string(),
             0x05 => "Error: no esta autorizado".to_string(),
             _ => "Error desconocido".to_string(),

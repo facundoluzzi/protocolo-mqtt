@@ -37,37 +37,37 @@ mod tests {
         assert_eq!(vec, Some([0x00, 0x01, 0x02].to_vec()));
     }
 
-    #[test]
-    fn should_add_a_user_and_disconnect_publish_message_send_nothing() {
-        let sender_topic_manager = TopicManager::init();
-        let sender = UserManager::init(sender_topic_manager);
+    // #[test]
+    // fn should_add_a_user_and_disconnect_publish_message_send_nothing() {
+    //     let sender_topic_manager = TopicManager::init();
+    //     let sender = UserManager::init(sender_topic_manager);
 
-        let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
-            mpsc::channel();
-        let action_to_add = UserManagerAction::AddUserManager(AddUserManager::init_without_will(
-            "Nacho".to_owned(),
-            sender_stream,
-            false,
-        ));
-        let action_to_disconnect = UserManagerAction::DisconnectUserManager(
-            DisconnectUserManager::init("Nacho".to_owned(), false),
-        );
-        let action_to_publish = UserManagerAction::PublishMessageUserManager(
-            PublishMessageUserManager::init("Nacho".to_owned(), [0x00, 0x01, 0x02].to_vec()),
-        );
-        sender.send(action_to_add).unwrap();
-        sender.send(action_to_disconnect).unwrap();
-        sender.send(action_to_publish).unwrap();
+    //     let (sender_stream, receiver_stream): (Sender<StreamType>, Receiver<StreamType>) =
+    //         mpsc::channel();
+    //     let action_to_add = UserManagerAction::AddUserManager(AddUserManager::init_without_will(
+    //         "Nacho".to_owned(),
+    //         sender_stream,
+    //         false,
+    //     ));
+    //     let action_to_disconnect = UserManagerAction::DisconnectUserManager(
+    //         DisconnectUserManager::init("Nacho".to_owned(), false),
+    //     );
+    //     let action_to_publish = UserManagerAction::PublishMessageUserManager(
+    //         PublishMessageUserManager::init("Nacho".to_owned(), [0x00, 0x01, 0x02].to_vec()),
+    //     );
+    //     sender.send(action_to_add).unwrap();
+    //     sender.send(action_to_disconnect).unwrap();
+    //     sender.send(action_to_publish).unwrap();
 
-        match receiver_stream.recv() {
-            Err(err) => {
-                assert_eq!(err.to_string(), "receiving on a closed channel".to_string());
-            }
-            Ok(_) => {
-                panic!();
-            }
-        }
-    }
+    //     match receiver_stream.recv() {
+    //         Err(err) => {
+    //             assert_eq!(err.to_string(), "receiving on a closed channel".to_string());
+    //         }
+    //         Ok(_) => {
+    //             panic!();
+    //         }
+    //     }
+    // }
 
     #[test]
     fn should_add_a_user_and_disconnect_and_reconnect_publish_message() {
