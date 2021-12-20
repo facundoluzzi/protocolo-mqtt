@@ -114,12 +114,15 @@ impl PublisherWriter {
     }
 
     fn publish(&self, message: Vec<u8>) {
-        if let Ok(packet_id) = self.get_packet_identifier(&message) {
-            let autosend = AddAutoSend::init(packet_id, message);
-            let action = AutoSendAction::Add(autosend);
-            let result = self.publish_autosend.send(action);
-            if let Err(err) = result {
-                println!("Unexpected error sending autosend: {}", err);
+        let qos_is_1 = 0b00000010 & message[0] > 0;
+        if qos_is_1 {
+            if let Ok(packet_id) = self.get_packet_identifier(&message) {
+                let autosend = AddAutoSend::init(packet_id, message);
+                let action = AutoSendAction::Add(autosend);
+                let result = self.publish_autosend.send(action);
+                if let Err(err) = result {
+                    println!("Unexpected error sending autosend: {}", err);
+                }
             }
         }
     }
