@@ -56,7 +56,6 @@ impl PublisherWriter {
                     ChannelPublisherWriter::Reconnect(reconnect) => self.reconnect(reconnect),
                     ChannelPublisherWriter::Disconnect => self.disconnect(),
                     ChannelPublisherWriter::StopToPublish(stop_publish) => {
-                        println!("Llego aca :D");
                         self.remove(stop_publish)
                     }
                 };

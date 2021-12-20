@@ -80,7 +80,6 @@ impl PublishAutoSend {
             let first_byte = byte | 0b00001000;
             let mut packet = vec![first_byte];
             packet.append(&mut receive[1..receive.len()].to_vec());
-            println!("Agregando: {:?}", packet_identifier);
 
             self.publish_packets.insert(packet_identifier, packet);
 
