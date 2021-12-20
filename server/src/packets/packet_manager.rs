@@ -149,7 +149,7 @@ impl PacketManager {
         self.logger.info("proccessing subscribe packet".to_string());
 
         if let Err(err) = Subscribe::process_message(bytes, self) {
-            let message_to_log = "Unexpected error subscribe publish packet:";
+            let message_to_log = "Unexpected error subscribe packet:";
             self.logger.info(format!("{}: {}", message_to_log, err));
             Disconnect::disconnect_ungracefully(
                 self.client_id.to_owned(),
