@@ -7,14 +7,16 @@ pub struct Publish {
     message: String,
     topic: String,
     is_qos_0: bool,
+    retain_is_active: bool,
 }
 
 impl Publish {
-    pub fn init(message: String, topic: String, is_qos_0: bool) -> Publish {
+    pub fn init(message: String, topic: String, is_qos_0: bool, retain_is_active: bool) -> Publish {
         Publish {
             message,
             topic,
             is_qos_0,
+            retain_is_active,
         }
     }
 
@@ -25,6 +27,7 @@ impl Publish {
             self.topic.to_string(),
             self.message.to_string(),
             self.is_qos_0,
+            self.retain_is_active,
         );
 
         let result = sender_stream.send((WriteStream, Some(publish_bytes), None));

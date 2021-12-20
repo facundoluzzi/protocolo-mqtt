@@ -1,4 +1,7 @@
-use crate::packet::{input::publish::Publish, sender_type::InterfaceSender};
+use crate::{
+    interface_extra::object_builder::build_checkbutton_with_name,
+    packet::{input::publish::Publish, sender_type::InterfaceSender},
+};
 use std::sync::mpsc::Sender;
 extern crate gtk;
 use gtk::prelude::*;
@@ -23,14 +26,16 @@ impl PublishTab {
         message_input: gtk::Entry,
         topic_input: gtk::Entry,
         qos_publish_0: gtk::RadioButton,
+        retain_check: gtk::CheckButton,
         sender_publish: Sender<InterfaceSender>,
     ) {
         publish_button.connect_clicked(move |_| {
             let message = message_input.text().to_string();
             let topic = topic_input.text().to_string();
             let is_qos_0 = qos_publish_0.is_active();
+            let retain_is_active = retain_check.is_active();
 
-            let publish = Publish::init(message, topic, is_qos_0);
+            let publish = Publish::init(message, topic, is_qos_0, retain_is_active);
             if let Err(_error) = sender_publish.send(InterfaceSender::Publish(publish)) {
                 println!("Error en el publish");
             }
@@ -45,6 +50,7 @@ impl PublishTab {
             build_entry_with_name(builder, "message_input"),
             build_entry_with_name(builder, "topic_input"),
             build_radiobutton_with_name(builder, "qos_publish_0"),
+            build_checkbutton_with_name(builder, "retain_check"),
             self.get_clone_sender_of_client(),
         );
     }

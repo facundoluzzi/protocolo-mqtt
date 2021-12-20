@@ -12,6 +12,8 @@ use crate::{
 };
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 
 pub enum PublisherSubscriberAction {
     PublishMessagePublisherSubscriber,
@@ -64,6 +66,7 @@ impl PublisherWriter {
     fn reconnect(&mut self, reconnect: ReconnectStream) {
         self.socket = Some(reconnect.get_sender());
         for message in self.queue.clone() {
+            sleep(Duration::from_millis(100));
             self.publish_message(message);
         }
     }

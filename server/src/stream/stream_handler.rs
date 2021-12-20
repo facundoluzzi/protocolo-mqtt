@@ -35,10 +35,11 @@ impl Stream {
         message_received: StreamType,
         to_write: TcpStream,
         to_read: TcpStream,
+        logger: Logger,
     ) -> Result<(), Error> {
         let action = message_received.0;
         match action {
-            StreamAction::WriteStream => Stream::write(to_write, message_received.1),
+            StreamAction::WriteStream => Stream::write(to_write, message_received.1, logger),
             StreamAction::ReadStream => {
                 if let Some(sender) = message_received.2 {
                     thread::spawn(move || -> Result<(), Error> {
@@ -67,6 +68,7 @@ impl Stream {
                     message_received,
                     stream_received.try_clone()?,
                     stream_received.try_clone()?,
+                    logger.clone(),
                 ) {
                     logger.info(format!("Unexpected error in logger: {}", err.to_string()));
                     return Err(err);
@@ -77,9 +79,14 @@ impl Stream {
         Ok(sender_stream)
     }
 
-    fn write(mut stream: TcpStream, message: Option<Vec<u8>>) -> Result<(), Error> {
+    fn write(
+        mut stream: TcpStream,
+        message: Option<Vec<u8>>,
+        mut logger: Logger,
+    ) -> Result<(), Error> {
         match message {
             Some(message) => {
+                logger.info(format!("{:?}: ", message));
                 let message_to_write: &[u8] = &message;
                 stream.write_all(message_to_write)?;
                 Ok(())

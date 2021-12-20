@@ -9,6 +9,21 @@ use std::str::from_utf8;
 
 use std::sync::mpsc::Sender;
 
+impl Clone for Publish {
+    fn clone(&self) -> Self {
+        Publish {
+            dup: self.dup,
+            qos: self.qos,
+            retain: self.retain,
+            remaining_length: self.remaining_length,
+            topic: self.topic.to_string(),
+            packet_identifier: self.packet_identifier,
+            payload: self.payload.to_string(),
+            all_bytes: self.all_bytes.clone(),
+        }
+    }
+}
+
 /// contiene los diferentes flags utilizados, el payload y el topic. Además de una copia del paquete para hacer los publish
 pub struct Publish {
     dup: u8,
