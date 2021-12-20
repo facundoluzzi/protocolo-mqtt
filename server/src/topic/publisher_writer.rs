@@ -86,7 +86,6 @@ impl PublisherWriter {
      * esto se usa solamente en qos 1, por lo cual si no tiene packet id, lanza panic.
      */
     fn get_packet_identifier(&self, bytes: &[u8]) -> Result<Vec<u8>, String> {
-        println!("LLEGO ACA");
         let (readed_index, _): (usize, usize) = save_remaining_length(&bytes[1..bytes.len()])?;
         let init_variable_header = 1 + readed_index;
         let variable_header = &bytes[init_variable_header..bytes.len()];
