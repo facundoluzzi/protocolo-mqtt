@@ -3,6 +3,7 @@
 /target/
 /server/target/
 /client/target/
+/fake-generator/target
 tarea.txt
 *.log
 server/**tests.txt
