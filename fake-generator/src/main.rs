@@ -30,7 +30,7 @@ fn send_connect(mut stream: TcpStream) -> Result<(), String> {
 }
 
 pub fn connect_to_server() -> Result<TcpStream, String> {
-    let address = "0.0.0.0:1883".to_owned();
+    let address = "localhost:1883".to_owned();
     match TcpStream::connect(address) {
         Ok(stream) => {
             send_connect(stream.try_clone().unwrap()).unwrap();

@@ -4,6 +4,7 @@
 /server/target/
 /client/target/
 /fake-generator/target
+/cliente_dos/target
 tarea.txt
 *.log
 server/**tests.txt
