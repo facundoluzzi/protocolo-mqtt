@@ -1,3 +1,6 @@
+use cliente_dos::enums::data_actions::AddData;
+use cliente_dos::enums::data_actions::GetData;
+use cliente_dos::enums::data_actions::DataAction;
 use std::io::Write;
 use std::net::TcpListener;
 use std::net::TcpStream;
@@ -18,7 +21,7 @@ fn build_bytes_for_connect() -> Vec<u8> {
         0x04, 
         0x00, 
         0x00, 0x00, 
-        0x00, 0x06, 0x41, 0x4C, 0x54, 0x45, 0x47, 0x4F, 
+        0x00, 0x06, 0x41, 0x41, 0x50, 0x45, 0x47, 0x4F, 
     ].to_vec()
 }
 
@@ -34,13 +37,13 @@ fn send_connect(sender_stream: Sender<StreamType>) -> Result<(), String> {
     Ok(())
 }
 
-fn connect() -> Result<Sender<StreamType>, String> {
+fn connect(sender_to_save_event: Sender<DataAction>) -> Result<Sender<StreamType>, String> {
     // channel
     match TcpStream::connect("localhost:1883") {
         Ok(stream) => {
             if let Ok(sender_stream) = Stream::init(stream) {
                 send_connect(sender_stream.clone()).unwrap();
-                start_to_read(sender_stream.clone());
+                start_to_read(sender_stream.clone(), sender_to_save_event.clone());
                 Ok(sender_stream)
             } else {
                 Err("Error clonando inicializando el stream".to_string())
@@ -71,11 +74,14 @@ pub fn send_subscribe(sender_stream: Sender<StreamType>) -> Result<(), String> {
     Ok(())
 }
 
-fn process_packet(packet: &[u8], sender_stream: Sender<StreamType>) ->  Result<(), String> {
+fn process_packet(packet: &[u8], sender_to_save_event: Sender<DataAction>) ->  Result<(), String> {
     let first_byte = packet.get(0).unwrap();
 
+    println!("{:?}", packet);
     match first_byte {
-        4 => {
+        48 => {
+            let add_data = AddData::init((0x45, 0x45));
+            sender_to_save_event.send(DataAction::Add(add_data)).unwrap();
             println!("llego temperatura");
             Ok(())
         },
@@ -90,9 +96,7 @@ fn is_empty_packet(packet: Vec<u8>) -> bool {
     !packet.into_iter().any(|element| element != 0)
 }
 
-fn start_to_read(
-    sender_stream: Sender<StreamType>,
-) {
+fn start_to_read(sender_stream: Sender<StreamType>, sender_to_save_event: Sender<DataAction>) {
     thread::spawn(move || {
         let (packet_sender, packet_receiver) = mpsc::channel::<Vec<u8>>();
 
@@ -104,13 +108,14 @@ fn start_to_read(
 
             if let Err(_msg) = message_sent {
             } else if let Ok(packet) = packet_receiver.recv() {
+                println!("asd");
                 let empty_packet = is_empty_packet(packet.clone());
                 if empty_packet {
                     break;
                 }
                 let packet_u8: &[u8] = &packet;
                 if let Err(err) =
-                    process_packet(packet_u8, sender_stream.clone())
+                    process_packet(packet_u8, sender_to_save_event.clone())
                 {
                     println!("err: {}", err);
                     break;
@@ -121,32 +126,49 @@ fn start_to_read(
 }
 
 fn main() {
-    // guardar los datos en memoria
-    // y esperar por peticiones get para devolver todos los datos generados
+    let (sender_for_actions, receiver_for_actions) = mpsc::channel::<DataAction>();
+    let sender_stream = connect(sender_for_actions.clone());
 
-    let sender_stream = connect();
-    send_subscribe(sender_stream.unwrap().clone());
-    // thread::spawn(move || {
+    send_subscribe(sender_stream.unwrap().clone()).unwrap();
 
-    // });
+    thread::spawn(move || {
+        let mut vec: Vec<(u8, u8)> = Vec::new();
+        for receive in receiver_for_actions {
+            match receive {
+                DataAction::Add(action) => {
+                    vec.push(action.get_data());
+                }
+                DataAction::Get(action) => {
+                    action.send_data(vec.clone());
+                }
+            }
+        }
+    });
 
     let listener = TcpListener::bind("0.0.0.0:3000").unwrap();
     for stream in listener.incoming() {
         match stream {
             Ok(mut stream) => {
+                let prueba = sender_for_actions.clone();
                 thread::spawn(move || {
                     let mut data = [0_u8; 400];
                     match stream.read(&mut data) {
-                        Ok(size) => {
-                            let s = match std::str::from_utf8(&data[0..size]) {
-                                Ok(v) => v,
-                                Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
-                            };
-                            println!("{}", s);
+                        Ok(_size) => {
+                            let (sender_to_get_data, receiver_data) = mpsc::channel::<Vec<(u8, u8)>>();
 
-                            let response = "HTTP/1.1 200 OK\n\nasd";
+                            let get_data = GetData::init(sender_to_get_data.clone());
+                            prueba.send(DataAction::Get(get_data)).unwrap();
 
-                            println!("{:?}", response);
+                            let data = receiver_data.recv().unwrap();
+                            let response_text: String = data.into_iter().map(|temp_tuple| {
+                                let mut temp_string = String::from("");
+                                let temperature = temp_tuple.0.to_string() + &temp_tuple.1.to_string();
+                                temp_string += &temperature.to_string();
+                                temp_string += "\n";
+                                temp_string.to_string()
+                            }).collect::<String>();
+
+                            let response = "HTTP/1.1 200 OK\n\n".to_string() + &response_text;
                             stream.write_all(response.as_bytes()).unwrap();
                         }
                         Err(_err) => {
@@ -154,7 +176,7 @@ fn main() {
                     }
                 });
             },
-            Err(err) => {
+            Err(_err) => {
 
             }
         }
