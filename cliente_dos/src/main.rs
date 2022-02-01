@@ -5,6 +5,7 @@ use cliente_dos::helper::stream::stream_handler::Stream;
 use cliente_dos::helper::stream::stream_handler::StreamAction::ReadStream;
 use cliente_dos::helper::stream::stream_handler::StreamAction::WriteStream;
 use cliente_dos::types::StreamType;
+use std::fs;
 use std::io::Read;
 use std::io::Write;
 use std::net::TcpListener;
@@ -13,6 +14,8 @@ use std::sync::mpsc;
 use std::sync::mpsc::Sender;
 use std::thread;
 use std::io;
+use std::io::prelude::*;
+use std::fs::File;
 
 fn build_bytes_for_connect() -> Vec<u8> {
     [
@@ -93,6 +96,7 @@ fn process_packet(packet: &[u8], sender_to_save_event: Sender<DataAction>) -> Re
 
     match first_byte {
         48 => {
+
             let decena = packet[packet.len() - 2];
             let decimal = packet[packet.len() - 1];
 
@@ -107,6 +111,11 @@ fn process_packet(packet: &[u8], sender_to_save_event: Sender<DataAction>) -> Re
             
                 .send(DataAction::Add(add_data))
                 .unwrap();
+
+
+
+
+
             println!("llego temperatura");
             Ok(())
         }
@@ -138,7 +147,8 @@ fn start_to_read(sender_stream: Sender<StreamType>, sender_to_save_event: Sender
                 let empty_packet = is_empty_packet(packet.clone());
                 println!("is empty packet: {}", empty_packet);
                 if empty_packet {
-                    break;
+                    println!("Rompio");
+                    continue;
                 }
                 let packet_u8: &[u8] = &packet;
                 if let Err(err) = process_packet(packet_u8, sender_to_save_event.clone()) {
@@ -155,6 +165,11 @@ fn main() {
     let sender_stream = connect(sender_for_actions.clone()).unwrap();
 
     send_subscribe(sender_stream.clone()).unwrap();
+
+    let content = get_content("35");
+    fs::write("index.html", content).expect("Unable to write file");
+
+
 
     thread::spawn(move || {
         let mut vec: Vec<(i32, i32)> = Vec::new();
@@ -225,4 +240,15 @@ fn main() {
         send_disconnect(sender_stream.clone()).unwrap();
         return;
     }
+}
+
+
+
+fn get_content(temp: &str) -> String {
+    let code_html_before = "<!DOCTYPE html> \n <html lang=\"en\"> \n <head>\n <meta charset=\"utf-8\">\n<title>Hello!</title>\n </head>\n <body>\n <h1>Temperatura</h1>\n <p> ";
+    let code_html_after = "</p> \n</body> </html>";
+    
+    let returned = format!("{}{}{}", code_html_before, temp, code_html_after);
+
+    returned
 }
