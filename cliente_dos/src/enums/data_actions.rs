@@ -1,36 +1,31 @@
 use std::sync::mpsc::Sender;
 pub struct AddData {
-    data: (u8, u8)
+    data: (i32, i32),
 }
 
 impl AddData {
-    pub fn init(data: (u8, u8)) -> AddData {
-        AddData {
-            data
-        }
+    pub fn init(data: (i32, i32)) -> AddData {
+        AddData { data }
     }
 
-    pub fn get_data(&self) -> (u8, u8) {
+    pub fn get_data(&self) -> (i32, i32) {
         self.data.clone()
     }
 }
 
 pub struct GetData {
-    sender: Sender<Vec<(u8, u8)>>
+    sender: Sender<Vec<(i32, i32)>>,
 }
 
 impl GetData {
-    pub fn init(sender: Sender<Vec<(u8, u8)>>) -> GetData {
-        GetData {
-            sender
-        }
+    pub fn init(sender: Sender<Vec<(i32, i32)>>) -> GetData {
+        GetData { sender }
     }
 
-    pub fn send_data(&self, data: Vec<(u8, u8)>) {
+    pub fn send_data(&self, data: Vec<(i32,i32)>) {
         self.sender.send(data).unwrap();
     }
 }
-
 
 pub enum DataAction {
     Add(AddData),
