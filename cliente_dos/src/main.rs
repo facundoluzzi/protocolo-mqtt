@@ -187,12 +187,13 @@ fn main() {
                                     .map(|temp| {
                                         let mut temp_string = String::from("");
                                         temp_string += &temp.to_string();
-                                        temp_string += "\n";
+                                        temp_string += "°C\n";
                                         temp_string.to_string()
                                     })
                                     .collect::<String>();
 
-                                let response = "HTTP/1.1 200 OK\n\n".to_string() + &response_text;
+                                //let response = "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin: *\nContent-Type: text/plain\n\n".to_string() + &response_text;
+                                let response = "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Header: text/plain\nCache-Control: no-cache\nServer: libnhttpd\nDate: Wed Jul 4 15:32:03 2012\nConnection: Keep-Alive:\nContent-Type: text/plain\n\n".to_string() + &response_text ;
                                 stream.write_all(response.as_bytes()).unwrap();
                             }
                             Err(_err) => {

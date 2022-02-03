@@ -1,0 +1,42 @@
+.demo{
+    justify-content: center;
+    align-content: center;
+    text-align: center;
+    white-space: pre-line;
+    position: relative;
+    margin: 80px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: larger;
+}
+.header{
+    font-size: larger;
+    padding: 20px;
+    margin: 200;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: chocolate;
+}
+.refresh {
+    color:white;
+    border-radius: 25%;
+    -webkit-transition-duration: 0.4s; /* Safari */
+    transition-duration: 0.4s;
+    border: none;
+    background-color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+.refresh:hover {
+    background-color: #575555; /* Green */
+    color: white;
+}
