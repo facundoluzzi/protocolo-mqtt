@@ -95,14 +95,9 @@ fn process_packet(packet: &[u8], sender_to_save_event: Sender<DataAction>) -> Re
         48 => {
             let decena = packet[packet.len() - 2];
             let decimal = packet[packet.len() - 1];
+            let temperature = String::from_utf8(vec![0x00, 0x02, decena, decimal]).unwrap()[2..4].to_string();
 
-            let x = [0, 0, 0, decimal];
-            let y = [0, 0, 0, decena];
-
-            let xx = i32::from_be_bytes(x);
-            let yy = i32::from_be_bytes(y);
-
-            let add_data = AddData::init((xx, yy));
+            let add_data = AddData::init(temperature);
             sender_to_save_event
             
                 .send(DataAction::Add(add_data))
@@ -157,7 +152,7 @@ fn main() {
     send_subscribe(sender_stream.clone()).unwrap();
 
     thread::spawn(move || {
-        let mut vec: Vec<(i32, i32)> = Vec::new();
+        let mut vec: Vec<String> = Vec::new();
         for receive in receiver_for_actions {
             match receive {
                 DataAction::Add(action) => {
@@ -181,7 +176,7 @@ fn main() {
                         match stream.read(&mut data) {
                             Ok(_size) => {
                                 let (sender_to_get_data, receiver_data) =
-                                    mpsc::channel::<Vec<(i32, i32)>>();
+                                    mpsc::channel::<Vec<String>>();
 
                                 let get_data = GetData::init(sender_to_get_data.clone());
                                 prueba.send(DataAction::Get(get_data)).unwrap();
@@ -189,10 +184,9 @@ fn main() {
                                 let data = receiver_data.recv().unwrap();
                                 let response_text: String = data
                                     .into_iter()
-                                    .map(|temp_tuple| {
+                                    .map(|temp| {
                                         let mut temp_string = String::from("");
-                                        let temperature = temp_tuple.0.to_string() + &temp_tuple.1.to_string();
-                                        temp_string += &temperature.to_string();
+                                        temp_string += &temp.to_string();
                                         temp_string += "\n";
                                         temp_string.to_string()
                                     })

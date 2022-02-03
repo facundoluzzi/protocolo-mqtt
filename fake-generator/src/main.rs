@@ -1,9 +1,5 @@
 use std::io::Write;
-use fake_generator::helper::stream::stream_handler::Stream;
-use fake_generator::helper::stream::stream_handler::StreamAction::WriteStream;
-use fake_generator::types::StreamType;
 use std::net::TcpStream;
-use std::sync::mpsc::Sender;
 use rand::Rng;
 use std::thread;
 use std::time::Duration;

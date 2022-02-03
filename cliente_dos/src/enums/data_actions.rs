@@ -1,28 +1,28 @@
 use std::sync::mpsc::Sender;
 pub struct AddData {
-    data: (i32, i32),
+    data: String,
 }
 
 impl AddData {
-    pub fn init(data: (i32, i32)) -> AddData {
+    pub fn init(data: String) -> AddData {
         AddData { data }
     }
 
-    pub fn get_data(&self) -> (i32, i32) {
+    pub fn get_data(&self) -> String {
         self.data.clone()
     }
 }
 
 pub struct GetData {
-    sender: Sender<Vec<(i32, i32)>>,
+    sender: Sender<Vec<String>>,
 }
 
 impl GetData {
-    pub fn init(sender: Sender<Vec<(i32, i32)>>) -> GetData {
+    pub fn init(sender: Sender<Vec<String>>) -> GetData {
         GetData { sender }
     }
 
-    pub fn send_data(&self, data: Vec<(i32,i32)>) {
+    pub fn send_data(&self, data: Vec<String>) {
         self.sender.send(data).unwrap();
     }
 }
