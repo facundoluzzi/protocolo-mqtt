@@ -1,9 +1,5 @@
 use std::io::Write;
-use fake_generator::helper::stream::stream_handler::Stream;
-use fake_generator::helper::stream::stream_handler::StreamAction::WriteStream;
-use fake_generator::types::StreamType;
 use std::net::TcpStream;
-use std::sync::mpsc::Sender;
 use rand::Rng;
 use std::thread;
 use std::time::Duration;
@@ -30,7 +26,7 @@ fn send_connect(mut stream: TcpStream) -> Result<(), String> {
 }
 
 pub fn connect_to_server() -> Result<TcpStream, String> {
-    let address = "0.0.0.0:1883".to_owned();
+    let address = "localhost:1883".to_owned();
     match TcpStream::connect(address) {
         Ok(stream) => {
             send_connect(stream.try_clone().unwrap()).unwrap();
