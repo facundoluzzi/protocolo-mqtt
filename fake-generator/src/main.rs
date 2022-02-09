@@ -18,7 +18,7 @@ fn build_bytes_for_connect() -> Vec<u8> {
 fn send_connect(mut stream: TcpStream) -> Result<(), String> {
     let connect_bytes = build_bytes_for_connect();
     if let Err(_err) = stream.write(&connect_bytes) {
-        return Err("Error enviando connect".to_string());
+        return Err("Error sending the connect packet".to_string())
     }
     Ok(())
 }
@@ -34,12 +34,12 @@ pub fn connect_to_server() -> Result<TcpStream, String> {
                     Ok(stream)
                 }
             } else {
-                Err("No se pudo establecer la conexion".to_string())
+                return Err("Could not establish the connection".to_string());
             }
         }
         Err(err) => {
             println!("Failed to connect: {}", err);
-            let response = "La conexion no se ha podido establecer".to_string();
+            let response = "Could not establish the connection".to_string();
             Err(response)
         }
     }

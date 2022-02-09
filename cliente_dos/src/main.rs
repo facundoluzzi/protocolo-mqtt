@@ -29,7 +29,7 @@ fn send_connect(sender_stream: Sender<StreamType>) -> Result<(), String> {
         .send((WriteStream, Some(connect_bytes), None))
         .is_err()
     {
-        return Err("Error enviando el paquete connect".to_string());
+        return Err("Error sending the connect packet".to_string());
     }
 
     Ok(())
@@ -44,7 +44,7 @@ fn connect(sender_to_save_event: Sender<DataAction>) -> Result<Sender<StreamType
                 start_to_read(sender_stream.clone(), sender_to_save_event);
                 Ok(sender_stream)
             } else {
-                Err("Error clonando inicializando el stream".to_string())
+                Err("Error cloning the stream for connect".to_string())
             }
         }
         Err(err) => {
@@ -69,7 +69,7 @@ pub fn send_subscribe(sender_stream: Sender<StreamType>) -> Result<(), String> {
         .send((WriteStream, Some(subscribe_bytes), None))
         .is_err()
     {
-        return Err("Error enviando el paquete connect".to_string());
+        return Err("Error sending the connect packet".to_string());
     }
 
     Ok(())
@@ -86,7 +86,7 @@ pub fn send_disconnect(sender_stream: Sender<StreamType>) -> Result<(), String> 
         .send((WriteStream, Some(disconnect_bytes), None))
         .is_err()
     {
-        return Err("Error enviando el paquete connect".to_string());
+        return Err("Error sending the connect packet".to_string());
     }
 
     Ok(())
@@ -152,7 +152,7 @@ fn connect_and_subscribe(
             Ok(sender_stream)
         }
     } else {
-        Err("Can not connect".to_string())
+        return Err("Couldn't connect".to_string());
     }
 }
 
@@ -178,7 +178,8 @@ fn disconnect(sender_stream: Sender<StreamType>) {
         let mut input = String::new();
         io::stdin()
             .read_line(&mut input)
-            .expect("Error al leer de teclado");
+            .ok()
+            .expect("Error reading from stdio");
         let input_as_bytes = input.as_bytes();
         if input_as_bytes.len() == 1 && input_as_bytes[0] == 10 {
             continue;
@@ -237,7 +238,7 @@ fn spawn_listener(sender_for_actions: Sender<DataAction>) {
                                 }
                             }
                             Err(_err) => {
-                                println!("Can not write");
+                                println!("Couldn't write in stream");
                             }
                         }
                     });

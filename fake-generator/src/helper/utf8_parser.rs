@@ -20,7 +20,7 @@ impl UTF8 {
             UTF8::calculate_init_end_and_length_of_variable_header(msb, lsb, copy_bytes);
         match String::from_utf8(copy_bytes[init..end].to_vec()) {
             Ok(result) => Ok((result, length)),
-            Err(_) => Err("No pude convertir utf8 a string".to_string()),
+            Err(_) => Err("Could not convert ut8 to string".to_string()),
         }
     }
 
