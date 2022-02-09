@@ -214,7 +214,7 @@ fn process_response(action: Sender<DataAction>) -> String {
         })
         .collect::<String>();
 
-    "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Header: text/plain\nCache-Control: no-cache\nServer: libnhttpd\nDate: Wed Jul 4 15:32:03 2012\nConnection: Keep-Alive:\nContent-Type: text/plain\n\n".to_string() + &response_text
+    "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin: *\nAccess-Control-Allow-Header: text/plain\nContent-Type: text/plain\n\n".to_string() + &response_text
 }
 
 fn spawn_listener(sender_for_actions: Sender<DataAction>) {
