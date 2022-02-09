@@ -2,25 +2,38 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Document</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
 </head>
 
 <body>
-    <table>
-        <th class="header">
-            Temperatura
-        </th>
-        
-        <pre class="demo" id="demo"></pre>
-        <button class='refresh' onclick="window.location.reload();">Refresh</button>
-    </table>
+    <div class="outer" style="height: 500px; overflow:auto;">
+        <table class="table table-hover bg-light">
+            <thead id="demo">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Temperatura</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-
-
+    <div class="container">
+        <div class="center">
+            <button class='refresh' onclick="window.location.reload();">Refresh</button>
+        </div>
+    </div>
 
     <script>
         async function fetchAsync(url) {
@@ -29,27 +42,31 @@
                 headers: {
                     'Content-Type': 'text/plain',
                 }
-            }).then(res => {
-                return res.text()
-            }).then(res => {
-                console.log(res)
-                let array = res.split('\n')
-                console.log(array)
-                for (var i = 0; i <= array.length - 2; i++) {
-                    if (i % 21 == 0) {
-                        document.getElementById('demo').innerHTML += '\n'
-                    }
-                    document.getElementById('demo').innerHTML += ('&nbsp;&nbsp;&nbsp;' + array[i] + '&nbsp;&nbsp;&nbsp;&nbsp;')
-                }
             })
+                .then(res => res.text())
+                .then(res => res
+                    .split('\n')
+                    .forEach((item, index) => {
+                        if (item === '') return;
+                        const bootstrapClass = item => {
+                            if (item < '30°C') {
+                                return 'text-success';
+                            } else if (item < '40°C') {
+                                return 'text-warning';
+                            } else {
+                                return 'text-danger';
+                            }
+                        }
+                        document
+                            .getElementById('demo')
+                            .innerHTML += `<tr><td style="width: 50%">${index + 1}</td><td style="width: 50%" class="${bootstrapClass(item)}">${item}</td></tr>`
+                    })
+                );
         }
+
         data = fetchAsync('http://0.0.0.0:3000/')
 
     </script>
-
-
-
-
 </body>
 
 </html>
