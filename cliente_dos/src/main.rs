@@ -29,7 +29,7 @@ fn send_connect(sender_stream: Sender<StreamType>) -> Result<(), String> {
         .send((WriteStream, Some(connect_bytes), None))
         .is_err()
     {
-        return Err("Error enviando el paquete connect".to_string());
+        return Err("Error sending the connect packet".to_string());
     }
 
     Ok(())
@@ -41,10 +41,10 @@ fn connect(sender_to_save_event: Sender<DataAction>) -> Result<Sender<StreamType
         Ok(stream) => {
             if let Ok(sender_stream) = Stream::init(stream) {
                 send_connect(sender_stream.clone())?;
-                start_to_read(sender_stream.clone(), sender_to_save_event.clone());
+                start_to_read(sender_stream.clone(), sender_to_save_event);
                 Ok(sender_stream)
             } else {
-                Err("Error clonando inicializando el stream".to_string())
+                Err("Error cloning the stream for connect".to_string())
             }
         }
         Err(err) => {
@@ -69,7 +69,7 @@ pub fn send_subscribe(sender_stream: Sender<StreamType>) -> Result<(), String> {
         .send((WriteStream, Some(subscribe_bytes), None))
         .is_err()
     {
-        return Err("Error enviando el paquete connect".to_string());
+        return Err("Error sending the connect packet".to_string());
     }
 
     Ok(())
@@ -86,7 +86,7 @@ pub fn send_disconnect(sender_stream: Sender<StreamType>) -> Result<(), String> 
         .send((WriteStream, Some(disconnect_bytes), None))
         .is_err()
     {
-        return Err("Error enviando el paquete connect".to_string());
+        return Err("Error sending the connect packet".to_string());
     }
 
     Ok(())
@@ -142,15 +142,17 @@ fn start_to_read(sender_stream: Sender<StreamType>, sender_to_save_event: Sender
     });
 }
 
-fn connect_and_subscribe(sender_for_actions: Sender<DataAction>) -> Result<Sender<StreamType>, String> {
-    if let Ok(sender_stream) = connect(sender_for_actions.clone()) {
+fn connect_and_subscribe(
+    sender_for_actions: Sender<DataAction>,
+) -> Result<Sender<StreamType>, String> {
+    if let Ok(sender_stream) = connect(sender_for_actions) {
         if let Err(_err) = send_subscribe(sender_stream.clone()) {
-            return Err("Can not subscribe".to_string());
+            Err("Can not subscribe".to_string())
         } else {
-            return Ok(sender_stream);
+            Ok(sender_stream)
         }
     } else {
-        return Err("Can not connect".to_string());
+        return Err("Couldn't connect".to_string());
     }
 }
 
@@ -177,12 +179,12 @@ fn disconnect(sender_stream: Sender<StreamType>) {
         io::stdin()
             .read_line(&mut input)
             .ok()
-            .expect("Error al leer de teclado");
+            .expect("Error reading from stdio");
         let input_as_bytes = input.as_bytes();
         if input_as_bytes.len() == 1 && input_as_bytes[0] == 10 {
             continue;
         }
-        if let Err(_err) = send_disconnect(sender_stream.clone()) {
+        if let Err(_err) = send_disconnect(sender_stream) {
             println!("Unexpected error");
             return;
         }
@@ -192,21 +194,21 @@ fn disconnect(sender_stream: Sender<StreamType>) {
 
 fn process_response(action: Sender<DataAction>) -> String {
     let (sender_to_get_data, receiver_data) = mpsc::channel::<Vec<String>>();
-    let get_data = GetData::init(sender_to_get_data.clone());
+    let get_data = GetData::init(sender_to_get_data);
     if let Err(_err) = action.send(DataAction::Get(get_data)) {
         println!("Unexpected error");
     }
 
     let data = match receiver_data.recv() {
         Ok(data) => data,
-        Err(_) => Vec::new()
+        Err(_) => Vec::new(),
     };
 
     let response_text: String = data
         .into_iter()
         .map(|temp| {
             let mut temp_string = String::from("");
-            temp_string += &temp.to_string();
+            temp_string += &temp;
             temp_string += "°C\n";
             temp_string.to_string()
         })
@@ -229,12 +231,14 @@ fn spawn_listener(sender_for_actions: Sender<DataAction>) {
                         let mut data = [0_u8; 400];
                         match stream.read(&mut data) {
                             Ok(_size) => {
-                                if let Err(err) = stream.write_all(process_response(action.clone()).as_bytes()) {
+                                if let Err(err) =
+                                    stream.write_all(process_response(action.clone()).as_bytes())
+                                {
                                     println!("{}", err);
                                 }
                             }
                             Err(_err) => {
-                                println!("Can not write");
+                                println!("Couldn't write in stream");
                             }
                         }
                     });
@@ -250,13 +254,13 @@ fn spawn_listener(sender_for_actions: Sender<DataAction>) {
 fn main() {
     let (sender_for_actions, receiver_for_actions) = mpsc::channel::<DataAction>();
     let sender_stream = match connect_and_subscribe(sender_for_actions.clone()) {
-        Ok(sender_stream) => sender_stream.clone(),
+        Ok(sender_stream) => sender_stream,
         Err(err) => {
             println!("{}", err);
             return;
         }
     };
     spawn_data(receiver_for_actions);
-    spawn_listener(sender_for_actions.clone());
-    disconnect(sender_stream.clone());
+    spawn_listener(sender_for_actions);
+    disconnect(sender_stream);
 }
