@@ -180,7 +180,6 @@ fn disconnect(sender_stream: Sender<StreamType>) {
             .read_line(&mut input)
             .expect("Error al leer de teclado");
         let input_as_bytes = input.as_bytes();
-        println!("{:?}", input_as_bytes);
         if input_as_bytes.len() == 1 && input_as_bytes[0] == 10 {
             continue;
         }
