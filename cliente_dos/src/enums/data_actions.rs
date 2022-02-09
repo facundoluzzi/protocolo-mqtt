@@ -23,7 +23,9 @@ impl GetData {
     }
 
     pub fn send_data(&self, data: Vec<String>) {
-        self.sender.send(data).unwrap();
+        if let Err(err) = self.sender.send(data) {
+            println!("Error sending temperature {}", err);
+        }
     }
 }
 
