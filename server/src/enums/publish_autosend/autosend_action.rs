@@ -9,5 +9,5 @@ pub enum AutoSendAction {
     Add(AddAutoSend),
     Remove(RemoveAutoSend),
     PublishAll(PublishAllAutoSend),
-    ChangeMode, 
+    ChangeMode,
 }

@@ -45,9 +45,7 @@ impl PublishAutoSend {
                     AutoSendAction::PublishAll(_) => {
                         self.publish_all(sender_publisher_writer.clone())
                     }
-                    AutoSendAction::ChangeMode => {
-                        self.change_mode()
-                    }
+                    AutoSendAction::ChangeMode => self.change_mode(),
                 }
             }
         });
@@ -82,7 +80,6 @@ impl PublishAutoSend {
             packet.append(&mut receive[1..receive.len()].to_vec());
 
             self.publish_packets.insert(packet_identifier, packet);
-
         }
     }
 
@@ -94,7 +91,7 @@ impl PublishAutoSend {
 
     /// publica a todos los mensajes guardados
     pub fn publish_all(&mut self, sender: Sender<ChannelPublisherWriter>) {
-        if !self.is_disconnected{
+        if !self.is_disconnected {
             for publish in self.publish_packets.clone() {
                 let publish_to_stream = PublishToStream::init(publish.1);
                 let result = sender.send(ChannelPublisherWriter::Publish(publish_to_stream));
