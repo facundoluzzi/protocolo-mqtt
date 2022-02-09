@@ -21,7 +21,9 @@ fn build_bytes_for_connect() -> Vec<u8> {
 /// lo mande hacia el broker
 fn send_connect(mut stream: TcpStream) -> Result<(), String> {
     let connect_bytes = build_bytes_for_connect();
-    stream.write(&connect_bytes).unwrap();
+    if let Err(_err) = stream.write(&connect_bytes) {
+        return Err("Error enviando connect".to_string())
+    }
     Ok(())
 }
 
@@ -29,8 +31,15 @@ pub fn connect_to_server() -> Result<TcpStream, String> {
     let address = "localhost:1883".to_owned();
     match TcpStream::connect(address) {
         Ok(stream) => {
-            send_connect(stream.try_clone().unwrap()).unwrap();
-            Ok(stream.try_clone().unwrap())
+            if let Ok(stream_clone) = stream.try_clone() {
+                if let Err(err) = send_connect(stream_clone) {
+                    return Err(err);
+                } else {
+                    return Ok(stream);
+                }
+            } else {
+                return Err("No se pudo establecer la conexion".to_string());
+            }
         }
         Err(err) => {
             println!("Failed to connect: {}", err);
@@ -47,8 +56,11 @@ fn build_bytes_for_subscribe() -> Vec<u8> {
 
 pub fn send_subscribe(mut stream: TcpStream) -> Result<(), String> {
     let subscribe_bytes = build_bytes_for_subscribe();
-    stream.write(&subscribe_bytes).unwrap();
-    Ok(())
+    if let Ok(_stream) = stream.write(&subscribe_bytes){
+        Ok(()) 
+    }else{
+        Err("Error subscribing".to_string())
+    }
 }
 
 fn random_value() -> [u8; 2] {
@@ -64,18 +76,23 @@ fn build_bytes_for_publish(ten: u8, unit: u8) -> Vec<u8> {
 
 pub fn send_publish(mut stream: TcpStream, ten: u8, unit: u8) -> Result<(), String> {
     let publish_bytes = build_bytes_for_publish(ten, unit);
-    stream.write(&publish_bytes).unwrap();
+    if let Err(_err) = stream.write(&publish_bytes) {
+        return Err("Error publishing".to_string());
+    }
     Ok(())
 }
 
-fn main() {
-    let stream = connect_to_server().unwrap();
-    send_subscribe(stream.try_clone().unwrap()).unwrap();
+fn main() -> Result<(), String> {
+    let stream = connect_to_server()?;
+    if let Ok(stream_clone) = stream.try_clone() {
+        send_subscribe(stream_clone)?;
+    }
     thread::sleep(Duration::from_secs(1));
     loop {
         thread::sleep(Duration::from_secs(5));
         let [ten, unit]: [u8; 2] = random_value();
-        send_publish(stream.try_clone().unwrap(), ten, unit).unwrap();
-        println!("{}{}", ten, unit);
+        if let Ok(stream_clone) = stream.try_clone() {
+            send_publish(stream_clone, ten, unit)?;
+        }
     }
 }
