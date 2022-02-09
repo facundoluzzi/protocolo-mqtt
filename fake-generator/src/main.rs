@@ -81,15 +81,40 @@ pub fn send_publish(mut stream: TcpStream, ten: u8, unit: u8) -> Result<(), Stri
     Ok(())
 }
 
+pub fn adaptate_value(mut ten: u8, mut unit: u8) -> [u8; 2] {
+    let random = rand::thread_rng().gen_range(1..6);
+    if unit % 2 == 1 {
+        unit = unit + random;
+        if unit > 57 {
+            unit = unit - 10;
+            if ten < 52 {
+                ten = ten + 1;
+            }
+        }
+    }else {
+        unit = unit - random;
+        if unit < 48 {
+            unit = unit + 10;
+            if ten > 48 {
+                ten = ten - 1;
+            }
+        }
+    }
+    [ten, unit]
+}
+
 fn main() -> Result<(), String> {
     let stream = connect_to_server()?;
     if let Ok(stream_clone) = stream.try_clone() {
         send_subscribe(stream_clone)?;
     }
+    let [mut last_ten, mut last_unit]: [u8; 2] = random_value();
     thread::sleep(Duration::from_secs(1));
     loop {
         thread::sleep(Duration::from_secs(5));
-        let [ten, unit]: [u8; 2] = random_value();
+        let [ten, unit]: [u8; 2] = adaptate_value(last_ten, last_unit);
+        last_ten = ten;
+        last_unit = unit;
         if let Ok(stream_clone) = stream.try_clone() {
             send_publish(stream_clone, ten, unit)?;
         }
