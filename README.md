@@ -1,6 +1,6 @@
-# Protocolo MQTT - Proyecto 2C-2021 de la materia Taller de Programación, catedra Deymonnaz.
+# Protocolo MQTT 
 
-Implementación del protocolo MQTT en el lenguaje de programación Rust.
+Proyecto 2C-2021 de la materia Taller de Programación, catedra Deymonnaz.
 
 MQTT es un protocolo de mensajería basado en el patrón de comunicación publisher-suscriber y la
 arquitectura cliente-servidor. Dentro de sus principales características se puede destacar que es un
