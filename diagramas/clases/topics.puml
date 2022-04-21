@@ -1,0 +1,26 @@
+@startuml
+
+class ContextApplication {}
+
+class Logger {}
+class Topics {
+    + add(topic)
+    + remove(topic)
+    + publish(topic, msg)
+}
+
+class Topic {
+    + name
+    + publish(msg)
+}
+
+class Subscriber {
+    + publish(msg)
+}
+
+ContextApplication *-down- Logger
+ContextApplication *-down- Topics
+Topics "1" *-down- "n" Topic
+Topic "1" *-down- "n" Subscriber
+
+@enduml

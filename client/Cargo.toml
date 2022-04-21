@@ -1,0 +1,12 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+gtk = "0.14.3"
+glib = "*"
+
+[[bin]]
+name = "interface"
+path = "src/bin/interface.rs"

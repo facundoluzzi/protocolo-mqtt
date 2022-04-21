@@ -1,0 +1,24 @@
+@startuml
+
+participant Client1 as cl1 order 1
+participant Server as sv order 2
+participant Client2 as cl2 order 3
+
+
+cl1 --> sv: Connect
+sv --> cl1: Connack
+
+cl2 --> sv :Connect 
+sv --> cl2: Connack
+
+cl1 --> sv: Suscribe(Topic: "Gatos")
+cl2 --> sv: Suscribe(Topic: "Perros")
+
+cl1 --> sv: Publish(Topic: "Perros")
+sv --> cl2: Message(Topic: "Perros")
+
+cl2 --> sv: Publish(Topic: "Gatos")
+sv --> cl1: Message(Topic: "Gatos")
+
+
+@enduml
